@@ -20,7 +20,7 @@ from parsimonious import Grammar, NodeVisitor
 from funcy import flatten
 import numpy as np
 
-from blustl import stl
+from stl import stl
 
 STL_GRAMMAR = Grammar(u'''
 phi = (g / f / lineq / or / and / paren_phi)
