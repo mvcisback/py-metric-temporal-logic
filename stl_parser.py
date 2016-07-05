@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+# TODO: consider using sympy to interpret stuff
 # TODO: break out into seperate library
 # TODO: allow matrix to be symbolically parsed in STL_GRAMMAR
 # TODO: allow multiplication to be distributive
 # TODO: support reference specific time points
 # TODO: add Implies and Iff syntactic sugar
 # TODO: add support for parsing Until
-# TODO: properly handle pm when parsing
 # TODO: support variables on both sides of ineq
+# TODO: Allow -x = -1*x
 # TODO: change way of parsing dt
 # - Allow inside of time index
 # - Allow dt*x rather than dt*1*x
@@ -19,6 +20,7 @@ import operator as op
 from parsimonious import Grammar, NodeVisitor
 from funcy import flatten
 import numpy as np
+from lenses import lens
 
 from stl import stl
 
@@ -39,19 +41,14 @@ interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 
 const_or_unbound = unbound / const
 
-
-symlineq = matvec (__ "+" __ dt "*" matvec)? _ op _ const_or_unbound
-matvec = mat "*" vec
-mat = "A" ~r"\d+"
-vec = ("X" / "U" / "W") ("'")?
-
 lineq = terms _ op _ const_or_unbound
 term =  coeff? var
 coeff = (dt __ "*" __)? const __ "*" __
-terms = (term __ ("+"/"-") __ terms) / term
+terms = (term __ pm __ terms) / term
 
 var = id time?
-time = (prime / ("[" "t" __ pm __ const "]"))
+time = prime / time_index
+time_index = "[" "t" __ pm __ const "]"
 prime = "'"
 
 pm = "+" / "-"
@@ -123,24 +120,32 @@ class STLVisitor(NodeVisitor):
             
         return stl.Var(var_kind, iden, time)
 
+    def visit_time_index(self, _, children):
+        return children[3]* children[5]
+
     def visit_prime(self, *_):
-        return -1
+        return -stl.dt
 
     def visit_const(self, const, children):
         return float(const.text)
 
+    def visit_dt(self, *_):
+        return stl.dt
+
     def visit_term(self, _, children):
         coeffs, var = children
-        (dt, c) = coeffs[0] if coeffs else (False, 1)
-        return stl.Term(dt, c, var)
+        c = coeffs[0] if coeffs else 1
+        return stl.Term(c, var)
 
     def visit_coeff(self, _, children):
         dt, coeff, *_ = children
-        return bool(dt), coeff
+        dt = dt[0][0] if dt else 1
+        return dt * coeff
 
     def visit_terms(self, _, children):
         if isinstance(children[0], list):
-            term, *_, terms = children[0]
+            term, _1, sgn ,_2, terms = children[0]
+            terms = lens(terms)[0].coeff * sgn
             return [term] + terms
         else:
             return children
@@ -148,6 +153,9 @@ class STLVisitor(NodeVisitor):
     def visit_lineq(self, _, children):
         terms, _1, op, _2, const = children
         return stl.LinEq(tuple(terms), op, const[0])
+
+    def visit_pm(self, node, _):
+        return 1 if node.text == "+" else -1
 
 
 class MatrixVisitor(NodeVisitor):

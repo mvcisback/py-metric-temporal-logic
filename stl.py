@@ -8,9 +8,12 @@ from collections import namedtuple, deque
 from itertools import repeat
 from typing import Union
 from enum import Enum
+from sympy import Symbol
 
 VarKind = Enum("VarKind", ["x", "u", "w"])
 str_to_varkind = {"x": VarKind.x, "u": VarKind.u, "w": VarKind.w}
+dt = Symbol('dt', positive=True)
+
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
     def __repr__(self):
@@ -27,15 +30,14 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
 
 class Var(namedtuple("Var", ["kind", "id", "time"])):
     def __repr__(self):
-        time_str = "'" if self.time == -1 else "[t+{}]".format(self.time)
+        time_str = "[t + {}]".format(self.time)
         return "{k}{i}{t}".format(k=self.kind.name, i=self.id, t=time_str)
 
 
-class Term(namedtuple("Term", ["dt", "coeff", "var"])):
+class Term(namedtuple("Term", ["coeff", "var"])):
     def __repr__(self):
-        dt = "dt*" if self.dt else ""
         coeff = str(self.coeff) + "*" if self.coeff != 1 else ""
-        return "{dt}{c}{v}".format(dt=dt, c=coeff, v=self.var)
+        return "{c}{v}".format(c=coeff, v=self.var)
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):
