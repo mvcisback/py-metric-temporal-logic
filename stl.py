@@ -102,8 +102,9 @@ def tree(stl):
     return {x:set(x.children()) for x in walk(stl) if x.children()}
 
 
-def time_lens(phi:"STL") -> lens:
-    return _time_lens(phi).bind(phi)
+def time_lens(phi:"STL", bind=True) -> lens:
+    l = _time_lens(phi)
+    return l.bind(phi) if bind else l
 
 
 def _time_lens(phi):
@@ -116,7 +117,3 @@ def _time_lens(phi):
         return lens().args.tuple_(*child_lens).each_()
     else:
         return lens().arg.add_lens(_time_lens(phi.arg))
-
-
-def set_time(phi, *, t, dt=0.1):
-    return time_lens(phi).call("evalf", subs={t_sym: t, dt_sym: dt})
