@@ -2,16 +2,12 @@
 
 # TODO: consider using sympy to interpret stuff
 # TODO: break out into seperate library
-# TODO: allow matrix to be symbolically parsed in STL_GRAMMAR
 # TODO: allow multiplication to be distributive
 # TODO: support reference specific time points
 # TODO: add Implies and Iff syntactic sugar
 # TODO: add support for parsing Until
 # TODO: support variables on both sides of ineq
 # TODO: Allow -x = -1*x
-# TODO: change way of parsing dt
-# - Allow inside of time index
-# - Allow dt*x rather than dt*1*x
 
 from functools import partialmethod
 from collections import namedtuple
@@ -137,7 +133,7 @@ class STLVisitor(NodeVisitor):
     def visit_term(self, _, children):
         coeffs, var = children
         c = coeffs[0] if coeffs else 1
-        return stl.Term(c, var)
+        return lens(var).id*c
 
     def visit_coeff(self, _, children):
         dt, coeff, *_ = children
@@ -147,7 +143,7 @@ class STLVisitor(NodeVisitor):
     def visit_terms(self, _, children):
         if isinstance(children[0], list):
             term, _1, sgn ,_2, terms = children[0]
-            terms = lens(terms)[0].coeff * sgn
+            terms = lens(terms)[0].id * sgn
             return [term] + terms
         else:
             return children

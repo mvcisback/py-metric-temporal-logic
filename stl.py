@@ -17,12 +17,9 @@ t_sym = Symbol('t', positive=True)
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
     def __repr__(self):
-        n = len(self.terms)
-        rep = "{}"
-        if n > 1:
-            rep += " + {}"*(n - 1)
-        rep += " {op} {c}"
-        return rep.format(*self.terms, op=self.op, c=self.const)
+        rep = "{lhs} {op} {c}"
+        lhs = sum(t.id for t in self.terms)
+        return rep.format(lhs=lhs, op=self.op, c=self.const)
 
     def children(self):
         return []
@@ -32,12 +29,6 @@ class Var(namedtuple("Var", ["kind", "id", "time"])):
     def __repr__(self):
         time_str = "[{}]".format(self.time)
         return "{i}{t}".format(k=self.kind.name, i=self.id, t=time_str)
-
-
-class Term(namedtuple("Term", ["coeff", "var"])):
-    def __repr__(self):
-        coeff = str(self.coeff) + "*" if self.coeff != 1 else ""
-        return "{c}{v}".format(c=coeff, v=self.var)
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):
