@@ -17,9 +17,12 @@ t_sym = Symbol('t', positive=True)
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
     def __repr__(self):
-        rep = "{lhs} {op} {c}"
-        lhs = sum(t.id for t in self.terms)
-        return rep.format(lhs=lhs, op=self.op, c=self.const)
+        n = len(self.terms)
+        rep = "{}"
+        if n > 1:
+            rep += " + {}"*(n - 1)
+        rep += " {op} {c}"
+        return rep.format(*self.terms, op=self.op, c=self.const)
 
     def children(self):
         return []
@@ -105,7 +108,7 @@ def time_lens(phi:"STL") -> lens:
 
 def _time_lens(phi):
     if isinstance(phi, LinEq):
-        return lens().terms.each_().var.time
+        return lens().terms.each_().time
 
     if isinstance(phi, NaryOpSTL):
         child_lens = [lens()[i].add_lens(_time_lens(c)) for i, c
