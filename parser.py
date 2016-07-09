@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# TODO: consider using sympy to interpret stuff
 # TODO: break out into seperate library
 # TODO: allow multiplication to be distributive
 # TODO: support reference specific time points
@@ -58,16 +57,6 @@ op = ">=" / "<=" / "<" / ">" / "="
 _ = ~r"\s"+
 __ = ~r"\s"*
 EOL = "\\n"
-''')
-
-MATRIX_GRAMMAR = Grammar(r'''
-matrix = "[" __ row+ __ "]"
-row = consts ";"? __
-consts = (const _ consts) / const
-
-const = ~r"[\+\-]?\d+(\.\d+)?"
-_ = ~r"\s"+
-__ = ~r"\s"*
 ''')
 
 
@@ -156,28 +145,5 @@ class STLVisitor(NodeVisitor):
         return 1 if node.text == "+" else -1
 
 
-class MatrixVisitor(NodeVisitor):
-    def generic_visit(self, _, children):
-        return children
-
-    def visit_matrix(self, _, children):
-        _, _, rows, _, _ = children
-        return rows
-
-    def visit_row(self, _, children):
-        consts, _, _ = children
-        return consts
-
-    def visit_const(self, node, _):
-        return float(node.text)
-
-    def visit_consts(self, _, children):
-        return list(flatten(children))
-
-
-def parse_stl(stl_str:str, rule:str="phi") -> "STL":
+def parse(stl_str:str, rule:str="phi") -> "STL":
     return STLVisitor().visit(STL_GRAMMAR[rule].parse(stl_str))
-
-
-def parse_matrix(mat_str:str) -> np.array:
-    return np.array(MatrixVisitor().visit(MATRIX_GRAMMAR.parse(mat_str)))
