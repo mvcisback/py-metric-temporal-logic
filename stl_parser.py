@@ -116,7 +116,7 @@ class STLVisitor(NodeVisitor):
         (var_kind, iden), time_node = children
 
         time_node = list(flatten(time_node))
-        time = time_node[0] if len(time_node) > 0 else 0
+        time = time_node[0] if len(time_node) > 0 else stl.t_sym
             
         return stl.Var(var_kind, iden, time)
 
@@ -124,13 +124,13 @@ class STLVisitor(NodeVisitor):
         return children[3]* children[5]
 
     def visit_prime(self, *_):
-        return -stl.dt
+        return -stl.dt_sym
 
     def visit_const(self, const, children):
         return float(const.text)
 
     def visit_dt(self, *_):
-        return stl.dt
+        return stl.dt_sym
 
     def visit_term(self, _, children):
         coeffs, var = children
