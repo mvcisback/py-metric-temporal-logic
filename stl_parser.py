@@ -22,6 +22,8 @@ from funcy import flatten
 import numpy as np
 from lenses import lens
 
+from sympy import Symbol
+
 from stl import stl
 
 STL_GRAMMAR = Grammar(u'''
@@ -54,7 +56,7 @@ prime = "'"
 pm = "+" / "-"
 dt = "dt"
 unbound = "?"
-id = ("x" / "u" / "w") ~r"\d+" 
+id = ("x" / "u" / "w") ~r"[a-zA-z\d]*" 
 const = ~r"[\+\-]?\d*(\.\d+)?"
 op = ">=" / "<=" / "<" / ">" / "="
 _ = ~r"\s"+
@@ -109,8 +111,8 @@ class STLVisitor(NodeVisitor):
     visit_and = partialmethod(binop_visitor, op=stl.And)
 
     def visit_id(self, name, _):
-        var_kind, *iden = name.text
-        return stl.str_to_varkind[var_kind] ,int("".join(iden))
+        var_kind, *_ = name.text
+        return stl.str_to_varkind[var_kind] , Symbol(name.text)
 
     def visit_var(self, _, children):
         (var_kind, iden), time_node = children

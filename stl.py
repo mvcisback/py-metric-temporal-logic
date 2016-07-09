@@ -31,7 +31,7 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
 class Var(namedtuple("Var", ["kind", "id", "time"])):
     def __repr__(self):
         time_str = "[{}]".format(self.time)
-        return "{k}{i}{t}".format(k=self.kind.name, i=self.id, t=time_str)
+        return "{i}{t}".format(k=self.kind.name, i=self.id, t=time_str)
 
 
 class Term(namedtuple("Term", ["coeff", "var"])):
