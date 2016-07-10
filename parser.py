@@ -96,16 +96,15 @@ class STLVisitor(NodeVisitor):
     visit_and = partialmethod(binop_visitor, op=stl.And)
 
     def visit_id(self, name, _):
-        var_kind, *_ = name.text
-        return stl.str_to_varkind[var_kind] , Symbol(name.text)
+        return Symbol(name.text)
 
     def visit_var(self, _, children):
-        (var_kind, iden), time_node = children
+        iden, time_node = children
 
         time_node = list(flatten(time_node))
         time = time_node[0] if len(time_node) > 0 else stl.t_sym
             
-        return stl.Var(var_kind, iden, time)
+        return stl.Var(iden, time)
 
     def visit_time_index(self, _, children):
         return children[3]* children[5]
