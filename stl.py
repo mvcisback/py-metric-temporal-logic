@@ -7,9 +7,10 @@ from itertools import repeat
 from typing import Union
 from enum import Enum
 from sympy import Symbol
-import funcy as fn
 
 from lenses import lens
+
+import funcy as fn
 
 VarKind = Enum("VarKind", ["x", "u", "w"])
 str_to_varkind = {"x": VarKind.x, "u": VarKind.u, "w": VarKind.w}
@@ -18,11 +19,21 @@ t_sym = Symbol('t', positive=True)
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
     def __repr__(self):
-        rep = "{lhs} {op} {c}"
-        return rep.format(lhs=self.terms, op=self.op, c=self.const)
+        n = len(self.terms)
+        rep = "{}"
+        if n > 1:
+            rep += " + {}"*(n - 1)
+        rep += " {op} {c}"
+        return rep.format(*self.terms, op=self.op, c=self.const)
 
     def children(self):
         return []
+
+
+class Var(namedtuple("Var", ["coeff", "id", "time"])):
+    def __repr__(self):
+        time_str = "[{}]".format(self.time)
+        return "{c}*{i}{t}".format(c=self.coeff, i=self.id, t=time_str)
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):
@@ -93,10 +104,14 @@ def tree(stl):
     return {x:set(x.children()) for x in walk(stl) if x.children()}
 
 
-def terms_lens(phi:"STL", bind=True) -> lens:
-    tls = list(fn.flatten(_terms_lens(phi)))
+def lineq_lens(phi:"STL", bind=True) -> lens:
+    tls = list(fn.flatten(_lineq_lens(phi)))
     tl = lens().tuple_(*tls).each_()
     return tl.bind(phi) if bind else tl
+
+
+def terms_lens(phi:"STL", bind=True) -> lens:
+    return lineq_lens(phi, bind).terms.each_()
 
 
 def _child_lens(psi, focus):
@@ -107,9 +122,9 @@ def _child_lens(psi, focus):
         yield focus.arg
 
 
-def _terms_lens(phi, focus=lens()):
+def _lineq_lens(phi, focus=lens()):
     psi = focus.get(state=phi)
     if isinstance(psi, LinEq):
-        return [focus.terms]
+        return [focus]
     child_lenses = list(_child_lens(psi, focus=focus))
-    return [_terms_lens(phi, focus=cl) for cl in child_lenses]
+    return [_lineq_lens(phi, focus=cl) for cl in child_lenses]

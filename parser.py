@@ -17,7 +17,7 @@ from funcy import flatten
 import numpy as np
 from lenses import lens
 
-from sympy import Function
+from sympy import Symbol, Number
 
 from stl import stl
 
@@ -45,14 +45,13 @@ terms = (term __ pm __ terms) / term
 
 var = id time?
 time = prime / time_index
-time_index = "(" "t" __ pm __ const ")"
+time_index = "[" "t" __ pm __ const "]"
 prime = "'"
 
 pm = "+" / "-"
 dt = "dt"
 unbound = "?"
-id = ("x" / "u" / "w") (aZ / ~r"\d")*
-aZ = (~r"[a-z]" / ~r"A-z")
+id = ("x" / "u" / "w") ~r"[a-zA-z\d]*" 
 const = ~r"[\+\-]?\d*(\.\d+)?"
 op = ">=" / "<=" / "<" / ">" / "="
 _ = ~r"\s"+
@@ -97,20 +96,21 @@ class STLVisitor(NodeVisitor):
     visit_and = partialmethod(binop_visitor, op=stl.And)
 
     def visit_id(self, name, _):
-        return Function(name.text)(stl.t_sym)
+        return Symbol(name.text)
 
     def visit_var(self, _, children):
         iden, time_node = children
 
         time_node = list(flatten(time_node))
         time = time_node[0] if len(time_node) > 0 else stl.t_sym
-        return iden.subs(stl.t_sym, time)
+            
+        return iden, time
 
     def visit_time_index(self, _, children):
-        return stl.t_sym + children[3]* children[5]
+        return children[3]* children[5]
 
     def visit_prime(self, *_):
-        return -stl.dt_sym
+        return stl.t_sym - stl.dt_sym
 
     def visit_const(self, const, children):
         return float(const.text)
@@ -119,29 +119,30 @@ class STLVisitor(NodeVisitor):
         return stl.dt_sym
 
     def visit_term(self, _, children):
-        coeffs, var = children
-        c = coeffs[0] if coeffs else 1
-        return var*c
+        coeffs, (iden, time) = children
+        c = coeffs[0] if coeffs else Number(1)
+        return stl.Var(coeff=c, id=iden, time=time)
+    
 
     def visit_coeff(self, _, children):
         dt, coeff, *_ = children
-        dt = dt[0][0] if dt else 1
+        dt = dt[0][0] if dt else Number(1)
         return dt * coeff
 
     def visit_terms(self, _, children):
         if isinstance(children[0], list):
             term, _1, sgn ,_2, terms = children[0]
-            terms = lens(terms)[0]*sgn
+            terms = lens(terms)[0].coeff * sgn
             return [term] + terms
         else:
             return children
 
     def visit_lineq(self, _, children):
         terms, _1, op, _2, const = children
-        return stl.LinEq(sum(terms), op, const[0])
+        return stl.LinEq(tuple(terms), op, const[0])
 
     def visit_pm(self, node, _):
-        return 1 if node.text == "+" else -1
+        return Number(1) if node.text == "+" else Number(-1)
 
 
 def parse(stl_str:str, rule:str="phi") -> "STL":
