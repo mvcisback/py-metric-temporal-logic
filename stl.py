@@ -7,6 +7,7 @@ from itertools import repeat
 from typing import Union
 from enum import Enum
 from sympy import Symbol
+import funcy as fn
 
 from lenses import lens
 
@@ -17,21 +18,11 @@ t_sym = Symbol('t', positive=True)
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
     def __repr__(self):
-        n = len(self.terms)
-        rep = "{}"
-        if n > 1:
-            rep += " + {}"*(n - 1)
-        rep += " {op} {c}"
-        return rep.format(*self.terms, op=self.op, c=self.const)
+        rep = "{lhs} {op} {c}"
+        return rep.format(lhs=self.terms, op=self.op, c=self.const)
 
     def children(self):
         return []
-
-
-class Var(namedtuple("Var", ["id", "time"])):
-    def __repr__(self):
-        time_str = "[{}]".format(self.time)
-        return "{i}{t}".format(i=self.id, t=time_str)
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):
@@ -102,18 +93,23 @@ def tree(stl):
     return {x:set(x.children()) for x in walk(stl) if x.children()}
 
 
-def time_lens(phi:"STL", bind=True) -> lens:
-    l = _time_lens(phi)
-    return l.bind(phi) if bind else l
+def terms_lens(phi:"STL", bind=True) -> lens:
+    tls = list(fn.flatten(_terms_lens(phi)))
+    tl = lens().tuple_(*tls).each_()
+    return tl.bind(phi) if bind else tl
 
 
-def _time_lens(phi):
-    if isinstance(phi, LinEq):
-        return lens().terms.each_().time
-
-    if isinstance(phi, NaryOpSTL):
-        child_lens = [lens()[i].add_lens(_time_lens(c)) for i, c
-                      in enumerate(phi.children())]
-        return lens().args.tuple_(*child_lens).each_()
+def _child_lens(psi, focus):
+    if isinstance(psi, NaryOpSTL):
+        for j, _ in enumerate(psi.args):
+            yield focus.args[j]
     else:
-        return lens().arg.add_lens(_time_lens(phi.arg))
+        yield focus.arg
+
+
+def _terms_lens(phi, focus=lens()):
+    psi = focus.get(state=phi)
+    if isinstance(psi, LinEq):
+        return [focus.terms]
+    child_lenses = list(_child_lens(psi, focus=focus))
+    return [_terms_lens(phi, focus=cl) for cl in child_lenses]
