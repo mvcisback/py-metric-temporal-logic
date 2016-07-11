@@ -105,16 +105,20 @@ def tree(stl):
 
 
 def lineq_lens(phi:"STL", bind=True) -> lens:
-    tls = list(fn.flatten(_lineq_lens(phi)))
-    tl = lens().tuple_(*tls).each_()
-    return tl.bind(phi) if bind else tl
+    return ast_lens(phi, bind=bind, types={LinEq})
 
 
 def terms_lens(phi:"STL", bind=True) -> lens:
     return lineq_lens(phi, bind).terms.each_()
 
 
+def and_or_lens(phi:"STL", bind=True) -> lens:
+    return ast_lens(phi, bind=bind, types={And, Or})
+
+
 def _child_lens(psi, focus):
+    if psi is None:
+        return
     if isinstance(psi, NaryOpSTL):
         for j, _ in enumerate(psi.args):
             yield focus.args[j]
@@ -122,9 +126,19 @@ def _child_lens(psi, focus):
         yield focus.arg
 
 
-def _lineq_lens(phi, focus=lens()):
+def ast_lens(phi:"STL", bind=True, *, types) -> lens:
+    tls = list(fn.flatten(_ast_lens(phi, types=types)))
+    tl = lens().tuple_(*tls).each_()
+    return tl.bind(phi) if bind else tl
+
+
+def _ast_lens(phi, *, types, focus=lens()):
     psi = focus.get(state=phi)
+    ret_lens = [focus] if type(psi) in types else []
+
     if isinstance(psi, LinEq):
-        return [focus]
+        return ret_lens
+
     child_lenses = list(_child_lens(psi, focus=focus))
-    return [_lineq_lens(phi, focus=cl) for cl in child_lenses]
+    ret_lens += [_ast_lens(phi, types=types, focus=cl) for cl in child_lenses]
+    return ret_lens
