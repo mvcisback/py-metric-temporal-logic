@@ -19,7 +19,7 @@ from lenses import lens
 
 from sympy import Symbol, Number
 
-from stl import stl
+from stl import ast
 
 STL_GRAMMAR = Grammar(u'''
 phi = (g / f / lineq / or / and / paren_phi)
@@ -72,7 +72,7 @@ class STLVisitor(NodeVisitor):
 
     def visit_interval(self, _, children):
         _, _, left, _, _, _, right, _, _ = children
-        return stl.Interval(left[0], right[0])
+        return ast.Interval(left[0], right[0])
 
     def get_text(self, node, _):
         return node.text
@@ -90,10 +90,10 @@ class STLVisitor(NodeVisitor):
         argR = list(phi2.args) if isinstance(phi2, op) else [phi2]
         return op(tuple(argL + argR))
 
-    visit_f = partialmethod(unary_temp_op_visitor, op=stl.F)
-    visit_g = partialmethod(unary_temp_op_visitor, op=stl.G)
-    visit_or = partialmethod(binop_visitor, op=stl.Or)
-    visit_and = partialmethod(binop_visitor, op=stl.And)
+    visit_f = partialmethod(unary_temp_op_visitor, op=ast.F)
+    visit_g = partialmethod(unary_temp_op_visitor, op=ast.G)
+    visit_or = partialmethod(binop_visitor, op=ast.Or)
+    visit_and = partialmethod(binop_visitor, op=ast.And)
 
     def visit_id(self, name, _):
         return Symbol(name.text)
@@ -102,7 +102,7 @@ class STLVisitor(NodeVisitor):
         iden, time_node = children
 
         time_node = list(flatten(time_node))
-        time = time_node[0] if len(time_node) > 0 else stl.t_sym
+        time = time_node[0] if len(time_node) > 0 else ast.t_sym
             
         return iden, time
 
@@ -110,18 +110,18 @@ class STLVisitor(NodeVisitor):
         return children[3]* children[5]
 
     def visit_prime(self, *_):
-        return stl.t_sym - stl.dt_sym
+        return ast.t_sym - ast.dt_sym
 
     def visit_const(self, const, children):
         return float(const.text)
 
     def visit_dt(self, *_):
-        return stl.dt_sym
+        return ast.dt_sym
 
     def visit_term(self, _, children):
         coeffs, (iden, time) = children
         c = coeffs[0] if coeffs else Number(1)
-        return stl.Var(coeff=c, id=iden, time=time)
+        return ast.Var(coeff=c, id=iden, time=time)
     
 
     def visit_coeff(self, _, children):
@@ -139,7 +139,7 @@ class STLVisitor(NodeVisitor):
 
     def visit_lineq(self, _, children):
         terms, _1, op, _2, const = children
-        return stl.LinEq(tuple(terms), op, const[0])
+        return ast.LinEq(tuple(terms), op, const[0])
 
     def visit_pm(self, node, _):
         return Number(1) if node.text == "+" else Number(-1)
