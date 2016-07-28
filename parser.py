@@ -14,7 +14,6 @@ import operator as op
 
 from parsimonious import Grammar, NodeVisitor
 from funcy import flatten
-import numpy as np
 from lenses import lens
 
 from sympy import Symbol, Number
@@ -51,7 +50,7 @@ prime = "'"
 pm = "+" / "-"
 dt = "dt"
 unbound = "?"
-id = ("x" / "u" / "w") ~r"[a-zA-z\d]*" 
+id = ~r"[a-zA-z\d]*"
 const = ~r"[\+\-]?\d*(\.\d+)?"
 op = ">=" / "<=" / "<" / ">" / "="
 _ = ~r"\s"+
