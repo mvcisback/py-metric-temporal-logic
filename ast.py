@@ -47,7 +47,7 @@ class NaryOpSTL(namedtuple('NaryOp', ['args'])):
         if n == 1:
             return "{}".format(self.args[0])
         elif self.args:
-            rep = " {op} ".join(["({})"]*(len(self.args) - 1))
+            rep = " {op} ".join(["({})"]*(len(self.args)))
             return rep.format(*self.args, op=self.OP)
         else:
             return ""
