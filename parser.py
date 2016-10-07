@@ -49,8 +49,8 @@ prime = "'"
 
 pm = "+" / "-"
 dt = "dt"
-unbound = "?"
-id = ~r"[a-zA-z\d]*"
+unbound = "?" id
+id = ~r"[a-zA-z\d]+"
 const = ~r"[\+\-]?\d*(\.\d+)?"
 op = ">=" / "<=" / "<" / ">" / "="
 _ = ~r"\s"+
