@@ -1,3 +1,5 @@
+from collections import deque
+
 from lenses import lens
 import funcy as fn
 
