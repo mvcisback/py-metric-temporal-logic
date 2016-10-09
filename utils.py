@@ -1,6 +1,6 @@
 from collections import deque
 
-from lenses import lens
+from lenses import lens, Lens
 import funcy as fn
 import sympy
 
@@ -69,3 +69,8 @@ def param_lens(phi):
         return [lens().const] if isinstance(leaf, LinEq) else [lens().interval[0], lens().interval[1]]
 
     return ast_lens(phi, pred=type_pred(LinEq, F, G), focus_lens=focus_lens).filter_(is_sym)
+
+
+def set_params(stl_or_lens, val):
+    l = stl_or_lens if isinstance(stl_or_lens, Lens) else param_lens(stl_or_lens)
+    return l.modify(lambda x: val[str(x)] if str(x) in val else x)
