@@ -49,7 +49,7 @@ prime = "'"
 
 pm = "+" / "-"
 dt = "dt"
-unbound = "?" id
+unbound = id "?"
 id = ~r"[a-zA-z\d]+"
 const = ~r"[\+\-]?\d*(\.\d+)?"
 op = ">=" / "<=" / "<" / ">" / "="
@@ -76,7 +76,9 @@ class STLVisitor(NodeVisitor):
     def get_text(self, node, _):
         return node.text
 
-    visit_unbound = get_text
+    def visit_unbound(self, node, _):
+        return Symbol(node.text)
+        
     visit_op = get_text
 
     def unary_temp_op_visitor(self, _, children, op):

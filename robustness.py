@@ -88,4 +88,3 @@ def lex_param_project(stl, x, *, order, polarity, ranges, tol=1e-3):
         r, param = binsearch() #TODO
         # TODO: update val
     return val
-        
