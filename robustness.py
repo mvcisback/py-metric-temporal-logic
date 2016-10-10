@@ -6,6 +6,7 @@ from lenses import lens
 import stl.ast
 from stl.utils import set_params, param_lens
 
+oo = float('inf')
 
 @singledispatch
 def pointwise_robustness(stl):
@@ -26,14 +27,14 @@ def _(stl):
 def _(stl):
     lo, hi = stl.interval
     return lambda x, t: max((pointwise_robustness(stl.arg)(x, t + t2) 
-                            for t2 in x[lo:hi].index), default=float('inf'))
+                             for t2 in x[lo:hi].index), default=-oo)
 
 
 @pointwise_robustness.register(stl.G)
 def _(stl):
     lo, hi = stl.interval
     return lambda x, t: min((pointwise_robustness(stl.arg)(x, t + t2) 
-                            for t2 in x[lo:hi].index), default=-float('inf'))
+                             for t2 in x[lo:hi].index), default=oo)
 
 
 @pointwise_robustness.register(stl.Neg)
