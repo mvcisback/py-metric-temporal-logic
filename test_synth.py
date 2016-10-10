@@ -17,13 +17,15 @@ ex4 = ("G[0, b?](A < 0)", ("b?",), {"b?": (0.1, 5)},
        {"b?": False}, {"b?": 0.1})
 ex5 = ("F[0, b?](A > 0)", ("b?",), {"b?": (0.1, 5)},
        {"b?": True}, {"b?": 0.1})
+ex6 = ("(A > a?) or (A > b?)", ("a?", "b?",), {"a?": (0, 2), "b?": (0, 2)},
+       {"a?": False, "b?": False}, {"a?": 2, "b?": 1})
 
 x = pd.DataFrame([[1,2], [1,4], [4,2]], index=[0,0.1,0.2], 
                  columns=["A", "B"])
 
 
 class TestSTLRobustness(unittest.TestCase):
-    @params(ex1, ex2, ex3, ex4, ex5)
+    @params(ex1, ex2, ex3, ex4, ex5, ex6)
     def test_lex_synth(self, phi_str, order, ranges, polarity, val):
         phi = stl.parse(phi_str)
         val2 = stl.synth.lex_param_project(

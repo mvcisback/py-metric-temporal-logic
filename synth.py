@@ -1,3 +1,5 @@
+import operator as op
+
 from stl.utils import set_params, param_lens
 from stl.robustness import pointwise_robustness
 
@@ -11,16 +13,12 @@ def binsearch(stleval, *, tol=1e-3, lo, hi, polarity):
     elif not polarity and stleval(hi) > 0:
         return hi
 
+    test = op.le if polarity else op.gt
     while hi - lo > tol:
         mid = lo + (hi - lo) / 2
         r = stleval(mid)
-        if not polarity: # swap direction
-            r *= -1
-        if r < 0:
-            lo, hi = mid, hi
-        else:
-            lo, hi = lo, mid
-    
+        lo, hi = (mid, hi) if test(r, 0) else (lo, mid)
+
     # Want satisifiable formula
     return hi if polarity else lo
 
