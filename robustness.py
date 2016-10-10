@@ -1,3 +1,5 @@
+# TODO: technically incorrect on 0 robustness since conflates < and >
+
 from functools import singledispatch
 from operator import sub, add
 
