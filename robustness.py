@@ -79,7 +79,6 @@ def binsearch(stleval, *, tol=1e-3, lo, hi, polarity):
     while abs(r) > tol and hi - lo > tol:
         mid = lo + (hi - lo) / 2
         r = stleval(mid)
-        print(lo, mid, hi, r)
         if polarity: # swap direction
             r *= -1
         if r < 0:
@@ -97,10 +96,8 @@ def lex_param_project(stl, x, *, order, polarity, ranges, tol=1e-3):
     def stleval_fact(var, val):
         l = lens(val)[var]
         return lambda p: pointwise_robustness(set_params(stl, l.set(p)))(x, 0)
-        
     
     for var in order:
-        print(val)
         stleval = stleval_fact(var, val)
         lo, hi = ranges[var]
         _, param = binsearch(stleval, lo=lo, hi=hi, tol=tol, polarity=polarity[var])
