@@ -17,7 +17,6 @@ x = pd.DataFrame([[1,2], [1,4], [4,2]], index=[0,0.1,0.2],
                  columns=["A", "B"])
 
 
-
 class TestSTLRobustness(unittest.TestCase):
     @params(ex1, ex2, ex3, ex4, ex5, ex6)
     def test_stl(self, phi_str, r):

@@ -1,23 +1,22 @@
 import operator as op
 
 from stl.utils import set_params, param_lens
-from stl.robustness import pointwise_robustness
+from stl.boolean_eval import pointwise_sat
 
 from lenses import lens
 
 def binsearch(stleval, *, tol=1e-3, lo, hi, polarity):
     """Only run search if tightest robustness was positive."""
     # Early termination via bounds checks
-    if polarity and stleval(lo) > 0:
+    if polarity and stleval(lo):
         return lo
-    elif not polarity and stleval(hi) > 0:
+    elif not polarity and stleval(hi):
         return hi
 
-    test = op.le if polarity else op.gt
     while hi - lo > tol:
         mid = lo + (hi - lo) / 2
         r = stleval(mid)
-        lo, hi = (mid, hi) if test(r, 0) else (lo, mid)
+        lo, hi = (mid, hi) if r ^ polarity else (lo, mid)
 
     # Want satisifiable formula
     return hi if polarity else lo
@@ -28,7 +27,7 @@ def lex_param_project(stl, x, *, order, polarity, ranges, tol=1e-3):
     p_lens = param_lens(stl)
     def stleval_fact(var, val):
         l = lens(val)[var]
-        return lambda p: pointwise_robustness(set_params(stl, l.set(p)))(x, 0)
+        return lambda p: pointwise_sat(set_params(stl, l.set(p)))(x, 0)
     
     for var in order:
         stleval = stleval_fact(var, val)
