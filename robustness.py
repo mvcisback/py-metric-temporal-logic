@@ -87,12 +87,13 @@ def binsearch(stleval, *, tol=1e-3, lo, hi, polarity):
             lo, hi = mid, hi
         else:
             lo, hi = lo, mid
-    return mid
+    
+    # Want satisifiable formula
+    return hi if polarity else lo
 
 
 def lex_param_project(stl, x, *, order, polarity, ranges, tol=1e-3):
     val = {var: (ranges[var][0] if not polarity[var] else ranges[var][1]) for var in order}
-    # TODO: evaluate top paramater
     p_lens = param_lens(stl)
     def stleval_fact(var, val):
         l = lens(val)[var]
