@@ -5,14 +5,10 @@ from lenses import lens
 
 def binsearch(stleval, *, tol=1e-3, lo, hi, polarity):
     """Only run search if tightest robustness was positive."""
-    # Only check low since hi taken care of by precondition.
-    # TODO: allow for different polarities
-    rL, rH = stleval(lo), stleval(hi)
     # Early termination via bounds checks
-    posL, posH = rL > 0, rH > 0
-    if polarity and posL:
+    if polarity and stleval(lo) > 0:
         return lo
-    elif not polarity and posH:
+    elif not polarity and stleval(hi) > 0:
         return hi
 
     while hi - lo > tol:
