@@ -3,6 +3,7 @@
 from functools import singledispatch
 from operator import sub, add
 
+import numpy as np
 from lenses import lens
 
 import stl.ast
@@ -52,6 +53,7 @@ op_lookup = {
 }
 
 
+
 @pointwise_robustness.register(stl.LinEq)
 def _(stl):
     op = op_lookup[stl.op]
@@ -64,4 +66,5 @@ def eval_terms(lineq, x, t):
 
 
 def eval_term(x, t):
-    return lambda term: term.coeff*x[term.id.name][t]
+    # TODO(lift interpolation much higher)
+    return lambda term: term.coeff*np.interp(t, x.index, x[term.id.name])
