@@ -4,6 +4,7 @@
 from functools import singledispatch
 import operator as op
 
+import numpy as np
 from lenses import lens
 
 import stl.ast
@@ -63,4 +64,5 @@ def eval_terms(lineq, x, t):
 
 
 def eval_term(x, t):
-    return lambda term: term.coeff*x[term.id.name][t]
+    # TODO(lift interpolation much higher)
+    return lambda term: term.coeff*np.interp(t, x.index, x[term.id.name])
