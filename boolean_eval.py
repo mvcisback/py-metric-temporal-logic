@@ -27,14 +27,14 @@ def _(stl):
 @pointwise_sat.register(stl.F)
 def _(stl):
     lo, hi = stl.interval
-    return lambda x, t: any((pointwise_sat(stl.arg)(x, t + t2) 
+    return lambda x, t: any((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1]))
                              for t2 in x[lo:hi].index))
 
 
 @pointwise_sat.register(stl.G)
 def _(stl):
     lo, hi = stl.interval
-    return lambda x, t: all((pointwise_sat(stl.arg)(x, t + t2) 
+    return lambda x, t: all((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1])) 
                              for t2 in x[lo:hi].index))
 
 
