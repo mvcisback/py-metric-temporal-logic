@@ -13,6 +13,14 @@ str_to_varkind = {"x": VarKind.x, "u": VarKind.u, "w": VarKind.w}
 dt_sym = Symbol('dt', positive=True)
 t_sym = Symbol('t', positive=True)
 
+class AtomicPred(namedtuple("AP", ["id"])):
+    def __repr__(self):
+        return "{}".format(self.id)
+
+    def children(self):
+        return []
+
+
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"])):
     def __repr__(self):
         n = len(self.terms)

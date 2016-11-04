@@ -5,6 +5,7 @@ from functools import singledispatch
 import operator as op
 
 import numpy as np
+import sympy as smp
 from lenses import lens
 
 import stl.ast
@@ -50,6 +51,11 @@ op_lookup = {
     "<=": op.le,
     "=": op.eq,
 }
+
+
+@pointwise_sat.register(stl.AtomicPred)
+def _(stl):
+    return lambda x, t: x[term.id][t]
 
 
 @pointwise_sat.register(stl.LinEq)

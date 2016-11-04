@@ -21,7 +21,7 @@ from sympy import Symbol, Number
 from stl import ast
 
 STL_GRAMMAR = Grammar(u'''
-phi = (g / f / lineq / or / and / paren_phi)
+phi = (g / f / lineq / AP / or / and / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -46,6 +46,8 @@ var = id time?
 time = prime / time_index
 time_index = "[" "t" __ pm __ const "]"
 prime = "'"
+
+AP = ~r"[a-zA-z\d]+"
 
 pm = "+" / "-"
 dt = "dt"
@@ -144,6 +146,9 @@ class STLVisitor(NodeVisitor):
 
     def visit_pm(self, node, _):
         return Number(1) if node.text == "+" else Number(-1)
+
+    def visit_AP(self, node, _):
+        return ast.AtomicPred(node.text)
 
 
 def parse(stl_str:str, rule:str="phi") -> "STL":
