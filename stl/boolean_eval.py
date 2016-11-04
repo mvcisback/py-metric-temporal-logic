@@ -55,7 +55,7 @@ op_lookup = {
 
 @pointwise_sat.register(stl.AtomicPred)
 def _(stl):
-    return lambda x, t: x[term.id][t]
+    return lambda x, t: x[stl.id][t]
 
 
 @pointwise_sat.register(stl.LinEq)
