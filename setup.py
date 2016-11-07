@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='py-stl',
-      version='0.1',
+      version='0.11',
       description='TODO',
       url='http://github.com/mvcisback/py-stl',
       author='Marcell Vazquez-Chanlatte',
