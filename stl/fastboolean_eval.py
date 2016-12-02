@@ -24,7 +24,6 @@ def _(stl):
             val = pointwise_sat(arg)(x, t) | val
         return val
     return sat_comp
-    #return lambda x, t: any(pointwise_sat(arg)(x, t) for arg in stl.args)
 
 
 @pointwise_sat.register(stl.And)
@@ -35,7 +34,6 @@ def _(stl):
             val = pointwise_sat(arg)(x, t) & val
         return val
     return sat_comp
-    #return lambda x, t: all(pointwise_sat(arg)(x, t) for arg in stl.args)
 
 
 @pointwise_sat.register(stl.F)
@@ -48,8 +46,6 @@ def _(stl):
             val = (val << 1) | (pointwise_sat(stl.arg)(x, tau_t) > 0)
         return val
     return sat_comp
-    #return lambda x, t, val: [pointwise_sat(stl.arg)(x, [min(deltat + t2, x.index[-1])
-    #                         for t2 in x[lo:hi].index], 0) for deltat in t]
 
 
 @pointwise_sat.register(stl.G)
@@ -62,8 +58,6 @@ def _(stl):
             val = (val << 1) | (gp.popcount(pointwise_sat(stl.arg)(x, tau_t)) == len(tau_t))
         return val
     return sat_comp
-    #return lambda x, t: all((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1])) 
-    #                         for t2 in x[lo:hi].index))
 
 
 @pointwise_sat.register(stl.Neg)
@@ -72,7 +66,6 @@ def _(stl):
         val = pointwise_sat(arg)(x, t) ^ (2**(len(t))-1)
         return val
     return sat_comp
-    #return lambda x, t:  pointwise_sat(arg)(x, t, val)
 
 
 op_lookup = {
@@ -92,7 +85,6 @@ def _(stl):
             val = (val << 1) | (1 if x[stl.id][tau] else 0)
         return val
     return sat_comp
-    #return lambda x, t, val: [(val << 1) | (x[stl.id][deltat] == True) for deltat in t] 
 
 
 @pointwise_sat.register(stl.LinEq)
@@ -104,7 +96,6 @@ def _(stl):
             val = (val << 1) | (op(eval_terms(stl, x, tau), stl.const) == True)
         return val
     return sat_comp 
-    #return lambda x, t, val: [(val << 1) |(op(eval_terms(stl, x, deltat), stl.const) == True) for deltat in t]
 
 
 def eval_terms(lineq, x, t):
