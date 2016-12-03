@@ -21,5 +21,5 @@ class TestSTLRobustness(unittest.TestCase):
     @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9)
     def test_stl(self, phi_str, r):
         phi = stl.parse(phi_str)
-        stl_eval = stl.fastboolean_eval.pointwise_sat(phi)
+        stl_eval = stl.fastboolean_eval.pointwise_satf(phi)
         self.assertEqual(stl_eval(x, [0]), r)
