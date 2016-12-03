@@ -5,7 +5,6 @@ from functools import singledispatch
 import operator as op
 
 import numpy as np
-import sympy as smp
 from lenses import lens
 
 import stl.ast

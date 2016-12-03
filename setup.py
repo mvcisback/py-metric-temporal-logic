@@ -12,6 +12,7 @@ setup(name='py-stl',
           'parsimonious', 
           'lenses',
           'sympy',
+          'bitarray',
       ],
       extras_require = {
           'robustness': ['numpy', 'pandas']
