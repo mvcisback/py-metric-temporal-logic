@@ -1,4 +1,6 @@
 from functools import singledispatch
+from operator import and_, or_
+
 from bitarray import bitarray
 
 import stl.ast
@@ -8,25 +10,25 @@ from stl.boolean_eval import eval_terms, op_lookup
 def pointwise_satf(stl):
     raise NotImplementedError
 
-
-@pointwise_satf.register(stl.Or)
-def _(stl):
+def bool_op(stl, conjunction=False):
+    f = and_ if conjunction else or_
     def sat_comp(x,t):
         sat = bitarray(len(t))
         for arg in stl.args:
-            sat = pointwise_satf(arg)(x, t) | sat
+            sat = f(pointwise_satf(arg)(x, t), sat)
         return sat
     return sat_comp
+
+
+@pointwise_satf.register(stl.Or)
+def _(stl):
+    return bool_op(stl, conjunction=False)
 
 
 @pointwise_satf.register(stl.And)
 def _(stl):
-    def sat_comp(x,t):
-        sat = ~bitarray(len(t))
-        for arg in stl.args:
-            sat = ~(~pointwise_satf(arg)(x, t) | ~sat)            
-        return sat
-    return sat_comp
+    return bool_op(stl, conjunction=True)
+
 
 
 def temporal_op(stl, lo, hi, conjunction=False):
