@@ -29,28 +29,27 @@ def _(stl):
     return sat_comp
 
 
-@pointwise_satf.register(stl.F)
-def _(stl):
-    lo, hi = stl.interval
+def temporal_op(stl, lo, hi, conjunction=False):
+    f = bitarray.all if conjunction else bitarray.any
     def sat_comp(x,t):
         sat = bitarray()
         for tau in t:
             tau_t = [min(tau + t2, x.index[-1]) for t2 in x[lo:hi].index]
-            sat.append((pointwise_satf(stl.arg)(x, tau_t)).count() > 0)
+            sat.append(f(pointwise_satf(stl.arg)(x, tau_t)))
         return sat
     return sat_comp
+
+
+@pointwise_satf.register(stl.F)
+def _(stl):
+    lo, hi = stl.interval
+    return temporal_op(stl, lo, hi, conjunction=False)
 
 
 @pointwise_satf.register(stl.G)
 def _(stl):
     lo, hi = stl.interval
-    def sat_comp(x,t):
-        sat = bitarray()
-        for tau in t:
-            tau_t = [min(tau + t2, x.index[-1]) for t2 in x[lo:hi].index]
-            sat.append((~(pointwise_satf(stl.arg)(x, tau_t))).count() == 0)
-        return sat
-    return sat_comp
+    return temporal_op(stl, lo, hi, conjunction=True)
 
 
 @pointwise_satf.register(stl.Neg)
