@@ -22,10 +22,10 @@ def _(stl):
 @pointwise_satf.register(stl.And)
 def _(stl):
     def sat_comp(x,t):
-        sat = bitarray(len(t))
+        sat = ~bitarray(len(t))
         for arg in stl.args:
-            sat = ~pointwise_satf(arg)(x, t) | ~sat
-        return ~sat
+            sat = ~(~pointwise_satf(arg)(x, t) | ~sat)            
+        return sat
     return sat_comp
 
 
