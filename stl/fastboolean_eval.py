@@ -23,10 +23,9 @@ def _(stl):
 def _(stl):
     def sat_comp(x,t):
         sat = bitarray(len(t))
-        sat.setall('True')
         for arg in stl.args:
-            sat = pointwise_satf(arg)(x, t) & sat
-        return sat
+            sat = ~pointwise_satf(arg)(x, t) | ~sat
+        return ~sat
     return sat_comp
 
 
@@ -49,8 +48,7 @@ def _(stl):
         sat = bitarray()
         for tau in t:
             tau_t = [min(tau + t2, x.index[-1]) for t2 in x[lo:hi].index]
-            point_sat = pointwise_satf(stl.arg)(x, tau_t)
-            sat.append(point_sat.count() == point_sat.length())
+            sat.append((~(pointwise_satf(stl.arg)(x, tau_t))).count() == 0)
         return sat
     return sat_comp
 
