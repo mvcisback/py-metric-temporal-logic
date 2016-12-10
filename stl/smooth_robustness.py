@@ -5,59 +5,51 @@ from operator import sub, add
 
 import sympy as sym
 from lenses import lens
+from numpy import arange
+from funcy import pairwise, autocurry
 
 import stl.ast
 from stl.ast import t_sym
 
 @singledispatch
-def smooth_robustness(stl):
+def smooth_robustness(stl, L, h):
     raise NotImplementedError
 
-def f1(rs):
+@smooth_robustness.register(stl.And)
+@smooth_robustness.register(stl.G)
+def _(stl, L, H):
+    raise NotImplementedError("Call canonicalization function")
+
+def soft_max(rs):
     return sym.log(sum(sym.exp(r) for r in rs))
 
-def f2(rs):
-    return sym.log(sum(sym.exp(r) for r in rs)/(len(rs)))
+
+def LSE(rs):
+    return soft_max(rs) - sym.log(len(rs))
+
 
 @smooth_robustness.register(stl.Or)
-def _(stl, depth=0):
-    rl, rh = list(zip(*[smooth_robustness(arg, depth) for arg in stl.args]))
-    return f1(rl), f2(rh)
-
-@smooth_robustness.register(stl.And)
-def _(stl, depth=0):
-    rh, rl = list(zip(*[-smooth_robustness(arg, depth) for arg in stl.args]))
-    return -f2(rh), -f1(rl)
+def _(stl, L, h):
+    rl, rh = list(zip(
+        *[smooth_robustness(arg, depth) for arg in stl.args]))
+    return soft_max(rl), LSE(rh)
 
 
-def F1(r, interval, t):
-    lo, hi = interval
-    bounds = (t, lo, hi)
-    return sym.log(sym.Integral(sym.exp(r), bounds))
-
-def F2(r, interval, t):
-    lo, hi = interval
-    return F1(r, interval, t) - sym.log(hi - lo)
+@autocurry
+def x_ij(L, h, x_i, x_j):
+    return (L*h + x_i + x_j)/2
 
 @smooth_robustness.register(stl.F)
-def _(stl, depth=0):
-    depth += 1
-    t = sym.Symbol("t{}".format(depth))
+def _(stl, L, H):
+    lo, hi = stl.interval
+    times = arange(lo, hi, H)
     rl, rh = smooth_robustness(stl.arg)
-    r = (rl.subs({t_sym: t}), rh.subs({t_sym: t}))
-    return F1(r[0], stl.interval, t), F2(rh[1], stl.interval, t)
-
-@smooth_robustness.register(stl.G)
-def _(stl, depth=0):
-    depth += 1
-    t = sym.Symbol("t{}".format(depth))
-    rl, rh = smooth_robustness(stl.arg)
-    r = (rl.subs({t_sym: t}), rh.subs({t_sym: t}))
-    return -F2(r[1], stl.interval, t), -F1(r[0], stl.interval, t)
+    los, his = zip(*[rl.subs({t_sym: t}), rh.subs({t_sym: t}) for t in times])
+    return LSE(rl), soft_max(map(x_ij(L, H), his))
 
 
 @smooth_robustness.register(stl.Neg)
-def _(stl, depth=0):
+def _(stl, L, H):
     rl, rh = smooth_robustness(arg)
     return -rh, -rl
 
@@ -71,7 +63,7 @@ op_lookup = {
 
 
 @smooth_robustness.register(stl.LinEq)
-def _(stl, depth=0):
+def _(stl, L, H):
     op = op_lookup[stl.op]
     retval = op(eval_terms(stl), stl.const)
     return retval, retval
