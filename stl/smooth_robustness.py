@@ -42,11 +42,6 @@ def _(stl, L, h, eps, depth=0):
     return soft_max(rl, eps=eps/2), LSE(rh, eps=eps/2)
 
 
-def x_ij(L, h, xi_xj):
-    x_i, x_j = xi_xj
-    return (L*h + x_i + x_j)/2
-
-
 def soft_max2(r, eps, lo, hi, L, H, depth):
     N = sym.ceiling((hi - lo) / H)
     B = eps_to_base(eps, N)
@@ -54,13 +49,21 @@ def soft_max2(r, eps, lo, hi, L, H, depth):
     x_ij = (L*H + r.subs({t_sym: t_sym+i}) + r.subs({t_sym: t_sym+i+1}))/2
     return sym.log(sym.summation(B**x_ij, (i, lo, hi)), B)
 
+def LSE2(r, eps, lo, hi, H, depth):
+    N = sym.ceiling((hi - lo) / H)
+    B = eps_to_base(eps, N)
+    i = sym.Symbol("i_{}".format(depth))
+    x_i = r.subs({t_sym: t_sym+i})
+    return sym.log(sym.summation(B**x_i, (i, lo, hi))/N, B)
+
+
 
 @smooth_robustness.register(stl.F)
 def _(stl, L, H, eps, depth=0):
     lo, hi = stl.interval
     times = arange(lo, hi, H)
     rl, rh = smooth_robustness(stl.arg, L, H, eps=eps/2, depth=depth+1)
-    return (soft_max2(rl, eps/2, lo, hi, L, H, depth), 
+    return (LSE2(rl, eps/2, lo, hi, H, depth), 
             soft_max2(rh, eps/2, lo, hi, L, H, depth))
 
 
