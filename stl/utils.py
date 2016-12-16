@@ -85,3 +85,26 @@ def symbol_lens(phi):
 def set_params(stl_or_lens, val):
     l = stl_or_lens if isinstance(stl_or_lens, Lens) else param_lens(stl_or_lens)
     return l.modify(lambda x: val[str(x)] if str(x) in val else x)
+
+
+def f_neg_or_canonical_form(phi):
+    if isinstance(phi, stl.LinEq):
+        return phi
+
+    children = [f_neg_or_canonical_form(s) for s in phi.children()]
+    if isinstance(phi, (stl.And, stl.G)):
+        children = [stl.ast.Neg(s) for s in children]
+    children = tuple(children)
+
+    if isinstance(phi, stl.Or):
+        return stl.Or(children)
+    elif isinstance(phi, stl.And):
+        return stl.Neg(stl.Or(children))
+    elif isinstance(phi, stl.Neg):
+        return stl.Neg(children[0])
+    elif isinstance(phi, stl.F):
+        return stl.F(phi.interval, children[0])
+    elif isinstance(phi, stl.G):
+        return stl.Neg(stl.F(phi.interval, children[0]))
+    else:
+        raise NotImplementedError

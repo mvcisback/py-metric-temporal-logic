@@ -10,7 +10,7 @@ from lenses import lens
 
 import stl.ast
 from stl.ast import t_sym
-from stl.utils import walk
+from stl.utils import walk, f_neg_or_canonical_form
 from stl.robustness import op_lookup
 
 Param = namedtuple("Param", ["L", "h", "B", "eps"])
@@ -40,10 +40,6 @@ def admissible_params(phi, eps, L):
     B = max(node_base(n, eps, L) for n in walk(phi))
     return B, h
 
-def new_symbol_set(ss):
-    indices = set(ss[id_map].keys())
-    non_indicies = set(v.name for k, v in ss.items() if v != "id_map")
-    return indices | non_indicies
 
 def symbolic_params(phi, eps, L):
     return Param(
@@ -53,8 +49,8 @@ def symbolic_params(phi, eps, L):
         eps=sym.Dummy("eps"),
     )
 
-
 def smooth_robustness(phi, *, L=None, eps=None):
+    phi = f_neg_or_canonical_form(phi)
     p = symbolic_params(phi, eps, L)
     lo, hi = beta(phi, p), alpha(phi, p)
     subs = {}
@@ -96,7 +92,7 @@ def _(phi, p):
 
 @alpha.register(stl.Neg)
 def _(phi, p):
-    return 1/beta(phi, p)
+    return 1/beta(phi.arg, p)
 
 
 @alpha.register(stl.Or)
@@ -128,7 +124,7 @@ beta.register(stl.LinEq)(alpha)
 
 @beta.register(stl.Neg)
 def _(phi, p):
-    return 1/alpha(phi, p)
+    return 1/alpha(phi.arg, p)
 
 
 @beta.register(stl.Or)
