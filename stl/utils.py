@@ -4,7 +4,7 @@ from lenses import lens, Lens
 import funcy as fn
 import sympy
 
-from stl.ast import LinEq, And, Or, NaryOpSTL, F, G, Interval
+from stl.ast import LinEq, And, Or, NaryOpSTL, F, G, Interval, Neg
 
 def walk(stl, bfs=False):
     """Walks Ast. Defaults to DFS unless BFS flag is set."""
@@ -88,23 +88,23 @@ def set_params(stl_or_lens, val):
 
 
 def f_neg_or_canonical_form(phi):
-    if isinstance(phi, stl.LinEq):
+    if isinstance(phi, LinEq):
         return phi
 
     children = [f_neg_or_canonical_form(s) for s in phi.children()]
-    if isinstance(phi, (stl.And, stl.G)):
-        children = [stl.ast.Neg(s) for s in children]
+    if isinstance(phi, (And, G)):
+        children = [Neg(s) for s in children]
     children = tuple(children)
 
-    if isinstance(phi, stl.Or):
-        return stl.Or(children)
-    elif isinstance(phi, stl.And):
-        return stl.Neg(stl.Or(children))
-    elif isinstance(phi, stl.Neg):
-        return stl.Neg(children[0])
-    elif isinstance(phi, stl.F):
-        return stl.F(phi.interval, children[0])
-    elif isinstance(phi, stl.G):
-        return stl.Neg(stl.F(phi.interval, children[0]))
+    if isinstance(phi, Or):
+        return Or(children)
+    elif isinstance(phi, And):
+        return Neg(Or(children))
+    elif isinstance(phi, Neg):
+        return Neg(children[0])
+    elif isinstance(phi, F):
+        return F(phi.interval, children[0])
+    elif isinstance(phi, G):
+        return Neg(F(phi.interval, children[0]))
     else:
         raise NotImplementedError

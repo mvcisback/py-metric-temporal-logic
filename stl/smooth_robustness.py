@@ -42,11 +42,13 @@ def admissible_params(phi, eps, L):
 
 
 def symbolic_params(phi, eps, L):
+    L = sym.Dummy("L")
+    eps = sym.Dummy("eps")
     return Param(
-        L=sym.Dummy("L"),
-        h=sym.Dummy("h"),
+        L=L,
+        h=sample_rate(eps, L),
         B=sym.Dummy("B"),
-        eps=sym.Dummy("eps"),
+        eps=eps,
     )
 
 def smooth_robustness(phi, *, L=None, eps=None):
