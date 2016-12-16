@@ -17,18 +17,18 @@ Param = namedtuple("Param", ["L", "h", "B", "eps"])
 
 @singledispatch
 def node_base(_, _1, _2):
-    return sym.e
+    return sym.E
 
 
 @node_base.register(stl.ast.Or)
-def _(_, eps, _1):
-    return len(stl.args)**(1/eps)
+def _(phi, eps, _1):
+    return len(phi.args)**(1/eps)
 
 
 @node_base.register(stl.ast.F)
-def _(_, eps, L):
-    lo, hi = stl.interval
-    return sym.ceil((hi - lo)*L/eps)**(2/eps)
+def _(phi, eps, L):
+    lo, hi = phi.interval
+    return sym.ceiling((hi - lo)*L/eps)**(2/eps)
 
 
 def sample_rate(eps, L):
@@ -36,8 +36,8 @@ def sample_rate(eps, L):
 
 
 def admissible_params(phi, eps, L):
-    h = sample_rate(eps, L),
-    B = max(node_base(n, eps, L) for n in walk(phi)),
+    h = sample_rate(eps, L)
+    B = max(node_base(n, eps, L) for n in walk(phi))
     return B, h
 
 def new_symbol_set(ss):
@@ -55,7 +55,6 @@ def symbolic_params(phi, eps, L):
 
 
 def smooth_robustness(phi, *, L=None, eps=None):
-    # TODO: Return symbollic formula if flag
     p = symbolic_params(phi, eps, L)
     lo, hi = beta(phi, p), alpha(phi, p)
     subs = {}
@@ -71,7 +70,7 @@ def smooth_robustness(phi, *, L=None, eps=None):
     else:
         B = p.B
 
-    return sym.log(lo, B), sym.log(hi, B)
+    return sym.log(lo, B).simplify(), sym.log(hi, B).simplify()
 
 
 # Alpha implementation
