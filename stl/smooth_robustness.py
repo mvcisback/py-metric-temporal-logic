@@ -43,11 +43,11 @@ def admissible_params(phi, eps, L):
 
 def symbolic_params(phi, eps, L):
     L = sym.Dummy("L")
-    eps = sym.Dummy("eps")
+    eps = sym.Dummy("\epsilon")
     return Param(
         L=L,
         h=sample_rate(eps, L),
-        B=sym.Dummy("B"),
+        B=sym.Dummy("B")(eps, sym.Dummy("\phi")),
         eps=eps,
     )
 
