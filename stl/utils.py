@@ -66,10 +66,21 @@ def terms_lens(phi:"STL", bind=True) -> lens:
 def param_lens(phi):
     is_sym = lambda x: isinstance(x, sympy.Symbol)
     def focus_lens(leaf):
-        return [lens().const] if isinstance(leaf, LinEq) else [lens().interval[0], lens().interval[1]]
+        return [lens().const, lens().id] if isinstance(leaf, LinEq) else [lens().interval[0], lens().interval[1]]
 
-    return ast_lens(phi, pred=type_pred(LinEq, F, G), focus_lens=focus_lens).filter_(is_sym)
+    return ast_lens(phi, pred=type_pred(LinEq, F, G), 
+                    focus_lens=focus_lens).filter_(is_sym)
 
+
+def symbol_lens(phi):
+    is_sym = lambda x: isinstance(x, sympy.Symbol)
+    def focus_lens(leaf):
+        spacial = [lens().const] + lens().terms.each_().id.get_all()
+        temporal = [lens().interval[0], lens().interval[1]]
+        return spacial if isinstance(leaf, LinEq) else temp
+
+    return ast_lens(phi, pred=type_pred(LinEq, F, G), 
+                    focus_lens=focus_lens).filter_(is_sym)
 
 def set_params(stl_or_lens, val):
     l = stl_or_lens if isinstance(stl_or_lens, Lens) else param_lens(stl_or_lens)

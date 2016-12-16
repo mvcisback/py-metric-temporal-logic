@@ -13,7 +13,7 @@ from stl.ast import t_sym
 from stl.utils import walk
 from stl.robustness import op_lookup
 
-Param = namedtuple("Param", ["L", "h", "B", "id_map", "eps"])
+Param = namedtuple("Param", ["L", "h", "B", "eps"])
 
 @singledispatch
 def node_base(_, _1, _2):
@@ -21,12 +21,12 @@ def node_base(_, _1, _2):
 
 
 @node_base.register(stl.ast.Or)
-def node_base(_, eps, _1):
+def _(_, eps, _1):
     return len(stl.args)**(1/eps)
 
 
 @node_base.register(stl.ast.F)
-def node_base(_, eps, L):
+def _(_, eps, L):
     lo, hi = stl.interval
     return sym.ceil((hi - lo)*L/eps)**(2/eps)
 
@@ -40,13 +40,17 @@ def admissible_params(phi, eps, L):
     B = max(node_base(n, eps, L) for n in walk(phi)),
     return B, h
 
+def new_symbol_set(ss):
+    indices = set(ss[id_map].keys())
+    non_indicies = set(v.name for k, v in ss.items() if v != "id_map")
+    return indices | non_indicies
+
 def symbolic_params(phi, eps, L):
     return Param(
-        L=sym.Symbol("L"),
-        h=sym.Symbol("h"),
-        B="B",
-        id_map={n:i for i, n in enumerate(walk(phi))},
-        eps=sym.symbol("eps")
+        L=sym.Dummy("L"),
+        h=sym.Dummy("h"),
+        B=sym.Dummy("B"),
+        eps=sym.Dummy("eps"),
     )
 
 
@@ -87,9 +91,8 @@ def eval_term(term):
 @alpha.register(stl.LinEq)
 def _(phi, p):
     op = op_lookup[phi.op]
-    B = eps_to_base(eps/depth, N)
     x = op(eval_terms(phi), phi.const)
-    return B**x
+    return p.B**x
 
 
 @alpha.register(stl.Neg)
@@ -99,21 +102,21 @@ def _(phi, p):
 
 @alpha.register(stl.Or)
 def _(phi, p):
-    return sum(alpha(psi, p) for psi in psi in phi.args)
+    return sum(alpha(psi, p) for psi in phi.args)
 
 
 def F_params(phi, p, r):
     hi, lo = phi.interval
     N = sym.ceiling((hi - lo) / p.h)
-    i = sym.Symbol("i_{}".format(p.id_map[phi]))
     x = lambda k: r.subs({t_sym: t_sym+k+lo})
+    i = sym.Dummy("i")
     return N, i, x
 
 
 @alpha.register(stl.F)
 def _(phi, p):
     N, i, x = F_params(phi, p, alpha(phi.arg, p))
-    x_ij = sym.sqrt(p.B**(L*h)*x(i)*x(i+1))
+    x_ij = sym.sqrt(p.B**(p.L*p.h)*x(i)*x(i+1))
     return sym.summation(x_ij, (i, 0, N-1))
 
 # Beta implementation
@@ -131,7 +134,7 @@ def _(phi, p):
 
 @beta.register(stl.Or)
 def _(phi, p):
-    return alpha(phi)/len(phi.args)
+    return alpha(phi, p)/len(phi.args)
 
 
 @beta.register(stl.F)
