@@ -66,7 +66,7 @@ def terms_lens(phi:"STL", bind=True) -> lens:
 def param_lens(phi):
     is_sym = lambda x: isinstance(x, sympy.Symbol)
     def focus_lens(leaf):
-        return [lens().const, lens().id] if isinstance(leaf, LinEq) else [lens().interval[0], lens().interval[1]]
+        return [lens().const] if isinstance(leaf, LinEq) else [lens().interval[0], lens().interval[1]]
 
     return ast_lens(phi, pred=type_pred(LinEq, F, G), 
                     focus_lens=focus_lens).filter_(is_sym)
