@@ -4,6 +4,7 @@ from lenses import lens, Lens
 import funcy as fn
 import sympy
 
+import stl.ast
 from stl.ast import LinEq, And, Or, NaryOpSTL, F, G, Interval, Neg
 
 def walk(stl, bfs=False):
@@ -108,3 +109,12 @@ def f_neg_or_canonical_form(phi):
         return Neg(F(phi.interval, children[0]))
     else:
         raise NotImplementedError
+
+
+def to_mtl(phi):
+    focus = lineq_lens(phi)
+    to_ap = lambda i: stl.ast.AtomicPred("AP{}".format(i))
+    ap_map = {to_ap(i): leq for i, leq in enumerate(focus.get_all())}
+    lineq_map = {v:k for k,v in ap_map.items()}
+    return focus.modify(lineq_map.get), ap_map
+    
