@@ -121,6 +121,5 @@ def to_mtl(phi):
 
 
 def from_mtl(phi, ap_map):
-    focus = lineq_lens(phi)
+    focus = AP_lens(phi)
     return focus.modify(ap_map.get)
-    
