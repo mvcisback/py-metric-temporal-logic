@@ -1,5 +1,7 @@
 from typing import List, Type, Dict, Mapping, T
 from collections import deque
+import operator as op
+from functools import reduce
 
 from lenses import lens, Lens
 import funcy as fn
@@ -127,3 +129,19 @@ def to_mtl(phi:STL) -> MTL:
 def from_mtl(phi:MTL, ap_map:Dict[AtomicPred, LinEq]) -> STL:
     focus = AP_lens(phi)
     return focus.modify(ap_map.get)
+
+
+def alw(phi, *, lo, hi):
+    return G(Interval(lo, hi), phi)
+
+def env(phi, *, lo, hi):
+    return F(Interval(lo, hi), phi)
+
+def until(phi, *, lo, hi):
+    raise NotImplementedError
+
+def andf(*args):
+    return reduce(op.and_, args)
+
+def orf():
+    return reduce(op.or_, args)
