@@ -131,14 +131,16 @@ def from_mtl(phi:MTL, ap_map:Dict[AtomicPred, LinEq]) -> STL:
     return focus.modify(ap_map.get)
 
 
+# EDSL
+
 def alw(phi, *, lo, hi):
     return G(Interval(lo, hi), phi)
 
 def env(phi, *, lo, hi):
     return F(Interval(lo, hi), phi)
 
-def until(phi, *, lo, hi):
-    raise NotImplementedError
+def until(phi1, phi2, *, lo, hi):
+    return stl.ast.Until(Interval(lo, hi), phi1, phi2)
 
 def andf(*args):
     return reduce(op.and_, args, stl.And(tuple()))
