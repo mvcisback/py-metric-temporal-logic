@@ -141,7 +141,7 @@ def until(phi, *, lo, hi):
     raise NotImplementedError
 
 def andf(*args):
-    return reduce(op.and_, args)
+    return reduce(op.and_, args, stl.And(tuple()))
 
-def orf():
-    return reduce(op.or_, args)
+def orf(*args):
+    return reduce(op.or_, args, stl.Or(tuple()))

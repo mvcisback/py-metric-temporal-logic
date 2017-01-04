@@ -6,3 +6,4 @@ from stl.parser import parse
 from stl.synth import lex_param_project
 from stl.boolean_eval import pointwise_sat
 from stl.fastboolean_eval import pointwise_satf
+from stl.types import STL

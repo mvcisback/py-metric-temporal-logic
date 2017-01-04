@@ -21,7 +21,7 @@ from sympy import Symbol, Number
 from stl import ast
 
 STL_GRAMMAR = Grammar(u'''
-phi = (g / f / lineq / AP / or / and / paren_phi)
+phi = (g / f / until / lineq / AP / or / and / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -30,9 +30,12 @@ and = paren_phi _ ("∧" / "and") _ (and / paren_phi)
 
 f = F interval phi
 g = G interval phi
+until = "(" __ phi _ U interval _ phi __ ")"
 
 F = "F" / "◇"
 G = "G" / "□"
+U = "U"
+
 interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 
 const_or_unbound = unbound / const
@@ -97,6 +100,10 @@ class STLVisitor(NodeVisitor):
     visit_g = partialmethod(unary_temp_op_visitor, op=ast.G)
     visit_or = partialmethod(binop_visitor, op=ast.Or)
     visit_and = partialmethod(binop_visitor, op=ast.And)
+
+    def visit_until(self, _, children):
+        _, _, phi1, _, _, i, _, phi2, *_ = children
+        return ast.Until(i, phi1, phi2)
 
     def visit_id(self, name, _):
         return Symbol(name.text)

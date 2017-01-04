@@ -90,6 +90,14 @@ class G(ModalOp):
     OP = "□"
 
 
+class Until(namedtuple('ModalOp', ['interval', 'arg1', 'arg2']), AST):
+    def __repr__(self):
+        return f"({self.arg1} U{self.interval} ({self.arg2}))"
+    
+    def children(self):
+        return [self.arg1, self.arg2]
+
+
 class Neg(namedtuple('Neg', ['arg']), AST):
     def __repr__(self):
         return f"¬({self.arg})"
