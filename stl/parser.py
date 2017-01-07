@@ -120,7 +120,7 @@ class STLVisitor(NodeVisitor):
         return children[3]* children[5]
 
     def visit_prime(self, *_):
-        return ast.t_sym - ast.dt_sym
+        return ast.t_sym + ast.dt_sym
 
     def visit_const(self, const, children):
         return float(const.text)
