@@ -21,12 +21,14 @@ from sympy import Symbol, Number
 from stl import ast
 
 STL_GRAMMAR = Grammar(u'''
-phi = (g / f / until / lineq / AP / or / and / paren_phi)
+phi = (g / f / until / lineq / AP / or / and / neg / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
-or = paren_phi _ ("∨" / "or") _ (or / paren_phi)
-and = paren_phi _ ("∧" / "and") _ (and / paren_phi)
+or = paren_phi _ ("∨" / "or" / "|") _ (or / paren_phi)
+and = paren_phi _ ("∧" / "and" / "&") _ (and / paren_phi)
+
+neg = ("~" / "¬") paren_phi
 
 f = F interval phi
 g = G interval phi
@@ -156,6 +158,9 @@ class STLVisitor(NodeVisitor):
 
     def visit_AP(self, node, _):
         return ast.AtomicPred(node.text)
+
+    def visit_neg(self, _, children):
+        return ast.Neg(children[1])
 
 
 def parse(stl_str:str, rule:str="phi") -> "STL":
