@@ -30,9 +30,9 @@ class AST(object):
 
 
 
-class AtomicPred(namedtuple("AP", ["id"]), AST):
+class AtomicPred(namedtuple("AP", ["id", "time"]), AST):
     def __repr__(self):
-        return "{}".format(self.id)
+        return f"{self.id}[{self.time}]"
 
     def children(self):
         return []

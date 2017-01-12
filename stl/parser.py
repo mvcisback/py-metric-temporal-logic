@@ -157,7 +157,7 @@ class STLVisitor(NodeVisitor):
         return Number(1) if node.text == "+" else Number(-1)
 
     def visit_AP(self, node, _):
-        return ast.AtomicPred(node.text)
+        return ast.AtomicPred(node.text, ast.t_sym)
 
     def visit_neg(self, _, children):
         return ast.Neg(children[1])
