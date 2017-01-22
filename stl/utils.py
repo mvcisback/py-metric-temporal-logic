@@ -147,3 +147,12 @@ def andf(*args):
 
 def orf(*args):
     return reduce(op.or_, args, stl.Or(tuple()))
+
+def implies(x, y):
+    return ~x | y
+
+def xor(x, y):
+    return (x | y) & ~(x & y)
+
+def iff(x, y):
+    return (x & y) | (~x & ~y)

@@ -19,14 +19,18 @@ from lenses import lens
 from sympy import Symbol, Number
 
 from stl import ast
+from stl.utils import implies, xor, iff
 
 STL_GRAMMAR = Grammar(u'''
-phi = (g / f / until / lineq / AP / or / and / neg / paren_phi)
+phi = (g / f / until / lineq / AP / or / and / implies / xor / iff / neg / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
 or = paren_phi _ ("∨" / "or" / "|") _ (or / paren_phi)
 and = paren_phi _ ("∧" / "and" / "&") _ (and / paren_phi)
+implies = paren_phi _ ("→" / "->") _ (and / paren_phi)
+iff = paren_phi _ ("⇔" / "<->" / "iff") _ (and / paren_phi)
+xor = paren_phi _ ("⊕" / "^" / "xor") _ (and / paren_phi)
 
 neg = ("~" / "¬") paren_phi
 
@@ -64,8 +68,7 @@ _ = ~r"\s"+
 __ = ~r"\s"*
 EOL = "\\n"
 ''')
-
-
+    
 class STLVisitor(NodeVisitor):
     def generic_visit(self, _, children):
         return children
@@ -98,10 +101,17 @@ class STLVisitor(NodeVisitor):
         argR = list(phi2.args) if isinstance(phi2, op) else [phi2]
         return op(tuple(argL + argR))
 
+    def sugar_binop_visitor(self, _, children, op):
+        phi1, _, _, _, (phi2,) = children
+        return op(phi1, phi2)
+
     visit_f = partialmethod(unary_temp_op_visitor, op=ast.F)
     visit_g = partialmethod(unary_temp_op_visitor, op=ast.G)
     visit_or = partialmethod(binop_visitor, op=ast.Or)
     visit_and = partialmethod(binop_visitor, op=ast.And)
+    visit_xor = partialmethod(sugar_binop_visitor, op=xor)
+    visit_iff = partialmethod(sugar_binop_visitor, op=iff)
+    visit_implies = partialmethod(sugar_binop_visitor, op=implies)
 
     def visit_until(self, _, children):
         _, _, phi1, _, _, i, _, phi2, *_ = children
