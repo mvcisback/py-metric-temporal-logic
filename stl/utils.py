@@ -22,10 +22,6 @@ def walk(phi:STL, bfs:bool=False) -> STL_Generator:
         children.extend(node.children())
 
 
-def tree(phi:STL) -> Dict[STL, STL]:
-    return {x:set(x.children()) for x in walk(phi) if x.children()}
-
-
 def type_pred(*args:List[Type]) -> Mapping[Type, bool]:
     ast_types = set(args)
     return lambda x: type(x) in ast_types
@@ -80,16 +76,6 @@ def param_lens(phi:STL) -> Lens:
                     focus_lens=focus_lens).filter_(is_sym)
 
 
-def symbol_lens(phi:STL) -> Lens:
-    is_sym = lambda x: isinstance(x, sympy.Symbol)
-    def focus_lens(leaf):
-        spacial = [lens().const] + lens().terms.each_().id.get_all()
-        temporal = [lens().interval[0], lens().interval[1]]
-        return spacial if isinstance(leaf, LinEq) else temp
-
-    return ast_lens(phi, pred=type_pred(LinEq, F, G), 
-                    focus_lens=focus_lens).filter_(is_sym)
-
 def set_params(stl_or_lens, val) -> STL:
     l = stl_or_lens if isinstance(stl_or_lens, Lens) else param_lens(stl_or_lens)
     return l.modify(lambda x: val.get(x, val.get(str(x), x)))
@@ -129,6 +115,13 @@ def to_mtl(phi:STL) -> MTL:
 def from_mtl(phi:MTL, ap_map:Dict[AtomicPred, LinEq]) -> STL:
     focus = AP_lens(phi)
     return focus.modify(ap_map.get)
+
+
+def get_polarity(phi, traces=None):
+    raise NotImplementedError
+
+def canonical_polarity(phi, traces=None):
+    raise NotImplementedError
 
 
 # EDSL

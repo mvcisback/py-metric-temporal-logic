@@ -28,3 +28,31 @@ class TestSTLUtils(unittest.TestCase):
         
         self.assertEqual(set(map(str, stl.utils.param_lens(phi).get_all())), set())
         self.assertEqual(phi, phi2)
+
+    def test_walk(self):
+        raise NotImplementedError
+
+
+    def test_type_pred(self):
+        raise NotImplementedError
+
+
+    def test_ast_lens(self):
+        raise NotImplementedError
+
+
+    def test_terms_lens(self):
+        raise NotImplementedError
+
+
+    def test_f_neg_or_canonical_form(self):
+        raise NotImplementedError
+
+    def test_to_from_mtl(self):
+        raise NotImplementedError
+
+    def test_get_polarity(self):
+        raise NotImplementedError
+
+    def test_canonical_polarity(self):
+        raise NotImplementedError

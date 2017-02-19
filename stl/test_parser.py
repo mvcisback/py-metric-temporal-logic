@@ -5,17 +5,17 @@ import unittest
 from sympy import Symbol
 
 ex1 = ('x1 > 2', stl.LinEq(
-    (stl.Var(1, Symbol("x1"), stl.ast.t_sym),),
+    (stl.Var(1, Symbol("x1"), stl.t_sym),),
     ">",
     2.0
 ))
 ex1_ = ('x1 > a?', stl.LinEq(
-    (stl.Var(1, Symbol("x1"), stl.ast.t_sym),),
+    (stl.Var(1, Symbol("x1"), stl.t_sym),),
     ">",
     Symbol("a?")
 ))
 
-ex1__ = ('x1', stl.AtomicPred('x1'))
+ex1__ = ('x1', stl.AtomicPred('x1', stl.t_sym))
 
 i1 = stl.Interval(0., 1.)
 i1_ = stl.Interval(0., Symbol("b?"))
