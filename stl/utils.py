@@ -12,11 +12,11 @@ from stl.ast import (LinEq, And, Or, NaryOpSTL, F, G, Interval, Neg,
                      AtomicPred)
 from stl.types import STL, STL_Generator, MTL
 
-def walk(phi:STL, bfs:bool=False) -> STL_Generator:
-    """Walks Ast. Defaults to DFS unless BFS flag is set."""
-    pop = deque.popleft if bfs else deque.pop
+def walk(phi:STL) -> STL_Generator:
+    """DSF walk of the AST."""
+    pop = deque.pop
     children = deque([phi])
-    while len(children) != 0:
+    while len(children) > 0:
         node = pop(children)
         yield node
         children.extend(node.children())

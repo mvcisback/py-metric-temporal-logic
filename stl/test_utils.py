@@ -29,13 +29,16 @@ class TestSTLUtils(unittest.TestCase):
         self.assertEqual(set(map(str, stl.utils.param_lens(phi).get_all())), set())
         self.assertEqual(phi, phi2)
 
-    def test_walk(self):
-        raise NotImplementedError
+    @params(("x > 5", 1), ("~(x)", 2), ("(F[0,1](x)) & (~(G[0, 2](y)))", 6))
+    def test_walk(self, phi_str, l):
+        self.assertEqual(l, len(list(stl.walk(stl.parse(phi_str)))))
 
-
-    def test_type_pred(self):
-        raise NotImplementedError
-
+    @params(([], False, False),([int], True, False), ([int, bool], True, True))
+    def test_type_pred(self, types, b1, b2):
+        pred = stl.utils.type_pred(*types)
+        self.assertFalse(pred(None))
+        self.assertEqual(pred(1), b1)
+        self.assertEqual(pred(True), b2)
 
     def test_ast_lens(self):
         raise NotImplementedError
