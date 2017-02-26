@@ -14,6 +14,7 @@ def bool_op(stl, conjunction=False):
     f = and_ if conjunction else or_
     def sat_comp(x,t):
         sat = bitarray(len(t))
+        sat.setall(True) if conjunction else sat.setall(False)
         for arg in stl.args:
             sat = f(pointwise_satf(arg)(x, t), sat)
         return sat
