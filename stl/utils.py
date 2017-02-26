@@ -21,6 +21,9 @@ def walk(phi:STL) -> STL_Generator:
         yield node
         children.extend(node.children())
 
+def vars_in_phi(phi):
+    focus = stl.terms_lens(phi)
+    return set(focus.tuple_(lens().id, lens().time).get_all())
 
 def type_pred(*args:List[Type]) -> Mapping[Type, bool]:
     ast_types = set(args)

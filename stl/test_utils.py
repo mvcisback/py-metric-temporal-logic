@@ -8,7 +8,6 @@ from sympy import Symbol
 ex1 = ("F[b?, 1]G[0, c?](x > a?)", {"a?", "b?", "c?"})
 ex2 = ("G[0, c?](x > a?)", {"a?", "c?"})
 ex3 = ("F[b?, 1]G[0, c?](x > a?)", {"a?", "b?", "c?"})
-
 ex4 = ("F[b?, 1]G[0, c?](x > a?)", "F[2, 1]G[0, 3](x > 1)")
 ex5 = ("G[0, c?](x > a?)", "G[0, 3](x > 1)")
 
@@ -40,13 +39,16 @@ class TestSTLUtils(unittest.TestCase):
         self.assertEqual(pred(1), b1)
         self.assertEqual(pred(True), b2)
 
+    @params(("(F[0,1]G[0, 4]((x > 3) or (y < 4))) and (x < 3)", 2))
+    def test_vars_in_phi(self, phi_str, l):
+        phi = stl.parse(phi_str)
+        self.assertEqual(len(stl.utils.vars_in_phi(phi)), l)
+        
     def test_ast_lens(self):
         raise NotImplementedError
 
-
     def test_terms_lens(self):
         raise NotImplementedError
-
 
     def test_f_neg_or_canonical_form(self):
         raise NotImplementedError
