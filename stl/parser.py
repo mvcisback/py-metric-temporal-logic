@@ -48,7 +48,7 @@ const_or_unbound = unbound / const
 
 lineq = terms _ op _ const_or_unbound
 term =  coeff? var
-coeff = (dt __ "*" __)? const __ "*" __
+coeff = ((dt __ "*" __)? const __ "*" __) / (dt __ "*")
 terms = (term __ pm __ terms) / term
 
 var = id time?
@@ -150,9 +150,12 @@ class STLVisitor(NodeVisitor):
         return ast.Var(coeff=c, id=iden, time=time)
     
     def visit_coeff(self, _, children):
-        dt, coeff, *_ = children
-        dt = dt[0][0] if dt else Number(1)
-        return dt * coeff
+        dt, coeff, *_ = children[0]
+        if not isinstance(dt, Symbol):
+            dt = dt[0][0] if dt else Number(1)
+            return dt * coeff
+        else:
+            return dt
 
     def visit_terms(self, _, children):
         if isinstance(children[0], list):
