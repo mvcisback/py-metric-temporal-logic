@@ -119,14 +119,6 @@ def from_mtl(phi:MTL, ap_map:Dict[AtomicPred, LinEq]) -> STL:
     focus = AP_lens(phi)
     return focus.modify(ap_map.get)
 
-
-def get_polarity(phi, traces=None):
-    raise NotImplementedError
-
-def canonical_polarity(phi, traces=None):
-    raise NotImplementedError
-
-
 # EDSL
 
 def alw(phi, *, lo, hi):

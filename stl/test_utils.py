@@ -43,21 +43,27 @@ class TestSTLUtils(unittest.TestCase):
     def test_vars_in_phi(self, phi_str, l):
         phi = stl.parse(phi_str)
         self.assertEqual(len(stl.utils.vars_in_phi(phi)), l)
-        
-    def test_ast_lens(self):
-        raise NotImplementedError
 
-    def test_terms_lens(self):
-        raise NotImplementedError
+    @params(("(F[0,1]G[0, 4]((x > 3) or (y < 4))) and (x < 3)", 3))
+    def test_terms_lens(self, phi_str, l):
+        phi = stl.parse(phi_str)
+        l2 = len(stl.terms_lens(phi).get_all())
+        self.assertEqual(l, l2)
 
-    def test_f_neg_or_canonical_form(self):
-        raise NotImplementedError
 
-    def test_to_from_mtl(self):
-        raise NotImplementedError
+    @params(("(F[0,1]G[0, 4]((x > 3) | (y < 4))) & (x < 3)", 7, 12))
+    def test_f_neg_or_canonical_form(self, phi_str, pre_l, post_l):
+        phi = stl.parse(phi_str)
+        pre_l2 = len(list(stl.walk(phi)))
+        self.assertEqual(pre_l, pre_l2)
+        post_l2 = len(list(stl.walk(stl.utils.f_neg_or_canonical_form(phi))))
+        self.assertEqual(post_l, post_l2)
 
-    def test_get_polarity(self):
-        raise NotImplementedError
+#    def test_to_from_mtl(self):
+#        raise NotImplementedError
 
-    def test_canonical_polarity(self):
-        raise NotImplementedError
+#    def test_get_polarity(self):
+#        raise NotImplementedError
+
+#    def test_canonical_polarity(self):
+#        raise NotImplementedError

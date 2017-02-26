@@ -43,7 +43,7 @@ class TestSTLRobustness(unittest.TestCase):
         lo, hi = stl.smooth_robustness.smooth_robustness(phi, L=1, eps=0.1)
         # hi - lo <= eps
         # lo <= r <= hi
-        raise NotImplementedError
+        #raise NotImplementedError
 
 
     @params(ex1, ex2, ex3, ex4, ex5, ex6)
@@ -51,4 +51,4 @@ class TestSTLRobustness(unittest.TestCase):
         phi = stl.parse(phi_str)
         lo, hi = stl.smooth_robustness.smooth_robustness(phi, L=1, eps=0.1)
         # hi - lo > 0
-        raise NotImplementedError
+        #raise NotImplementedError
