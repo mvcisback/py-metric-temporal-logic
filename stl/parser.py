@@ -3,7 +3,6 @@
 # TODO: break out into seperate library
 # TODO: allow multiplication to be distributive
 # TODO: support reference specific time points
-# TODO: add Implies and Iff syntactic sugar
 # TODO: add support for parsing Until
 # TODO: support variables on both sides of ineq
 # TODO: Allow -x = -1*x
