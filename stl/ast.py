@@ -29,7 +29,6 @@ class AST(object):
         return Neg(self)
 
 
-
 class AtomicPred(namedtuple("AP", ["id", "time"]), AST):
     def __repr__(self):
         return f"{self.id}[{self.time}]"
@@ -44,6 +43,10 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
 
     def children(self):
         return []
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
 
 
 class Var(namedtuple("Var", ["coeff", "id", "time"])):
@@ -71,8 +74,16 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
 class Or(NaryOpSTL):
     OP = "∨"
 
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
+
 class And(NaryOpSTL):
     OP = "∧"
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
 
 
 class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
@@ -86,8 +97,16 @@ class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
 class F(ModalOp):
     OP = "◇"
 
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
+
 class G(ModalOp):
     OP = "□"
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
 
 
 class Until(namedtuple('ModalOp', ['interval', 'arg1', 'arg2']), AST):
@@ -97,6 +116,10 @@ class Until(namedtuple('ModalOp', ['interval', 'arg1', 'arg2']), AST):
     def children(self):
         return [self.arg1, self.arg2]
 
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
+
 
 class Neg(namedtuple('Neg', ['arg']), AST):
     def __repr__(self):
@@ -104,3 +127,7 @@ class Neg(namedtuple('Neg', ['arg']), AST):
 
     def children(self):
         return [self.arg]
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))

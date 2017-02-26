@@ -22,7 +22,7 @@ from stl import ast
 from stl.utils import implies, xor, iff
 
 STL_GRAMMAR = Grammar(u'''
-phi = (g / f / until / lineq / AP / or / and / implies / xor / iff / neg / paren_phi)
+phi = (neg / g / f / until / lineq / AP / or / and / implies / xor / iff / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -32,11 +32,11 @@ implies = paren_phi _ ("→" / "->") _ (and / paren_phi)
 iff = paren_phi _ ("⇔" / "<->" / "iff") _ (and / paren_phi)
 xor = paren_phi _ ("⊕" / "^" / "xor") _ (and / paren_phi)
 
-neg = ("~" / "¬") paren_phi
+neg = ("~" / "¬") phi
 
-f = F interval phi
-g = G interval phi
-until = "(" __ phi _ U interval _ phi __ ")"
+f = F interval? phi
+g = G interval? phi
+until = "(" __ phi _ U interval? _ phi __ ")"
 
 F = "F" / "◇"
 G = "G" / "□"
@@ -68,6 +68,8 @@ _ = ~r"\s"+
 __ = ~r"\s"*
 EOL = "\\n"
 ''')
+
+default_interval = ast.Interval(0, float('inf'))
     
 class STLVisitor(NodeVisitor):
     def generic_visit(self, _, children):
@@ -92,8 +94,9 @@ class STLVisitor(NodeVisitor):
     visit_op = get_text
 
     def unary_temp_op_visitor(self, _, children, op):
-        _, interval, phi = children
-        return op(interval, phi)
+        _, i, phi = children
+        i = default_interval if not i else i[0]
+        return op(i, phi)
 
     def binop_visitor(self, _, children, op):
         phi1, _, _, _, (phi2,) = children
@@ -115,6 +118,7 @@ class STLVisitor(NodeVisitor):
 
     def visit_until(self, _, children):
         _, _, phi1, _, _, i, _, phi2, *_ = children
+        i = default_interval if not i else i[0]
         return ast.Until(i, phi1, phi2)
 
     def visit_id(self, name, _):
@@ -145,7 +149,6 @@ class STLVisitor(NodeVisitor):
         c = coeffs[0] if coeffs else Number(1)
         return ast.Var(coeff=c, id=iden, time=time)
     
-
     def visit_coeff(self, _, children):
         dt, coeff, *_ = children
         dt = dt[0][0] if dt else Number(1)
