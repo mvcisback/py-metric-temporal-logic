@@ -131,10 +131,10 @@ def until(phi1, phi2, *, lo, hi):
     return stl.ast.Until(Interval(lo, hi), phi1, phi2)
 
 def andf(*args):
-    return reduce(op.and_, args, stl.And(tuple()))
+    return reduce(op.and_, args, None)
 
 def orf(*args):
-    return reduce(op.or_, args, stl.Or(tuple()))
+    return reduce(op.or_, args, None)
 
 def implies(x, y):
     return ~x | y
