@@ -40,7 +40,7 @@ def _(stl):
 
 @pointwise_sat.register(stl.Neg)
 def _(stl):
-    return lambda x, t: not pointwise_sat(arg)(x, t)
+    return lambda x, t: not pointwise_sat(stl.arg)(x, t)
 
 
 op_lookup = {

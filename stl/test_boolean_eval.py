@@ -23,12 +23,20 @@ class TestSTLEval(unittest.TestCase):
     def test_eval(self, phi_str, r):
         phi = stl.parse(phi_str)
         stl_eval = stl.boolean_eval.pointwise_sat(phi)
+        stl_eval2 = stl.boolean_eval.pointwise_sat(~phi)
         self.assertEqual(stl_eval(x, 0), r)
+        self.assertEqual(stl_eval2(x, 0), not r)
 
 
     @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9)
     def test_fasteval(self, phi_str, _):
         phi = stl.parse(phi_str)
         stl_eval = stl.boolean_eval.pointwise_sat(phi)
-        stl_evalf = stl.fastboolean_eval.pointwise_satf(phi)
-        self.assertEqual(bool(int(stl_evalf(x, [0]).to01())), stl_eval(x, 0))
+        stl_evalf = stl.fastboolean_eval.pointwise_sat(phi)
+        stl_evalf2 = stl.fastboolean_eval.pointwise_sat(~phi)
+
+        b_slow = stl_eval(x, 0)
+        b_fast = stl_evalf(x, 0)
+        b_fast2 = stl_evalf2(x, 0)
+        self.assertEqual(b_slow, b_fast)
+        self.assertEqual(b_fast, not b_fast2)

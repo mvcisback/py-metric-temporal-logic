@@ -6,6 +6,10 @@ from bitarray import bitarray
 import stl.ast
 from stl.boolean_eval import eval_terms, op_lookup
 
+def pointwise_sat(stl):
+    f = pointwise_satf(stl)
+    return lambda x, t: bool(int(f(x, [t]).to01()))
+
 @singledispatch
 def pointwise_satf(stl):
     raise NotImplementedError
@@ -57,7 +61,7 @@ def _(stl):
 
 @pointwise_satf.register(stl.Neg)
 def _(stl):
-    return lambda x,t: ~pointwise_satf(arg)(x, t) 
+    return lambda x,t: ~pointwise_satf(stl.arg)(x, t) 
 
 
 @pointwise_satf.register(stl.AtomicPred)
