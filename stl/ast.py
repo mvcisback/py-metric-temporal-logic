@@ -12,21 +12,46 @@ from sympy import Symbol
 dt_sym = Symbol('dt', positive=True)
 t_sym = Symbol('t', positive=True)
 
-def flatten_binary(phi):
-    t = type(phi)
-    f = lambda x: x.args if isinstance(x, t) else [x]
-    return t(tuple(fn.mapcat(f, phi.args)))
+def flatten_binary(phi, op, dropT, shortT):
+    f = lambda x: x.args if isinstance(x, op) else [x]
+    args = [arg for arg in phi.args if not isinstance(arg, type(dropT))]
+
+    if any(isinstance(arg, type(shortT)) for arg in args):
+        return shortT
+    elif not args:
+        return dropT
+    else:
+        return op(tuple(fn.mapcat(f, phi.args)))
         
 
 class AST(object):
     def __or__(self, other):
-        return flatten_binary(Or((self, other)))
+        return flatten_binary(Or((self, other)), Or, BOT, TOP)
 
     def __and__(self, other):
-        return flatten_binary(And((self, other)))
+        return flatten_binary(And((self, other)), And, TOP, BOT)
 
     def __invert__(self):
         return Neg(self)
+
+
+class _Top(AST):
+    def __repr__(self):
+        return "⊤"
+
+    def __invert__(self):
+        return Bot()
+
+
+class _Bot(AST):
+    def __repr__(self):
+        return "⊥"
+
+    def __invert__(self):
+        return Top()
+
+TOP = _Top()
+BOT = _Bot()
 
 
 class AtomicPred(namedtuple("AP", ["id", "time"]), AST):
