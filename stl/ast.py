@@ -14,9 +14,8 @@ t_sym = Symbol('t', positive=True)
 
 def flatten_binary(phi, op, dropT, shortT):
     f = lambda x: x.args if isinstance(x, op) else [x]
-    args = [arg for arg in phi.args if not isinstance(arg, type(dropT))]
-
-    if any(isinstance(arg, type(shortT)) for arg in args):
+    args = [arg for arg in phi.args if arg is not dropT]
+    if any(arg is shortT for arg in args):
         return shortT
     elif not args:
         return dropT
