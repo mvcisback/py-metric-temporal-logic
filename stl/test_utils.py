@@ -59,6 +59,14 @@ class TestSTLUtils(unittest.TestCase):
         post_l2 = len(list(stl.walk(stl.utils.f_neg_or_canonical_form(phi))))
         self.assertEqual(post_l, post_l2)
 
+    def test_andf(self):
+        phi = stl.parse("x")
+        self.assertEqual(phi, stl.andf(phi))
+
+    def test_orf(self):
+        phi = stl.parse("x")
+        self.assertEqual(phi, stl.orf(phi))
+
 #    def test_to_from_mtl(self):
 #        raise NotImplementedError
 

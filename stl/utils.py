@@ -131,10 +131,10 @@ def until(phi1, phi2, *, lo, hi):
     return stl.ast.Until(Interval(lo, hi), phi1, phi2)
 
 def andf(*args):
-    return reduce(op.and_, args, stl.TOP)
+    return reduce(op.and_, args) if args else stl.TOP
 
 def orf(*args):
-    return reduce(op.or_, args, stl.TOP)
+    return reduce(op.or_, args) if args else stl.TOP
 
 def implies(x, y):
     return ~x | y
