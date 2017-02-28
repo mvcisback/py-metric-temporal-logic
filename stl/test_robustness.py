@@ -32,8 +32,10 @@ class TestSTLRobustness(unittest.TestCase):
     @params(ex1, ex2, ex3, ex4, ex5, ex6)
     def test_robustness_value(self, phi_str, r):
         phi = stl.parse(phi_str)
-        stl_eval = stl.robustness.pointwise_robustness(phi)
-        self.assertEqual(stl_eval(x, 0), r)
+        r1 = stl.robustness.pointwise_robustness(phi)(x, 0)
+        r2 = stl.robustness.pointwise_robustness(~phi)(x, 0)
+        self.assertEqual(r1, r)
+        self.assertEqual(r1, -r2)
 
 
     @params(ex1, ex2, ex3, ex4, ex5, ex6)

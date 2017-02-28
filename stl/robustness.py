@@ -41,7 +41,7 @@ def _(stl):
 
 @pointwise_robustness.register(stl.Neg)
 def _(stl):
-    return lambda x, t: -pointwise_robustness(arg)(x, t)
+    return lambda x, t: -pointwise_robustness(stl.arg)(x, t)
 
 
 op_lookup = {
