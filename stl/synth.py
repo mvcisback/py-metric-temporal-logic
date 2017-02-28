@@ -1,7 +1,7 @@
 import operator as op
 
 from stl.utils import set_params, param_lens
-from stl.boolean_eval import pointwise_sat
+from stl import pointwise_sat
 
 from lenses import lens
 
