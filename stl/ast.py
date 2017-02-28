@@ -15,10 +15,13 @@ t_sym = Symbol('t', positive=True)
 def flatten_binary(phi, op, dropT, shortT):
     f = lambda x: x.args if isinstance(x, op) else [x]
     args = [arg for arg in phi.args if arg is not dropT]
+
     if any(arg is shortT for arg in args):
         return shortT
     elif not args:
         return dropT
+    elif len(args) == 1:
+        return args[0]
     else:
         return op(tuple(fn.mapcat(f, phi.args)))
         
