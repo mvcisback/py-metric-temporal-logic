@@ -11,3 +11,7 @@ class TestSTLAST(unittest.TestCase):
         self.assertEqual(stl.BOT, stl.BOT | stl.BOT)
         self.assertEqual(stl.TOP, stl.TOP | stl.BOT)
         self.assertEqual(stl.BOT, stl.TOP & stl.BOT)
+        self.assertEqual(~stl.BOT, stl.TOP)
+        self.assertEqual(~stl.TOP, stl.BOT)
+        self.assertEqual(~~stl.BOT, stl.BOT)
+        self.assertEqual(~~stl.TOP, stl.TOP)

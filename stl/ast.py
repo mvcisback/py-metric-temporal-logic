@@ -39,7 +39,7 @@ class _Top(AST):
         return "⊤"
 
     def __invert__(self):
-        return Bot()
+        return BOT
 
 
 class _Bot(AST):
@@ -47,7 +47,7 @@ class _Bot(AST):
         return "⊥"
 
     def __invert__(self):
-        return Top()
+        return TOP
 
 TOP = _Top()
 BOT = _Bot()
