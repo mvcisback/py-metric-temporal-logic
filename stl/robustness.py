@@ -66,5 +66,7 @@ def eval_terms(lineq, x, t):
 
 
 def eval_term(x, t):
-    # TODO(lift interpolation much higher)
-    return lambda term: term.coeff*np.interp(t, x.index, x[term.id.name])
+    def _eval_term(term):
+        coeff = float(term.coeff) if term.coeff.is_number else term.coeff
+        return coeff*np.interp(t, x.index, x[term.id.name])
+    return _eval_term

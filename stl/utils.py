@@ -33,7 +33,9 @@ def type_pred(*args:List[Type]) -> Mapping[Type, bool]:
 def _child_lens(psi:STL, focus:Lens) -> STL_Generator:
     if psi is None:
         return
-    if isinstance(psi, NaryOpSTL):
+    elif psi is stl.TOP or psi is stl.BOT:
+        return
+    elif isinstance(psi, NaryOpSTL):
         for j, _ in enumerate(psi.args):
             yield focus.args[j]
     else:
