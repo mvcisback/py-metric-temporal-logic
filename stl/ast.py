@@ -36,6 +36,9 @@ class AST(object):
     def __invert__(self):
         return Neg(self)
 
+    def children(self):
+        return []
+
 
 class _Top(AST):
     def __repr__(self):
