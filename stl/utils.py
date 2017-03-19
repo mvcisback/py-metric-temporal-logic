@@ -121,6 +121,15 @@ def from_mtl(phi:MTL, ap_map:Dict[AtomicPred, LinEq]) -> STL:
     focus = AP_lens(phi)
     return focus.modify(ap_map.get)
 
+
+def lineq_lipschitz(lineq):
+    """1 norm lipschitz bound of linear inequality predicate."""
+    return sum(map(abs, lens(lineq).terms.each_().coeff.get_all()))
+
+def linear_stl_lipschitz(phi):
+    return max(map(lineq_lipschitz, lineq_lens(phi).get_all()))
+
+
 # EDSL
 
 def alw(phi, *, lo, hi):
