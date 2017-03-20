@@ -121,14 +121,12 @@ def from_mtl(phi:MTL, ap_map:Dict[AtomicPred, LinEq]) -> STL:
     focus = AP_lens(phi)
     return focus.modify(ap_map.get)
 
-
 def linear_stl_lipschitz(phi):
     r = max(abs(c) for c in terms_lens(phi).coeff.get_all())
     try:
         return float(r)
     except TypeError:
         return r
-
 
 # EDSL
 
