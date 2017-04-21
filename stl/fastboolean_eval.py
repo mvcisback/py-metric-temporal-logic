@@ -38,6 +38,27 @@ def temporal_op(stl, lo, hi, conjunction=False):
     return sat_comp
 
 
+@pointwise_satf.register(stl.Until)
+def _(stl):
+    f1, f2 = pointwise_satf(stl.arg1), pointwise_satf(stl.arg2)
+    def __until(x, t):
+        f1, f2 = pointwise_satf(stl.arg1), pointwise_satf(stl.arg2)
+
+        state = False
+        for phi, tau in zip(reversed(f1(x, x.index)), reversed(x.index)):
+            if not phi:
+                state = f2(x, [tau])
+            if tau in t:
+                yield state
+
+    def _until(x, t):
+        retval = bitarray(__until(x, t))
+        retval.reverse()
+        return retval
+
+    return _until
+
+
 @pointwise_satf.register(stl.F)
 def _(stl):
     lo, hi = stl.interval

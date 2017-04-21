@@ -31,7 +31,7 @@ class TestSTLEval(unittest.TestCase):
 
 
 
-    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9)
+    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11)
     def test_fasteval(self, phi_str, _):
         phi = stl.parse(phi_str)
         stl_eval = stl.boolean_eval.pointwise_sat(phi)
