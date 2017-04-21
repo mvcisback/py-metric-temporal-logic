@@ -15,7 +15,7 @@ ex1_ = ('x1 > a?', stl.LinEq(
     Symbol("a?")
 ))
 
-ex1__ = ('x1', stl.AtomicPred('x1', stl.t_sym))
+ex1__ = ('x1', stl.AtomicPred(Symbol('x1'), stl.t_sym))
 
 i1 = stl.Interval(0., 1.)
 i1_ = stl.Interval(0., Symbol("b?"))

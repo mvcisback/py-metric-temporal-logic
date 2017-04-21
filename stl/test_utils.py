@@ -67,6 +67,23 @@ class TestSTLUtils(unittest.TestCase):
         phi = stl.parse("x")
         self.assertEqual(phi, stl.orf(phi))
 
+    def test_inline_context(self):
+        context = {
+            stl.parse("x"): stl.parse("(z) & (y)"),
+            stl.parse("z"): stl.parse("y - x > 4")
+        }
+        context2 = {
+            stl.parse("x"): stl.parse("x"),
+        }
+        phi = stl.parse("x")
+        self.assertEqual(stl.utils.inline_context(phi, {}), phi)
+        self.assertEqual(stl.utils.inline_context(phi, context), 
+                         stl.parse("(y - x > 4) & (y)"))
+
+        phi2 = stl.parse("((x) & (z)) | (y)")
+        self.assertEqual(stl.utils.inline_context(phi2, context), 
+                         stl.parse("((y - x > 4) & (y) & (y - x > 4)) | (y)"))
+
 #    def test_to_from_mtl(self):
 #        raise NotImplementedError
 

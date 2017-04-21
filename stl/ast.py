@@ -61,7 +61,7 @@ BOT = _Bot()
 
 class AtomicPred(namedtuple("AP", ["id", "time"]), AST):
     def __repr__(self):
-        return f"{self.id}[{self.time}]"
+        return f"{self.id}({self.time})"
 
     def children(self):
         return []
@@ -81,7 +81,7 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
 
 class Var(namedtuple("Var", ["coeff", "id", "time"])):
     def __repr__(self):
-        return f"{self.coeff}*{self.id}[{self.time}]"
+        return f"{self.coeff}*{self.id}({self.time})"
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):

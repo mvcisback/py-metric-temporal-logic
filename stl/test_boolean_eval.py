@@ -28,6 +28,7 @@ class TestSTLEval(unittest.TestCase):
         self.assertEqual(stl_eval2(x, 0), not r)
 
 
+
     @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9)
     def test_fasteval(self, phi_str, _):
         phi = stl.parse(phi_str)

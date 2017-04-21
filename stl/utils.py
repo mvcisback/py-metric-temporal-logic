@@ -128,6 +128,14 @@ def linear_stl_lipschitz(phi):
     """Infinity norm lipschitz bound of linear inequality predicate."""
     return float(max(map(_lineq_lipschitz, lineq_lens(phi).get_all())))
 
+def inline_context(phi, context):
+    phi2 = None
+    update = lambda ap: context.get(ap, ap)
+    while phi2 != phi:
+        phi2, phi = phi, AP_lens(phi).modify(update)
+    # TODO: this is hack to flatten the AST. Fix!
+    return stl.parse(str(phi))
+
 # EDSL
 
 def alw(phi, *, lo, hi):

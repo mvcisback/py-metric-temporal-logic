@@ -68,7 +68,7 @@ def _(stl):
 def _(stl):
     def sat_comp(x, t):
         sat = bitarray()
-        [sat.append(x[stl.id][tau]) for tau in t]
+        [sat.append(x[str(stl.id)][tau]) for tau in t]
         return sat
     return sat_comp
 

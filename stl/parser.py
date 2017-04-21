@@ -21,7 +21,7 @@ from stl import ast
 from stl.utils import implies, xor, iff
 
 STL_GRAMMAR = Grammar(u'''
-phi = (neg / g / f / until / lineq / AP / or / and / implies / xor / iff / paren_phi)
+phi = (until / neg / g / f / lineq / AP / or / and / implies / xor / iff / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -35,7 +35,7 @@ neg = ("~" / "¬") phi
 
 f = F interval? phi
 g = G interval? phi
-until = "(" __ phi _ U interval? _ phi __ ")"
+until = paren_phi __ U interval? __ paren_phi
 
 F = "F" / "◇"
 G = "G" / "□"
@@ -52,10 +52,10 @@ terms = (term __ pm __ terms) / term
 
 var = id time?
 time = prime / time_index
-time_index = "[" "t" __ pm __ const "]"
+time_index = "(" ("t" / const) ")"
 prime = "'"
 
-AP = ~r"[a-zA-z\d]+"
+AP = id time?
 
 pm = "+" / "-"
 dt = "dt"
@@ -118,7 +118,7 @@ class STLVisitor(NodeVisitor):
     visit_implies = partialmethod(sugar_binop_visitor, op=implies)
 
     def visit_until(self, _, children):
-        _, _, phi1, _, _, i, _, phi2, *_ = children
+        phi1, _, _, i, _, phi2 = children
         i = self.default_interval if not i else i[0]
         return ast.Until(i, phi1, phi2)
 
@@ -134,7 +134,8 @@ class STLVisitor(NodeVisitor):
         return iden, time
 
     def visit_time_index(self, _, children):
-        return children[3]* children[5]
+        children = list(flatten(children))
+        return children[0] if children else ast.t_sym
 
     def visit_prime(self, *_):
         return ast.t_sym + ast.dt_sym
@@ -173,8 +174,8 @@ class STLVisitor(NodeVisitor):
     def visit_pm(self, node, _):
         return Number(1) if node.text == "+" else Number(-1)
 
-    def visit_AP(self, node, _):
-        return ast.AtomicPred(node.text, ast.t_sym)
+    def visit_AP(self, *args):
+        return ast.AtomicPred(*self.visit_var(*args))
 
     def visit_neg(self, _, children):
         return ast.Neg(children[1])
