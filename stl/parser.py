@@ -35,7 +35,7 @@ neg = ("~" / "¬") phi
 
 f = F interval? phi
 g = G interval? phi
-until = paren_phi __ U interval? __ paren_phi
+until = paren_phi __ U __ paren_phi
 
 F = "F" / "◇"
 G = "G" / "□"
@@ -118,9 +118,8 @@ class STLVisitor(NodeVisitor):
     visit_implies = partialmethod(sugar_binop_visitor, op=implies)
 
     def visit_until(self, _, children):
-        phi1, _, _, i, _, phi2 = children
-        i = self.default_interval if not i else i[0]
-        return ast.Until(i, phi1, phi2)
+        phi1, _, _, _, phi2 = children
+        return ast.Until(phi1, phi2)
 
     def visit_id(self, name, _):
         return Symbol(name.text)
