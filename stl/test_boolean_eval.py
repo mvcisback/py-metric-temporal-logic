@@ -15,11 +15,13 @@ ex6 = ("G[0, 0.1](A < 0)", False)
 ex7 = ("G[0, 0.1](C)", True)
 ex8 = ("G[0, 0.2](C)", False)
 ex9 = ("(F[0, 0.2](C)) and (F[0, 1](2*A > 3))", True)
+ex10 = ("(A = 1) U (A = 4)", True)
+ex11 = ("(A < 5) U (A = 4)", False)
 x = pd.DataFrame([[1,2, True], [1,4, True], [4,2, False]], index=[0,0.1,0.2], 
                  columns=["A", "B", "C"])
 
 class TestSTLEval(unittest.TestCase):
-    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9)
+    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11)
     def test_eval(self, phi_str, r):
         phi = stl.parse(phi_str)
         stl_eval = stl.boolean_eval.pointwise_sat(phi)

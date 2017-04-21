@@ -4,7 +4,7 @@ from operator import and_, or_
 from bitarray import bitarray
 
 import stl.ast
-from stl.boolean_eval import eval_terms, op_lookup
+from stl.boolean_eval import eval_terms, op_lookup, get_times
 
 def pointwise_sat(stl):
     f = pointwise_satf(stl)
@@ -30,15 +30,11 @@ def _(stl):
     return bool_op(stl, conjunction=True)
 
 
-def get_times(x, lo, hi, tau):
-    return [min(tau + t2, x.index[-1]) for t2 in x[lo:hi].index]
-
-
 def temporal_op(stl, lo, hi, conjunction=False):
     fold = bitarray.all if conjunction else bitarray.any
     f = pointwise_satf(stl.arg)
     def sat_comp(x,t):
-        return bitarray(fold(f(x, get_times(x, lo, hi, tau))) for tau in t)
+        return bitarray(fold(f(x, get_times(x, tau, lo, hi))) for tau in t)
     return sat_comp
 
 

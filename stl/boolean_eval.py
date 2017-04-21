@@ -26,28 +26,34 @@ def _(stl):
     return lambda x, t: all(f(x, t) for f in fs)
 
 
+def get_times(x, tau, lo=None, hi=None):
+    indices = x.index if lo is None or hi is None else x[lo:hi].index
+    return [min(tau + t2, x.index[-1]) for t2 in indices]
+
+
 @pointwise_sat.register(stl.Until)
 def _(stl):
     def _until(x, t):
-        phi = (pointwise_sat(phi)(x, t) for t in x.index)
-    return lambda x, t: any((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1]))
-                             for t2 in x[lo:hi].index))
+        f1, f2 = pointwise_sat(stl.arg1), pointwise_sat(stl.arg2)
+        for tau in get_times(x, t):
+            if not f1(x, tau):
+                return f2(x, tau)
+        return False
+    return _until
 
 
 @pointwise_sat.register(stl.F)
 def _(stl):
     lo, hi = stl.interval
     f = pointwise_sat(stl.arg) 
-    return lambda x, t: any((f(x, min(t + t2, x.index[-1]))
-                             for t2 in x[lo:hi].index))
+    return lambda x, t: any(f(x, tau) for tau in get_times(x, t, lo, hi))
 
 
 @pointwise_sat.register(stl.G)
 def _(stl):
     lo, hi = stl.interval
-    f = pointwise_sat(stl.arg) 
-    return lambda x, t: all((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1])) 
-                             for t2 in x[lo:hi].index))
+    f = pointwise_sat(stl.arg)
+    return lambda x, t: all(f(x, tau) for tau in get_times(x, t, lo, hi))
 
 
 @pointwise_sat.register(stl.Neg)
