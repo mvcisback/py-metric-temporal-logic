@@ -68,7 +68,7 @@ def smooth_robustness(phi, *, L=None, eps=None):
     else:
         B = p.B
 
-    return sym.log(lo, B).simplify(), sym.log(hi, B).simplify()
+    return sym.log(lo, B), sym.log(hi, B)
 
 
 # Alpha implementation
