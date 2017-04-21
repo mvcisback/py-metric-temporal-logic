@@ -38,7 +38,7 @@ def temporal_op(stl, lo, hi, conjunction=False):
     fold = bitarray.all if conjunction else bitarray.any
     f = pointwise_satf(stl.arg)
     def sat_comp(x,t):
-        return bitarray([fold(f(x, get_times(x, lo, hi, tau))) for tau in t])
+        return bitarray(fold(f(x, get_times(x, lo, hi, tau))) for tau in t)
     return sat_comp
 
 
@@ -61,18 +61,10 @@ def _(stl):
 
 @pointwise_satf.register(stl.AtomicPred)
 def _(stl):
-    def sat_comp(x, t):
-        sat = bitarray()
-        [sat.append(x[str(stl.id)][tau]) for tau in t]
-        return sat
-    return sat_comp
+    return lambda x, t: bitarray(x[str(stl.id)][tau] for tau in t)
 
 
 @pointwise_satf.register(stl.LinEq)
 def _(stl):
-    op = op_lookup[stl.op]
-    def sat_comp(x, t):
-        sat = bitarray()
-        [sat.append(op(eval_terms(stl, x, tau), stl.const)) for tau in t]
-        return sat
-    return sat_comp 
+    op = lambda a: op_lookup[stl.op](a, stl.const)
+    return lambda x, t: bitarray(op(eval_terms(stl, x, tau)) for tau in t)
