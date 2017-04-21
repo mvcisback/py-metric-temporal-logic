@@ -16,31 +16,44 @@ def pointwise_sat(stl):
 
 @pointwise_sat.register(stl.Or)
 def _(stl):
-    return lambda x, t: any(pointwise_sat(arg)(x, t) for arg in stl.args)
+    fs = [pointwise_sat(arg) for arg in stl.args]
+    return lambda x, t: any(f(x, t) for f in fs)
 
 
 @pointwise_sat.register(stl.And)
 def _(stl):
-    return lambda x, t: all(pointwise_sat(arg)(x, t) for arg in stl.args)
+    fs = [pointwise_sat(arg) for arg in stl.args]
+    return lambda x, t: all(f(x, t) for f in fs)
+
+
+@pointwise_sat.register(stl.Until)
+def _(stl):
+    def _until(x, t):
+        phi = (pointwise_sat(phi)(x, t) for t in x.index)
+    return lambda x, t: any((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1]))
+                             for t2 in x[lo:hi].index))
 
 
 @pointwise_sat.register(stl.F)
 def _(stl):
     lo, hi = stl.interval
-    return lambda x, t: any((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1]))
+    f = pointwise_sat(stl.arg) 
+    return lambda x, t: any((f(x, min(t + t2, x.index[-1]))
                              for t2 in x[lo:hi].index))
 
 
 @pointwise_sat.register(stl.G)
 def _(stl):
     lo, hi = stl.interval
+    f = pointwise_sat(stl.arg) 
     return lambda x, t: all((pointwise_sat(stl.arg)(x, min(t + t2, x.index[-1])) 
                              for t2 in x[lo:hi].index))
 
 
 @pointwise_sat.register(stl.Neg)
 def _(stl):
-    return lambda x, t: not pointwise_sat(stl.arg)(x, t)
+    f = pointwise_sat(stl.arg)
+    return lambda x, t: not f(x, t)
 
 
 op_lookup = {
