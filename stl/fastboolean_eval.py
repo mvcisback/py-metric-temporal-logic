@@ -1,4 +1,4 @@
-from functools import singledispatch
+from functools import singledispatch, reduce
 from operator import and_, or_
 
 from bitarray import bitarray
@@ -15,14 +15,9 @@ def pointwise_satf(stl):
     raise NotImplementedError
 
 def bool_op(stl, conjunction=False):
-    f = and_ if conjunction else or_
-    def sat_comp(x,t):
-        sat = bitarray(len(t))
-        sat.setall(True) if conjunction else sat.setall(False)
-        for arg in stl.args:
-            sat = f(pointwise_satf(arg)(x, t), sat)
-        return sat
-    return sat_comp
+    binop = and_ if conjunction else or_
+    fs = [pointwise_satf(arg) for arg in stl.args]
+    return lambda x, t: reduce(binop, (f(x, t) for f in fs))
 
 
 @pointwise_satf.register(stl.Or)
@@ -35,15 +30,15 @@ def _(stl):
     return bool_op(stl, conjunction=True)
 
 
+def get_times(x, lo, hi, tau):
+    return [min(tau + t2, x.index[-1]) for t2 in x[lo:hi].index]
+
 
 def temporal_op(stl, lo, hi, conjunction=False):
-    f = bitarray.all if conjunction else bitarray.any
+    fold = bitarray.all if conjunction else bitarray.any
+    f = pointwise_satf(stl.arg)
     def sat_comp(x,t):
-        sat = bitarray()
-        for tau in t:
-            tau_t = [min(tau + t2, x.index[-1]) for t2 in x[lo:hi].index]
-            sat.append(f(pointwise_satf(stl.arg)(x, tau_t)))
-        return sat
+        return bitarray([fold(f(x, get_times(x, lo, hi, tau))) for tau in t])
     return sat_comp
 
 
