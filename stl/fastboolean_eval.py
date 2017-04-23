@@ -45,7 +45,8 @@ def _(stl):
         f1, f2 = pointwise_satf(stl.arg1), pointwise_satf(stl.arg2)
 
         state = False
-        for phi, tau in zip(reversed(f1(x, x.index)), reversed(x.index)):
+        times = get_times(x, t[0])
+        for phi, tau in zip(reversed(f1(x, times)), reversed(times)):
             if not phi:
                 state = f2(x, [tau])
             if tau in t:

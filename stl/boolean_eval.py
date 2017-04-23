@@ -34,6 +34,8 @@ def get_times(x, tau, lo=None, hi=None):
         lo = min(v.first()[0] for v in x.values())
     if hi is None or hi is oo:
         hi = max(v.last()[0] for v in x.values())
+    lo += tau
+    hi += tau
     if lo > hi:
         return []
     elif hi == lo:
