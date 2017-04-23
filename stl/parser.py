@@ -18,10 +18,10 @@ from lenses import lens
 from sympy import Symbol, Number
 
 from stl import ast
-from stl.utils import implies, xor, iff
+from stl.utils import implies, xor, iff, env, alw
 
 STL_GRAMMAR = Grammar(u'''
-phi = (until / neg / g / f / lineq / AP / or / and / implies / xor / iff / paren_phi)
+phi = (timed_until / until / neg / g / f / lineq / AP / or / and / implies / xor / iff / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -36,6 +36,7 @@ neg = ("~" / "¬") phi
 f = F interval? phi
 g = G interval? phi
 until = paren_phi __ U __ paren_phi
+timed_until = paren_phi __ U interval __ paren_phi
 
 F = "F" / "◇"
 G = "G" / "□"
@@ -120,6 +121,10 @@ class STLVisitor(NodeVisitor):
     def visit_until(self, _, children):
         phi1, _, _, _, phi2 = children
         return ast.Until(phi1, phi2)
+
+    def visit_timed_until(self, _, children):
+        phi, _, _, (lo, hi), _, psi = children
+        return env(psi, lo=lo, hi=hi) & alw(ast.Until(phi, psi), lo=0, hi=hi)
 
     def visit_id(self, name, _):
         return Symbol(name.text)
