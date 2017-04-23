@@ -44,7 +44,7 @@ U = "U"
 
 interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 
-const_or_unbound = unbound / const
+const_or_unbound = unbound / "inf" / const
 
 lineq = terms _ op _ const_or_unbound
 term =  coeff? var
@@ -84,8 +84,10 @@ class STLVisitor(NodeVisitor):
     visit_paren_phi = partialmethod(children_getter, i=2)
 
     def visit_interval(self, _, children):
-        _, _, left, _, _, _, right, _, _ = children
-        return ast.Interval(left[0], right[0])
+        _, _, (left,), _, _, _, (right,), _, _ = children
+        left = left if left != [] else float("inf")
+        right = right if right != [] else float("inf")
+        return ast.Interval(left, right)
 
     def get_text(self, node, _):
         return node.text

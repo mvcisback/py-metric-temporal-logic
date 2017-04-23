@@ -5,9 +5,12 @@ from functools import singledispatch
 import operator as op
 
 import numpy as np
+import funcy as fn
 from lenses import lens
 
 import stl.ast
+
+oo = float('inf')
 
 @singledispatch
 def pointwise_sat(stl):
@@ -27,8 +30,17 @@ def _(stl):
 
 
 def get_times(x, tau, lo=None, hi=None):
-    indices = x.index if lo is None or hi is None else x[lo:hi].index
-    return [min(tau + t2, x.index[-1]) for t2 in indices]
+    if lo is None or lo is -oo:
+        lo = min(v.first()[0] for v in x.values())
+    if hi is None or hi is oo:
+        hi = max(v.last()[0] for v in x.values())
+    if lo > hi:
+        return []
+    elif hi == lo:
+        return [lo]
+
+    all_times = fn.cat(v.slice(lo, hi).items() for v in x.values())
+    return sorted(set(fn.pluck(0, all_times)))
 
 
 @pointwise_sat.register(stl.Until)
@@ -42,18 +54,26 @@ def _(stl):
     return _until
 
 
+def eval_unary_temporal_op(phi, always=True):
+    fold = all if always else any
+    lo, hi = phi.interval
+    if lo > hi:
+        retval = True if always else False
+        return lambda x, t: retval
+    if hi == lo:
+        return lambda x, t: f(x, t)
+    f = pointwise_sat(phi.arg) 
+    return lambda x, t: fold(f(x, tau) for tau in get_times(x, t, lo, hi))
+
+
 @pointwise_sat.register(stl.F)
-def _(stl):
-    lo, hi = stl.interval
-    f = pointwise_sat(stl.arg) 
-    return lambda x, t: any(f(x, tau) for tau in get_times(x, t, lo, hi))
+def _(phi):
+    return eval_unary_temporal_op(phi, always=False)
 
 
 @pointwise_sat.register(stl.G)
-def _(stl):
-    lo, hi = stl.interval
-    f = pointwise_sat(stl.arg)
-    return lambda x, t: all(f(x, tau) for tau in get_times(x, t, lo, hi))
+def _(phi):
+    return eval_unary_temporal_op(phi, always=True)
 
 
 @pointwise_sat.register(stl.Neg)
@@ -89,4 +109,4 @@ def eval_terms(lineq, x, t):
 
 def eval_term(x, t):
     # TODO(lift interpolation much higher)
-    return lambda term: term.coeff*np.interp(t, x.index, x[term.id.name])
+    return lambda term: term.coeff*x[term.id.name][t]

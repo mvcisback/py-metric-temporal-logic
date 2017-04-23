@@ -35,6 +35,8 @@ def _child_lens(psi:STL, focus:Lens) -> STL_Generator:
         return
     elif psi is stl.TOP or psi is stl.BOT:
         return
+    elif isinstance(psi, stl.ast.Until):
+        yield from [focus.arg1, focus.arg2]
     elif isinstance(psi, NaryOpSTL):
         for j, _ in enumerate(psi.args):
             yield focus.args[j]

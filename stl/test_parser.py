@@ -27,8 +27,13 @@ ex4 = ('(x1 > 2) or ((x1 > 2) or (x1 > 2))',
 ex5 = ('G[0, b?](x1 > a?)',
        stl.G(i1_, ex1_[1]))
 ex6 = ('◇[0,1](x1)', stl.F(i1, ex1__[1]))
+ex7 = ('F[0, inf](x)', stl.parse("F(x)"))
  
 class TestSTLParser(unittest.TestCase):
-    @params(ex1, ex2, ex3, ex4, ex5, ex6)
+    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7)
     def test_stl(self, phi_str, phi):
         self.assertEqual(stl.parse(phi_str), phi)
+
+    def test_smoke_test(self):
+        """Previously broken parses"""
+        stl.parse("◇[0,inf]((1*Lane_ID(t) = 1.0) ∧ (◇[0.0,eps?]((◇[eps?,tau1?](¬(1*Lane_ID(t) = 1.0))) ∧ (□[0,tau1?]((1*Lane_ID(t) = 1.0) U (¬(1*Lane_ID(t) = 1.0)))))))")
