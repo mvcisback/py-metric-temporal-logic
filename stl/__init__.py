@@ -7,4 +7,3 @@ from stl.parser import parse
 from stl.fastboolean_eval import pointwise_sat
 from stl.synth import lex_param_project
 from stl.types import STL
-from stl.robustness import pointwise_robustness
