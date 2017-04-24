@@ -4,7 +4,6 @@
 from functools import singledispatch
 import operator as op
 
-import numpy as np
 import funcy as fn
 from lenses import lens
 

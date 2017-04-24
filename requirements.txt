@@ -2,7 +2,6 @@ bitarray==0.8.1
 funcy==1.7.2
 lenses==0.1.7
 nose2==0.6.5
-numpy==1.11.3
 pandas==0.19.2
 parsimonious==0.7.0
 sympy==1.0
