@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='py-stl',
-      version='0.11',
+      version='0.2',
       description='TODO',
       url='http://github.com/mvcisback/py-stl',
       author='Marcell Vazquez-Chanlatte',
@@ -13,9 +13,10 @@ setup(name='py-stl',
           'lenses',
           'sympy',
           'bitarray',
+          'traces'
       ],
       extras_require = {
-          'robustness': ['numpy', 'pandas']
+          'robustness': ['pandas']
       },
       packages=find_packages(),
 )
