@@ -19,14 +19,17 @@ ex8 = ("G[0, 0.2](C)", False)
 ex9 = ("(F[0, 0.2](C)) and (F[0, 1](2*A > 3))", True)
 ex10 = ("(A = 1) U (A = 4)", True)
 ex11 = ("(A < 5) U (A = 4)", False)
+ex12 = ("(D > 10) U (D > 10)", False)
+ex13 = ("(D = 2) U[1, 20] (D = 3)", True)
 x = {
     "A": traces.TimeSeries([(0, 1), (0.1, 1), (0.2, 4)]),
     "B": traces.TimeSeries([(0, 2), (0.1, 4), (0.2, 2)]),
     "C": traces.TimeSeries([(0, True), (0.1, True), (0.2, False)]),
+    'D': traces.TimeSeries({0.0: 2, 13.8: 3, 19.7: 2}),
 }
 
 class TestSTLEval(unittest.TestCase):
-    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11)
+    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11, ex12, ex13)
     def test_eval(self, phi_str, r):
         phi = stl.parse(phi_str)
         stl_eval = stl.boolean_eval.pointwise_sat(phi)
@@ -35,7 +38,7 @@ class TestSTLEval(unittest.TestCase):
         self.assertEqual(stl_eval2(x, 0), not r)
 
 
-    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11)
+    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11, ex12, ex13)
     def test_fasteval(self, phi_str, _):
         phi = stl.parse(phi_str)
         stl_eval = stl.boolean_eval.pointwise_sat(phi)

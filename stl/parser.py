@@ -126,7 +126,7 @@ class STLVisitor(NodeVisitor):
 
     def visit_timed_until(self, _, children):
         phi, _, _, (lo, hi), _, psi = children
-        return env(psi, lo=lo, hi=hi) & alw(ast.Until(phi, psi), lo=0, hi=hi)
+        return env(psi, lo=lo, hi=hi) & alw(ast.Until(phi, psi), lo=0, hi=lo)
 
     def visit_id(self, name, _):
         return Symbol(name.text)

@@ -38,10 +38,11 @@ def _(stl):
 
 
 def get_times(x, tau, lo=None, hi=None):
+    domain = fn.first(x.values()).domain
     if lo is None or lo is -oo:
-        lo = min(v.first()[0] for v in x.values())
+        lo = domain.start()
     if hi is None or hi is oo:
-        hi = max(v.last()[0] for v in x.values())
+        hi = domain.end()
     end = min(v.domain.end() for v in x.values())
     hi = hi + tau if hi + tau <= end else end
     lo = lo + tau if lo + tau <= end else end
@@ -72,9 +73,9 @@ def eval_unary_temporal_op(phi, always=True):
     if lo > hi:
         retval = True if always else False
         return lambda x, t: retval
+    f = eval_stl(phi.arg) 
     if hi == lo:
         return lambda x, t: f(x, t)
-    f = eval_stl(phi.arg) 
     return lambda x, t: fold(f(x, tau) for tau in get_times(x, t, lo, hi))
 
 

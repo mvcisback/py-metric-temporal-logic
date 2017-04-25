@@ -49,6 +49,7 @@ def _(stl):
         for phi, tau in zip(reversed(f1(x, times)), reversed(times)):
             if not phi:
                 state = f2(x, [tau])
+                
             if tau in t:
                 yield state
 
