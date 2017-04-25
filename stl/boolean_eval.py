@@ -42,10 +42,7 @@ def get_times(x, tau, lo=None, hi=None):
         lo = min(v.first()[0] for v in x.values())
     if hi is None or hi is oo:
         hi = max(v.last()[0] for v in x.values())
-    try:
-        end = min(v.domain.end() for v in x.values())
-    except:
-        import pdb; pdb.set_trace()
+    end = min(v.domain.end() for v in x.values())
     hi = hi + tau if hi + tau <= end else end
     lo = lo + tau if lo + tau <= end else end
 
