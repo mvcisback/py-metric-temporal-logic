@@ -6,6 +6,7 @@ from functools import reduce
 from lenses import lens, Lens
 import funcy as fn
 import sympy
+import traces
 
 import stl.ast
 from stl.ast import (LinEq, And, Or, NaryOpSTL, F, G, Interval, Neg,
@@ -137,6 +138,43 @@ def inline_context(phi, context):
         phi2, phi = phi, AP_lens(phi).modify(update)
     # TODO: this is hack to flatten the AST. Fix!
     return stl.parse(str(phi))
+
+op_lookup = {
+    ">": op.gt,
+    ">=": op.ge,
+    "<": op.lt,
+    "<=": op.le,
+    "=": op.eq,
+}
+
+def get_times(x):
+    times = set.union(*({t for t, _ in v.items()} for v in x.values()))
+    return sorted(times)
+
+
+def eval_lineq(lineq, x, times=None, compact=True):
+    if times is None:
+        times = get_times(x)
+
+    def eval_term(term, t):
+        return float(term.coeff)*x[term.id.name][t]
+
+    output = traces.TimeSeries(domain=traces.Domain(times[0], times[-1]))
+    terms = lens(lineq).terms.each_().get_all()
+    for t in times:
+        lhs = sum(eval_term(term, t) for term in terms)
+        output[t] = op_lookup[lineq.op](lhs, lineq.const)
+        
+    if compact:
+        output.compact()
+    return output
+
+def eval_lineqs(phi, x, times=None):
+    if times is None:
+        times = get_times(x)
+    lineqs = set(lineq_lens(phi).get_all())
+    return {lineq: eval_lineq(lineq, x, times=times) for lineq in lineqs}
+
 
 # EDSL
 
