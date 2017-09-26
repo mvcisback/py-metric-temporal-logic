@@ -86,7 +86,7 @@ def param_lens(phi:STL) -> Lens:
 
 def set_params(stl_or_lens, val) -> STL:
     l = stl_or_lens if isinstance(stl_or_lens, Lens) else param_lens(stl_or_lens)
-    return l.modify(lambda x: val.get(x, val.get(str(x), x)))
+    return l.modify(lambda x: float(val.get(x, val.get(str(x), x))))
 
 
 def f_neg_or_canonical_form(phi:STL) -> STL:

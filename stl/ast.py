@@ -27,6 +27,8 @@ def flatten_binary(phi, op, dropT, shortT):
         
 
 class AST(object):
+    __slots__ = ()
+
     def __or__(self, other):
         return flatten_binary(Or((self, other)), Or, BOT, TOP)
 
@@ -41,6 +43,8 @@ class AST(object):
 
 
 class _Top(AST):
+    __slots__ = ()
+    
     def __repr__(self):
         return "⊤"
 
@@ -49,6 +53,8 @@ class _Top(AST):
 
 
 class _Bot(AST):
+    __slots__ = ()
+
     def __repr__(self):
         return "⊥"
 
@@ -60,7 +66,12 @@ BOT = _Bot()
 
 
 class AtomicPred(namedtuple("AP", ["id", "time"]), AST):
+    __slots__ = ()
+
     def __repr__(self):
+        # TODO: fix this hack...
+        if str(self.time) in ("t + dt", "dt + t"):
+            return f"{self.id}'"
         return f"{self.id}({self.time})"
 
     def children(self):
@@ -68,6 +79,8 @@ class AtomicPred(namedtuple("AP", ["id", "time"]), AST):
 
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
+    __slots__ = ()
+
     def __repr__(self):
         return " + ".join(map(str, self.terms)) + f" {self.op} {self.const}"
 
@@ -80,11 +93,18 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
 
 
 class Var(namedtuple("Var", ["coeff", "id", "time"])):
+    __slots__ = ()
+
     def __repr__(self):
+        # TODO: fix this hack...
+        if str(self.time) in ("t + dt", "dt + t"):
+            return f"{self.coeff}*{self.id}'"
         return f"{self.coeff}*{self.id}({self.time})"
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):
+    __slots__ = ()
+
     def __repr__(self):
         return f"[{self.lower},{self.upper}]"
 
@@ -93,6 +113,8 @@ class Interval(namedtuple('I', ['lower', 'upper'])):
 
 
 class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
+    __slots__ = ()
+
     OP = "?"
     def __repr__(self):
         return f" {self.OP} ".join(f"({x})" for x in self.args)
@@ -102,13 +124,16 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
 
 
 class Or(NaryOpSTL):
-    OP = "∨"
+    __slots__ = ()
 
+    OP = "∨"
     def __hash__(self):
         # TODO: compute hash based on contents
         return hash(repr(self))
 
 class And(NaryOpSTL):
+    __slots__ = ()
+
     OP = "∧"
 
     def __hash__(self):
@@ -117,6 +142,8 @@ class And(NaryOpSTL):
 
 
 class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
+    __slots__ = ()
+
     def __repr__(self):
         return f"{self.OP}{self.interval}({self.arg})"
     
@@ -125,6 +152,7 @@ class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
 
 
 class F(ModalOp):
+    __slots__ = ()
     OP = "◇"
 
     def __hash__(self):
@@ -132,6 +160,7 @@ class F(ModalOp):
         return hash(repr(self))
 
 class G(ModalOp):
+    __slots__ = ()
     OP = "□"
 
     def __hash__(self):
@@ -140,6 +169,8 @@ class G(ModalOp):
 
 
 class Until(namedtuple('ModalOp', ['arg1', 'arg2']), AST):
+    __slots__ = ()
+
     def __repr__(self):
         return f"({self.arg1}) U ({self.arg2})"
     
@@ -152,6 +183,8 @@ class Until(namedtuple('ModalOp', ['arg1', 'arg2']), AST):
 
 
 class Neg(namedtuple('Neg', ['arg']), AST):
+    __slots__ = ()
+
     def __repr__(self):
         return f"¬({self.arg})"
 

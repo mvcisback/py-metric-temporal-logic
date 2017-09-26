@@ -1,5 +1,4 @@
 import stl
-from nose2.tools import params
 import unittest
 
 class TestSTLAST(unittest.TestCase):

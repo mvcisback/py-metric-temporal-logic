@@ -26,9 +26,9 @@ def eval_stl(stl):
 
 
 @eval_stl.register(stl.Or)
-def _(stl):
-    fs = [eval_stl(arg) for arg in stl.args]
-    return lambda x, t: any(f(x, t) for f in fs)
+def _(phi):
+    fs = [eval_stl(arg) for arg in phi.args]
+    return lambda x, t: any(f(x,t) for f in fs)
 
 
 @eval_stl.register(stl.And)
@@ -107,6 +107,16 @@ op_lookup = {
 @eval_stl.register(stl.AtomicPred)
 def _(stl):
     return lambda x, t: x[str(stl.id)][t]
+
+
+@eval_stl.register(type(stl.TOP))
+def _(_):
+    return lambda *_: True
+
+
+@eval_stl.register(type(stl.BOT))
+def _(_):
+    return lambda *_: False
 
 
 @eval_stl.register(stl.LinEq)

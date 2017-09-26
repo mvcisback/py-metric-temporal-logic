@@ -82,6 +82,15 @@ def _(stl):
 def _(stl):
     return lambda x, t: bitarray(x[str(stl.id)][tau] for tau in t)
 
+@pointwise_satf.register(type(stl.TOP))
+def _(_):
+    return lambda _, t: bitarray([True]*len(t))
+
+
+@pointwise_satf.register(type(stl.BOT))
+def _(_):
+    return lambda _, t: bitarray([False]*len(t))
+
 
 @pointwise_satf.register(stl.LinEq)
 def _(stl):

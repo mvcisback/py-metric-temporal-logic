@@ -12,7 +12,7 @@ ex4 = ("F[b?, 1]G[0, c?](x > a?)", "F[2, 1]G[0, 3](x > 1)")
 ex5 = ("G[0, c?](x > a?)", "G[0, 3](x > 1)")
 
 val = {"a?": 1.0, "b?": 2.0, "c?": 3.0}
-
+"""
 class TestSTLUtils(unittest.TestCase):
     @params(ex1, ex2, ex3)
     def test_param_lens(self, phi_str, params):
@@ -92,3 +92,4 @@ class TestSTLUtils(unittest.TestCase):
 
 #    def test_canonical_polarity(self):
 #        raise NotImplementedError
+"""

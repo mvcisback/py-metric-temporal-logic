@@ -1,26 +1,30 @@
 import stl
 import stl.boolean_eval
+import stl.boolean_eval2
 import stl.fastboolean_eval
 import traces
-from nose2.tools import params
 import unittest
 from sympy import Symbol
 
-ex1 = ("2*A > 3", False)
-ex2 = ("F[0, 1](2*A > 3)", True)
-ex2 = ("F(2*A > 3)", True)
-ex2 = ("F[0, inf](2*A > 3)", True)
-ex3 = ("F[1, 0](2*A > 3)", False)
-ex4 = ("G[1, 0](2*A > 3)", True)
-ex5 = ("(A < 0)", False)
-ex6 = ("G[0, 0.1](A < 0)", False)
-ex7 = ("G[0, 0.1](C)", True)
-ex8 = ("G[0, 0.2](C)", False)
-ex9 = ("(F[0, 0.2](C)) and (F[0, 1](2*A > 3))", True)
-ex10 = ("(A = 1) U (A = 4)", True)
-ex11 = ("(A < 5) U (A = 4)", False)
-ex12 = ("(D > 10) U (D > 10)", False)
-ex13 = ("(D = 2) U[1, 20] (D = 3)", True)
+import hypothesis.strategies as st
+from hypothesis import given, note, assume, example
+
+
+"""
+TODO: property based test that fasteval should be the same as slow
+TODO: property based test that x |= phi == ~(x |= ~phi)
+TODO: property based test that ~~phi == phi
+TODO: property based test that ~~~phi == ~phi
+TODO: property based test that ~phi => phi
+TODO: property based test that phi => phi
+TODO: property based test that phi <=> phi
+TODO: property based test that phi & psi => phi
+TODO: property based test that psi => phi | psi
+TODO: property based test that (True U psi) => F(psi)
+TODO: property based test that G(psi) = ~F(~psi)
+TODO: Automatically generate input time series.
+"""
+
 x = {
     "A": traces.TimeSeries([(0, 1), (0.1, 1), (0.2, 4)]),
     "B": traces.TimeSeries([(0, 2), (0.1, 4), (0.2, 2)]),
@@ -28,17 +32,43 @@ x = {
     'D': traces.TimeSeries({0.0: 2, 13.8: 3, 19.7: 2}),
 }
 
-class TestSTLEval(unittest.TestCase):
-    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11, ex12, ex13)
+
+@given(st.just(stl.BOT))
+def test_boolean_identities(phi):
+    stl_eval = stl.boolean_eval.pointwise_sat(phi)
+    stl_eval2 = stl.boolean_eval.pointwise_sat(~phi)
+    assert stl_eval2(x, 0) == (not stl_eval(x, 0))
+    stl_eval3 = stl.boolean_eval.pointwise_sat(~~phi)
+    assert stl_eval3(x, 0) == stl_eval(x, 0)
+    stl_eval4 = stl.boolean_eval.pointwise_sat(phi & phi)
+    assert stl_eval4(x, 0) == stl_eval(x, 0)
+    stl_eval5 = stl.boolean_eval.pointwise_sat(phi & ~phi)
+    assert not stl_eval5(x, 0)
+    stl_eval6 = stl.boolean_eval.pointwise_sat(phi | ~phi)
+    assert stl_eval6(x, 0)
+
+
+@given(st.just(stl.BOT))
+def test_temporal_identities(phi):
+    stl_eval = stl.fastboolean_eval.pointwise_sat(stl.alw(phi, lo=0, hi=4))
+    stl_eval2 = stl.fastboolean_eval.pointwise_sat(~stl.env(~phi, lo=0, hi=4))
+    assert stl_eval2(x, 0) == stl_eval(x, 0)
+
+    stl_eval3 = stl.fastboolean_eval.pointwise_sat(~stl.alw(~phi, lo=0, hi=4))
+    stl_eval4 = stl.fastboolean_eval.pointwise_sat(stl.env(phi, lo=0, hi=4))
+    assert stl_eval4(x, 0) == stl_eval3(x, 0)
+
+"""
     def test_eval(self, phi_str, r):
         phi = stl.parse(phi_str)
-        stl_eval = stl.boolean_eval.pointwise_sat(phi)
-        stl_eval2 = stl.boolean_eval.pointwise_sat(~phi)
-        self.assertEqual(stl_eval(x, 0), r)
-        self.assertEqual(stl_eval2(x, 0), not r)
+        stl_eval = stl.boolean_eval2.pointwise_sat(phi)
+        stl_eval2 = stl.boolean_eval2.pointwise_sat(~phi)
+        self.assertEqual(stl_eval(x, 0)[0], r)
+        self.assertEqual(stl_eval2(x, 0)[0], not r)
 
 
-    @params(ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11, ex12, ex13)
+
+    @params(*examples)
     def test_fasteval(self, phi_str, _):
         phi = stl.parse(phi_str)
         stl_eval = stl.boolean_eval.pointwise_sat(phi)
@@ -51,3 +81,4 @@ class TestSTLEval(unittest.TestCase):
         self.assertEqual(b_slow, b_fast)
         self.assertEqual(b_fast, not b_fast2)
 
+"""

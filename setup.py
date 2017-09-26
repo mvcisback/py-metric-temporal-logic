@@ -15,8 +15,5 @@ setup(name='py-stl',
           'bitarray',
           'traces'
       ],
-      extras_require = {
-          'robustness': ['pandas']
-      },
       packages=find_packages(),
 )
