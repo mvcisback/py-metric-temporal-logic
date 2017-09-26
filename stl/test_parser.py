@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import stl
-from nose2.tools import params
 import unittest
 from sympy import Symbol
 

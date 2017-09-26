@@ -1,7 +1,6 @@
 import stl
 import stl.utils
 import pandas as pd
-from nose2.tools import params
 import unittest
 from sympy import Symbol
 

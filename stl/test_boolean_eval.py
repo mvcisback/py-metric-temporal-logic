@@ -1,6 +1,5 @@
 import stl
 import stl.boolean_eval
-import stl.boolean_eval2
 import stl.fastboolean_eval
 import traces
 import unittest
