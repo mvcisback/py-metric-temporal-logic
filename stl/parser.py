@@ -132,19 +132,8 @@ class STLVisitor(NodeVisitor):
     def visit_id(self, name, _):
         return Symbol(name.text)
 
-
-    def visit_time_index(self, _, children):
-        children = list(flatten(children))
-        return children[0] if children else ast.t_sym
-
-    def visit_prime(self, *_):
-        return ast.t_sym + ast.dt_sym
-
     def visit_const(self, const, children):
         return float(const.text)
-
-    def visit_dt(self, *_):
-        return ast.dt_sym
 
     def visit_term(self, _, children):
         coeffs, (iden, time) = children
