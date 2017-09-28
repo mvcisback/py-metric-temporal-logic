@@ -13,7 +13,7 @@ setup(name='py-stl',
           'lenses',
           'sympy',
           'bitarray',
-          'traces'
+          'traces',
       ],
       packages=find_packages(),
 )
