@@ -21,7 +21,8 @@ from stl import ast
 from stl.utils import implies, xor, iff, env, alw
 
 STL_GRAMMAR = Grammar(u'''
-phi = (timed_until / until / neg / next / g / f / lineq / AP / or / and / implies / xor / iff / paren_phi)
+phi = (timed_until / until / neg / next / g / f / lineq / AP / or / and
+     / implies / xor / iff / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -31,7 +32,7 @@ implies = paren_phi _ ("→" / "->") _ (and / paren_phi)
 iff = paren_phi _ ("⇔" / "<->" / "iff") _ (and / paren_phi)
 xor = paren_phi _ ("⊕" / "^" / "xor") _ (and / paren_phi)
 
-neg = ("~" / "¬") phi
+neg = ("~" / "¬") paren_phi
 next = "X" paren_phi
 f = F interval? phi
 g = G interval? phi
@@ -51,12 +52,8 @@ term =  coeff? var
 coeff = ((dt __ "*" __)? const __ "*" __) / (dt __ "*")
 terms = (term __ pm __ terms) / term
 
-var = id time?
-time = prime / time_index
-time_index = "(" ("t" / const) ")"
-prime = "'"
-
-AP = id time?
+var = id
+AP = ~r"[a-zA-z\d]+"
 
 pm = "+" / "-"
 dt = "dt"
@@ -135,13 +132,6 @@ class STLVisitor(NodeVisitor):
     def visit_id(self, name, _):
         return Symbol(name.text)
 
-    def visit_var(self, _, children):
-        iden, time_node = children
-
-        time_node = list(flatten(time_node))
-        time = time_node[0] if len(time_node) > 0 else ast.t_sym
-            
-        return iden, time
 
     def visit_time_index(self, _, children):
         children = list(flatten(children))
@@ -185,7 +175,7 @@ class STLVisitor(NodeVisitor):
         return Number(1) if node.text == "+" else Number(-1)
 
     def visit_AP(self, *args):
-        return ast.AtomicPred(*self.visit_var(*args))
+        return ast.AtomicPred(self.visit_id(*args))
 
     def visit_neg(self, _, children):
         return ast.Neg(children[1])

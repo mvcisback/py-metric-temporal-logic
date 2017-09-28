@@ -65,14 +65,11 @@ TOP = _Top()
 BOT = _Bot()
 
 
-class AtomicPred(namedtuple("AP", ["id", "time"]), AST):
+class AtomicPred(namedtuple("AP", ["id"]), AST):
     __slots__ = ()
 
     def __repr__(self):
-        # TODO: fix this hack...
-        if str(self.time) in ("t + dt", "dt + t"):
-            return f"{self.id}'"
-        return f"{self.id}({self.time})"
+        return f"{self.id}"
 
     def children(self):
         return []
@@ -92,14 +89,11 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
         return hash(repr(self))
 
 
-class Var(namedtuple("Var", ["coeff", "id", "time"])):
+class Var(namedtuple("Var", ["coeff", "id"])):
     __slots__ = ()
 
     def __repr__(self):
-        # TODO: fix this hack...
-        if str(self.time) in ("t + dt", "dt + t"):
-            return f"{self.coeff}*{self.id}'"
-        return f"{self.coeff}*{self.id}({self.time})"
+        return f"{self.coeff}*{self.id}"
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):

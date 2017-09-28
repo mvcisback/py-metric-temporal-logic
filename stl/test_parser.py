@@ -12,7 +12,7 @@ GRAMMAR = {
 }
 
 
-@given(ContextFreeGrammarStrategy(GRAMMAR, length=20, start='phi'))
+@given(ContextFreeGrammarStrategy(GRAMMAR, length=15, start='phi'))
 def test_invertable_repr(foo):
     note(''.join(foo))
     phi = stl.parse(''.join(foo))
