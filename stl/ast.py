@@ -194,3 +194,17 @@ class Neg(namedtuple('Neg', ['arg']), AST):
     def __hash__(self):
         # TODO: compute hash based on contents
         return hash(repr(self))
+
+
+class Next(namedtuple('Next', ['arg']), AST):
+    __slots__ = ()
+
+    def __repr__(self):
+        return f"X({self.arg})"
+
+    def children(self):
+        return [self.arg]
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))

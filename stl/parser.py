@@ -21,7 +21,7 @@ from stl import ast
 from stl.utils import implies, xor, iff, env, alw
 
 STL_GRAMMAR = Grammar(u'''
-phi = (timed_until / until / neg / g / f / lineq / AP / or / and / implies / xor / iff / paren_phi)
+phi = (timed_until / until / neg / next / g / f / lineq / AP / or / and / implies / xor / iff / paren_phi)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -32,7 +32,7 @@ iff = paren_phi _ ("⇔" / "<->" / "iff") _ (and / paren_phi)
 xor = paren_phi _ ("⊕" / "^" / "xor") _ (and / paren_phi)
 
 neg = ("~" / "¬") phi
-
+next = "X" paren_phi
 f = F interval? phi
 g = G interval? phi
 until = paren_phi __ U __ paren_phi
@@ -72,7 +72,7 @@ EOL = "\\n"
 class STLVisitor(NodeVisitor):
     def __init__(self, H=float('inf')):
         super().__init__()
-        self.default_interval = ast.Interval(0, H)
+        self.default_interval = ast.Interval(0.0, H)
 
     def generic_visit(self, _, children):
         return children
@@ -87,6 +87,10 @@ class STLVisitor(NodeVisitor):
         _, _, (left,), _, _, _, (right,), _, _ = children
         left = left if left != [] else float("inf")
         right = right if right != [] else float("inf")
+        if isinstance(left, int):
+            left = float(left)
+        if isinstance(right, int):
+            left = float(right)
         return ast.Interval(left, right)
 
     def get_text(self, node, _):
@@ -185,6 +189,9 @@ class STLVisitor(NodeVisitor):
 
     def visit_neg(self, _, children):
         return ast.Neg(children[1])
+
+    def visit_next(self, _, children):
+        return ast.Next(children[1])
 
 
 def parse(stl_str:str, rule:str="phi", H=float('inf')) -> "STL":
