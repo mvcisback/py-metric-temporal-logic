@@ -1,21 +1,13 @@
 # -*- coding: utf-8 -*-
 import stl
-from hypothesis import given, note
-from hypothesis_cfg import ContextFreeGrammarStrategy
+from hypothesis import given, event
 
-GRAMMAR = {
-    'phi': (('Unary', '(', 'phi', ')'),
-            ('(', 'phi', ')',  'Binary', '(', 'phi', ')'),
-            ('AP',)),
-    'Unary': (('~',), ('G',), ('F',), ('X',)),
-    'Binary': ((' | ',), (' & ',), (' U ',)),
-}
+from stl.hypothesis import SignalTemporalLogicStategy
 
 
-@given(ContextFreeGrammarStrategy(GRAMMAR, length=15, start='phi'))
-def test_invertable_repr(foo):
-    note(''.join(foo))
-    phi = stl.parse(''.join(foo))
+@given(SignalTemporalLogicStategy(max_length=25))
+def test_invertable_repr(phi):
+    event(str(phi))
     assert str(phi) == str(stl.parse(str(phi)))
 
 
