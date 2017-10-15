@@ -11,6 +11,7 @@ from sympy import Symbol
 dt_sym = Symbol('dt', positive=True)
 t_sym = Symbol('t', positive=True)
 
+
 def flatten_binary(phi, op, dropT, shortT):
     f = lambda x: x.args if isinstance(x, op) else [x]
     args = [arg for arg in phi.args if arg is not dropT]
@@ -23,7 +24,7 @@ def flatten_binary(phi, op, dropT, shortT):
         return args[0]
     else:
         return op(tuple(fn.mapcat(f, phi.args)))
-        
+
 
 class AST(object):
     __slots__ = ()
@@ -44,7 +45,7 @@ class AST(object):
 
 class _Top(AST):
     __slots__ = ()
-    
+
     def __repr__(self):
         return "⊤"
 
@@ -61,6 +62,7 @@ class _Bot(AST):
     def __invert__(self):
         return TOP
 
+
 TOP = _Top()
 BOT = _Bot()
 
@@ -70,7 +72,7 @@ class AtomicPred(namedtuple("AP", ["id"]), AST):
 
     def __repr__(self):
         return f"{self.id}"
-    
+
     @property
     def children(self):
         return set()
@@ -81,7 +83,7 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
 
     def __repr__(self):
         return " + ".join(map(str, self.terms)) + f" {self.op} {self.const}"
-    
+
     @property
     def children(self):
         return set()
@@ -103,7 +105,7 @@ class Interval(namedtuple('I', ['lower', 'upper'])):
 
     def __repr__(self):
         return f"[{self.lower},{self.upper}]"
-    
+
     @property
     def children(self):
         return {self.lower, self.upper}
@@ -113,9 +115,10 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
     __slots__ = ()
 
     OP = "?"
+
     def __repr__(self):
         return f" {self.OP} ".join(f"({x})" for x in self.args)
-    
+
     @property
     def children(self):
         return set(self.args)
@@ -125,9 +128,11 @@ class Or(NaryOpSTL):
     __slots__ = ()
 
     OP = "∨"
+
     def __hash__(self):
         # TODO: compute hash based on contents
         return hash(repr(self))
+
 
 class And(NaryOpSTL):
     __slots__ = ()
@@ -144,7 +149,7 @@ class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
 
     def __repr__(self):
         return f"{self.OP}{self.interval}({self.arg})"
-    
+
     @property
     def children(self):
         return {self.arg}
@@ -157,6 +162,7 @@ class F(ModalOp):
     def __hash__(self):
         # TODO: compute hash based on contents
         return hash(repr(self))
+
 
 class G(ModalOp):
     __slots__ = ()
@@ -172,7 +178,7 @@ class Until(namedtuple('ModalOp', ['arg1', 'arg2']), AST):
 
     def __repr__(self):
         return f"({self.arg1}) U ({self.arg2})"
-    
+
     @property
     def children(self):
         return {self.arg1, self.arg2}
@@ -187,7 +193,7 @@ class Neg(namedtuple('Neg', ['arg']), AST):
 
     def __repr__(self):
         return f"¬({self.arg})"
-    
+
     @property
     def children(self):
         return {self.arg}
@@ -202,7 +208,7 @@ class Next(namedtuple('Next', ['arg']), AST):
 
     def __repr__(self):
         return f"X({self.arg})"
-    
+
     @property
     def children(self):
         return {self.arg}

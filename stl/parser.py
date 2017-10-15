@@ -62,7 +62,8 @@ _ = ~r"\s"+
 __ = ~r"\s"*
 EOL = "\\n"
 ''')
-    
+
+
 class STLVisitor(NodeVisitor):
     def __init__(self, H=float('inf')):
         super().__init__()
@@ -78,7 +79,7 @@ class STLVisitor(NodeVisitor):
     visit_paren_phi = partialmethod(children_getter, i=2)
 
     def visit_interval(self, _, children):
-        _, _, (left,), _, _, _, (right,), _, _ = children
+        _, _, (left, ), _, _, _, (right, ), _, _ = children
         left = left if left != [] else float("inf")
         right = right if right != [] else float("inf")
         if isinstance(left, int):
@@ -92,7 +93,7 @@ class STLVisitor(NodeVisitor):
 
     def visit_unbound(self, node, _):
         return Symbol(node.text)
-        
+
     visit_op = get_text
 
     def unary_temp_op_visitor(self, _, children, op):
@@ -101,13 +102,13 @@ class STLVisitor(NodeVisitor):
         return op(i, phi)
 
     def binop_visitor(self, _, children, op):
-        phi1, _, _, _, (phi2,) = children
+        phi1, _, _, _, (phi2, ) = children
         argL = list(phi1.args) if isinstance(phi1, op) else [phi1]
         argR = list(phi2.args) if isinstance(phi2, op) else [phi2]
         return op(tuple(argL + argR))
 
     def sugar_binop_visitor(self, _, children, op):
-        phi1, _, _, _, (phi2,) = children
+        phi1, _, _, _, (phi2, ) = children
         return op(phi1, phi2)
 
     visit_f = partialmethod(unary_temp_op_visitor, op=ast.F)
@@ -136,7 +137,7 @@ class STLVisitor(NodeVisitor):
         coeffs, (iden, time) = children
         c = coeffs[0] if coeffs else Number(1)
         return ast.Var(coeff=c, id=iden, time=time)
-    
+
     def visit_coeff(self, _, children):
         dt, coeff, *_ = children[0]
         if not isinstance(dt, Symbol):
@@ -147,7 +148,7 @@ class STLVisitor(NodeVisitor):
 
     def visit_terms(self, _, children):
         if isinstance(children[0], list):
-            term, _1, sgn ,_2, terms = children[0]
+            term, _1, sgn, _2, terms = children[0]
             terms = lens(terms)[0].coeff * sgn
             return [term] + terms
         else:
@@ -170,5 +171,5 @@ class STLVisitor(NodeVisitor):
         return ast.Next(children[1])
 
 
-def parse(stl_str:str, rule:str="phi", H=float('inf')) -> "STL":
+def parse(stl_str: str, rule: str = "phi", H=float('inf')) -> "STL":
     return STLVisitor(H).visit(STL_GRAMMAR[rule].parse(stl_str))
