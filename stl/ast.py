@@ -146,7 +146,8 @@ class And(NaryOpSTL):
 
 class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
     __slots__ = ()
-
+    OP = '?'
+    
     def __repr__(self):
         return f"{self.OP}{self.interval}({self.arg})"
 

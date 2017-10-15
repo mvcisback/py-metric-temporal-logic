@@ -21,7 +21,7 @@ def build_lineq(params):
 
 
 LinEqStrategy = st.builds(
-    lambda x: stl.ast.Lineq(*x),
+    lambda x: stl.ast.LinEq(*x),
     st.tuples(
         st.lists(
             st.tuples(
@@ -35,7 +35,7 @@ LinEqStrategy = st.builds(
 
 class SignalTemporalLogicStategy(SearchStrategy):
     def __init__(self, max_length: int):
-        super(SearchStrategy, self).__init__()
+        super().__init__()
         self.cfg_gen = ContextFreeGrammarStrategy(
             GRAMMAR, max_length=max_length, start='phi')
         self.ap_gen = st.builds(

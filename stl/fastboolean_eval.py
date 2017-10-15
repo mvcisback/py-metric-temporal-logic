@@ -79,8 +79,8 @@ def _(stl):
 
 
 @pointwise_satf.register(stl.AtomicPred)
-def _(stl):
-    return lambda x, t: bitarray(x[str(stl.id)][tau] for tau in t)
+def _(phi):
+    return lambda x, t: bitarray(x[str(phi.id)][tau] for tau in t)
 
 @pointwise_satf.register(type(stl.TOP))
 def _(_):
