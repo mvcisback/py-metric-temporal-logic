@@ -1,7 +1,7 @@
 -e git://github.com/mvcisback/hypothesis-cfg@master#egg=hypothesis-cfg
 bitarray==0.8.1
-funcy==1.7.2
-lenses==0.1.7
+funcy==1.9.1
+lenses==0.3.0
 pandas==0.19.2
 parsimonious==0.7.0
 sympy==1.0

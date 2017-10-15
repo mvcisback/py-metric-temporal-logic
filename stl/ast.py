@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# TODO: create iso lens between sugar and non-sugar
 # TODO: supress + given a + (-b). i.e. want a - b
 
 from collections import namedtuple, deque
@@ -38,8 +37,9 @@ class AST(object):
     def __invert__(self):
         return Neg(self)
 
+    @property
     def children(self):
-        return []
+        return set()
 
 
 class _Top(AST):
@@ -70,9 +70,10 @@ class AtomicPred(namedtuple("AP", ["id"]), AST):
 
     def __repr__(self):
         return f"{self.id}"
-
+    
+    @property
     def children(self):
-        return []
+        return set()
 
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
@@ -80,9 +81,10 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
 
     def __repr__(self):
         return " + ".join(map(str, self.terms)) + f" {self.op} {self.const}"
-
+    
+    @property
     def children(self):
-        return []
+        return set()
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -101,9 +103,10 @@ class Interval(namedtuple('I', ['lower', 'upper'])):
 
     def __repr__(self):
         return f"[{self.lower},{self.upper}]"
-
+    
+    @property
     def children(self):
-        return [self.lower, self.upper]
+        return {self.lower, self.upper}
 
 
 class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
@@ -112,9 +115,10 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
     OP = "?"
     def __repr__(self):
         return f" {self.OP} ".join(f"({x})" for x in self.args)
-
+    
+    @property
     def children(self):
-        return self.args
+        return set(self.args)
 
 
 class Or(NaryOpSTL):
@@ -141,8 +145,9 @@ class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
     def __repr__(self):
         return f"{self.OP}{self.interval}({self.arg})"
     
+    @property
     def children(self):
-        return [self.arg]
+        return {self.arg}
 
 
 class F(ModalOp):
@@ -168,8 +173,9 @@ class Until(namedtuple('ModalOp', ['arg1', 'arg2']), AST):
     def __repr__(self):
         return f"({self.arg1}) U ({self.arg2})"
     
+    @property
     def children(self):
-        return [self.arg1, self.arg2]
+        return {self.arg1, self.arg2}
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -181,9 +187,10 @@ class Neg(namedtuple('Neg', ['arg']), AST):
 
     def __repr__(self):
         return f"¬({self.arg})"
-
+    
+    @property
     def children(self):
-        return [self.arg]
+        return {self.arg}
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -195,9 +202,10 @@ class Next(namedtuple('Next', ['arg']), AST):
 
     def __repr__(self):
         return f"X({self.arg})"
-
+    
+    @property
     def children(self):
-        return [self.arg]
+        return {self.arg}
 
     def __hash__(self):
         # TODO: compute hash based on contents
