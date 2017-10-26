@@ -19,8 +19,8 @@ compute_polarity = lambda stleval, lo, hi: np.array([compute_var_polarity(
                                             for i in range(len(hi))])
 
 # Project from unit cube
-project_ub = lambda lo, hi, elem: (np.array(hi) - np.array(lo))*np.array(
-    elem) + np.array(lo)
+project_ub = lambda lo, hi, theta: (np.array(hi) - np.array(lo))*np.array(
+    theta) + np.array(lo)
 
 # Update the lo, hi based on polarity
 def update_lo_hi(stleval, lo, hi):
@@ -34,8 +34,8 @@ def update_lo_hi(stleval, lo, hi):
 def thres_func(stleval, lo, hi):
     updated_hi, updated_lo, var_pol = thres_func(stleval, lo, hi)
     # elem is the sample point
-    def g(stleval, elem):
-        updated_elem = elem*(var_pol) + elem(~var_pol)*-1
+    def g(stleval, theta):
+        updated_elem = theta*(var_pol) + theta*(~var_pol)*-1
         proj_elem = project_ub(updated_lo, updated_hi, updated_elem)
         return stleval(proj_elem)
     return g
