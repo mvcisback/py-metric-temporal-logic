@@ -97,7 +97,13 @@ class Var(namedtuple("Var", ["coeff", "id"])):
     __slots__ = ()
 
     def __repr__(self):
-        return f"{self.coeff}*{self.id}"
+        if self.coeff == -1:
+            coeff_str = "-"
+        elif self.coeff == +1:
+            coeff_str = ""
+        else:
+            coeff_str = f"{self.coeff}*"
+        return f"{coeff_str}{self.id}"
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):
@@ -213,6 +219,18 @@ class Next(namedtuple('Next', ['arg']), AST):
     @property
     def children(self):
         return {self.arg}
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
+
+
+class Param(namedtuple('Param', ['name']), AST):
+    __slots__ = ()
+
+    def __repr__(self):
+        return self.name
+
 
     def __hash__(self):
         # TODO: compute hash based on contents
