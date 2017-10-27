@@ -37,13 +37,15 @@ def type_pred(*args: List[Type]) -> Mapping[Type, bool]:
     return lambda x: type(x) in ast_types
 
 
-def ast_lens(phi: STL, bind=True, *, pred=None, focus_lens=None) -> Lens:
+def ast_lens(phi: STL, bind=True, *, pred=None, focus_lens=None, 
+             getter=False) -> Lens:
     if focus_lens is None:
         focus_lens = lambda _: [lens]
     if pred is None:
         pred = lambda _: False
     l = lenses.bind(phi) if bind else lens
-    return l.Fork(*_ast_lens(phi, pred=pred, focus_lens=focus_lens))
+    child_lenses = _ast_lens(phi, pred=pred, focus_lens=focus_lens)
+    return (l.Tuple if getter else l.Fork)(*child_lenses)
 
 
 def _ast_lens(phi: STL, pred, focus_lens) -> Lens:
@@ -67,9 +69,9 @@ def _ast_lens(phi: STL, pred, focus_lens) -> Lens:
         yield from [l & cl for cl in _ast_lens(l.get()(phi), pred, focus_lens)]
 
 
-lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq))
-AP_lens = fn.partial(ast_lens, pred=type_pred(stl.ast.AtomicPred))
-and_or_lens = fn.partial(ast_lens, pred=type_pred(And, Or))
+lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq), getter=True)
+AP_lens = fn.partial(ast_lens, pred=type_pred(stl.ast.AtomicPred), getter=True)
+and_or_lens = fn.partial(ast_lens, pred=type_pred(And, Or), getter=True)
 
 
 def terms_lens(phi: STL, bind: bool = True) -> Lens:
