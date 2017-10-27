@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import stl
-from hypothesis import given, event
+from hypothesis import event, given
 
+import stl
 from stl.hypothesis import SignalTemporalLogicStrategy
 
 

@@ -1,24 +1,28 @@
 # TODO: figure out how to deduplicate this with robustness
 # - Abstract as working on distributive lattice
 
-from functools import singledispatch
 import operator as op
+from functools import singledispatch
 
 import funcy as fn
-from lenses import lens
 
-import stl.ast
 import stl
+import stl.ast
+from lenses import lens
 
 oo = float('inf')
 
+
 def pointwise_sat(phi):
     ap_names = [z.id.name for z in stl.utils.AP_lens(phi).Each().collect()]
+
     def _eval_stl(x, t):
         evaluated = stl.utils.eval_lineqs(phi, x)
         evaluated.update(fn.project(x, ap_names))
         return eval_stl(phi)(evaluated, t)
+
     return _eval_stl
+
 
 @singledispatch
 def eval_stl(stl):
@@ -26,13 +30,13 @@ def eval_stl(stl):
 
 
 @eval_stl.register(stl.Or)
-def _(phi):
+def eval_stl_or(phi):
     fs = [eval_stl(arg) for arg in phi.args]
-    return lambda x, t: any(f(x,t) for f in fs)
+    return lambda x, t: any(f(x, t) for f in fs)
 
 
 @eval_stl.register(stl.And)
-def _(stl):
+def eval_stl_and(stl):
     fs = [eval_stl(arg) for arg in stl.args]
     return lambda x, t: all(f(x, t) for f in fs)
 
@@ -57,13 +61,14 @@ def get_times(x, tau, lo=None, hi=None):
 
 
 @eval_stl.register(stl.Until)
-def _(stl):
+def eval_stl_until(stl):
     def _until(x, t):
         f1, f2 = eval_stl(stl.arg1), eval_stl(stl.arg2)
         for tau in get_times(x, t):
             if not f1(x, tau):
                 return f2(x, tau)
         return False
+
     return _until
 
 
@@ -73,24 +78,24 @@ def eval_unary_temporal_op(phi, always=True):
     if lo > hi:
         retval = True if always else False
         return lambda x, t: retval
-    f = eval_stl(phi.arg) 
+    f = eval_stl(phi.arg)
     if hi == lo:
         return lambda x, t: f(x, t)
     return lambda x, t: fold(f(x, tau) for tau in get_times(x, t, lo, hi))
 
 
 @eval_stl.register(stl.F)
-def _(phi):
+def eval_stl_f(phi):
     return eval_unary_temporal_op(phi, always=False)
 
 
 @eval_stl.register(stl.G)
-def _(phi):
+def eval_stl_g(phi):
     return eval_unary_temporal_op(phi, always=True)
 
 
 @eval_stl.register(stl.Neg)
-def _(stl):
+def eval_stl_neg(stl):
     f = eval_stl(stl.arg)
     return lambda x, t: not f(x, t)
 
@@ -105,22 +110,22 @@ op_lookup = {
 
 
 @eval_stl.register(stl.AtomicPred)
-def _(stl):
+def eval_stl_ap(stl):
     return lambda x, t: x[str(stl.id)][t]
 
 
 @eval_stl.register(type(stl.TOP))
-def _(_):
+def eval_stl_top(_):
     return lambda *_: True
 
 
 @eval_stl.register(type(stl.BOT))
-def _(_):
+def eval_stl_bot(_):
     return lambda *_: False
 
 
 @eval_stl.register(stl.LinEq)
-def _(lineq):
+def eval_stl_lineq(lineq):
     return lambda x, t: x[lineq][t]
 
 
@@ -130,4 +135,4 @@ def eval_terms(lineq, x, t):
 
 
 def eval_term(term, x, t):
-    return float(term.coeff)*x[term.id.name][t]
+    return float(term.coeff) * x[term.id][t]

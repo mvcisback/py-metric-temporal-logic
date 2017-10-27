@@ -5,15 +5,11 @@
 # TODO: Allow -x = -1*x
 
 from functools import partialmethod
-from collections import namedtuple
-import operator as op
 
-from parsimonious import Grammar, NodeVisitor
-from funcy import flatten
 from lenses import lens
-
+from parsimonious import Grammar, NodeVisitor
 from stl import ast
-from stl.utils import implies, xor, iff, env, alw
+from stl.utils import alw, env, iff, implies, xor
 
 STL_GRAMMAR = Grammar(u'''
 phi = (timed_until / until / neg / next / g / f / lineq / AP / or / and
@@ -60,8 +56,8 @@ __ = ~r"\s"*
 EOL = "\\n"
 ''')
 
-
 oo = float('inf')
+
 
 class STLVisitor(NodeVisitor):
     def __init__(self, H=oo):
@@ -136,7 +132,6 @@ class STLVisitor(NodeVisitor):
         coeffs, iden = children
         c = coeffs[0] if coeffs else 1
         return ast.Var(coeff=c, id=iden)
-
 
     def visit_terms(self, _, children):
         if isinstance(children[0], list):

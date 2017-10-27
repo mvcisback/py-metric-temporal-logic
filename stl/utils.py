@@ -1,18 +1,18 @@
-from typing import List, Type, Dict, Mapping, T, TypeVar
-from collections import deque
 import operator as op
+from collections import deque
 from functools import reduce
+from typing import Dict, List, Mapping, T, Type, TypeVar
 
-import lenses
-from lenses import lens
 import funcy as fn
 import sympy
 import traces
 
+import lenses
 import stl.ast
-from stl.ast import (LinEq, And, Or, NaryOpSTL, F, G, Interval, Neg,
-                     AtomicPred, Param, AST)
-from stl.types import STL, STL_Generator, MTL
+from lenses import lens
+from stl.ast import (AST, And, AtomicPred, F, G, Interval, LinEq, NaryOpSTL,
+                     Neg, Or, Param)
+from stl.types import MTL, STL, STL_Generator
 
 Lens = TypeVar('Lens')
 
@@ -37,7 +37,7 @@ def type_pred(*args: List[Type]) -> Mapping[Type, bool]:
     return lambda x: type(x) in ast_types
 
 
-def ast_lens(phi: STL, bind=True, *, pred=None, focus_lens=None, 
+def ast_lens(phi: STL, bind=True, *, pred=None, focus_lens=None,
              getter=False) -> Lens:
     if focus_lens is None:
         focus_lens = lambda _: [lens]
@@ -86,9 +86,7 @@ def param_lens(phi: STL) -> Lens:
         ]
         return (x for x in candidates if isinstance(x.get()(leaf), Param))
 
-    return ast_lens(
-        phi, pred=type_pred(LinEq, F, G),
-        focus_lens=focus_lens)
+    return ast_lens(phi, pred=type_pred(LinEq, F, G), focus_lens=focus_lens)
 
 
 def set_params(phi, val) -> STL:
