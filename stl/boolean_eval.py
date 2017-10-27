@@ -5,7 +5,6 @@ import operator as op
 from functools import singledispatch
 
 import funcy as fn
-
 import stl
 import stl.ast
 from lenses import lens

@@ -1,18 +1,17 @@
 import operator as op
 from collections import deque
 from functools import reduce
-from typing import Dict, List, Mapping, T, Type, TypeVar
+from typing import List, Mapping, Type, TypeVar
 
 import funcy as fn
-import sympy
 import traces
 
 import lenses
 import stl.ast
 from lenses import lens
-from stl.ast import (AST, And, AtomicPred, F, G, Interval, LinEq, NaryOpSTL,
+from stl.ast import (AST, And, F, G, Interval, LinEq, NaryOpSTL,
                      Neg, Or, Param)
-from stl.types import MTL, STL, STL_Generator
+from stl.types import STL, STL_Generator
 
 Lens = TypeVar('Lens')
 
@@ -40,12 +39,16 @@ def type_pred(*args: List[Type]) -> Mapping[Type, bool]:
 def ast_lens(phi: STL, bind=True, *, pred=None, focus_lens=None,
              getter=False) -> Lens:
     if focus_lens is None:
-        focus_lens = lambda _: [lens]
+        def focus_lens(_):
+            return [lens]
+
     if pred is None:
-        pred = lambda _: False
-    l = lenses.bind(phi) if bind else lens
+        def pred(_):
+            return False
+
     child_lenses = _ast_lens(phi, pred=pred, focus_lens=focus_lens)
-    return (l.Tuple if getter else l.Fork)(*child_lenses)
+    phi = lenses.bind(phi) if bind else lens
+    return (phi.Tuple if getter else phi.Fork)(*child_lenses)
 
 
 def _ast_lens(phi: STL, pred, focus_lens) -> Lens:
@@ -90,8 +93,8 @@ def param_lens(phi: STL) -> Lens:
 
 
 def set_params(phi, val) -> STL:
-    l = param_lens(phi) if isinstance(phi, AST) else phi
-    return l.modify(lambda x: float(val.get(x, val.get(str(x), x))))
+    phi = param_lens(phi) if isinstance(phi, AST) else phi
+    return phi.modify(lambda x: float(val.get(x, val.get(str(x), x))))
 
 
 def f_neg_or_canonical_form(phi: STL) -> STL:
@@ -128,7 +131,10 @@ def linear_stl_lipschitz(phi):
 
 def inline_context(phi, context):
     phi2 = None
-    update = lambda ap: context.get(ap, ap)
+
+    def update(ap):
+        return context.get(ap, ap)
+
     while phi2 != phi:
         phi2, phi = phi, AP_lens(phi).modify(update)
     # TODO: this is hack to flatten the AST. Fix!
