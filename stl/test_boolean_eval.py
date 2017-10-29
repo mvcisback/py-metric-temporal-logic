@@ -1,13 +1,11 @@
+import hypothesis.strategies as st
+import traces
+
+from hypothesis import given
+
 import stl
 import stl.boolean_eval
 import stl.fastboolean_eval
-import traces
-import unittest
-from sympy import Symbol
-
-import hypothesis.strategies as st
-from hypothesis import given, note, assume, example
-
 
 """
 TODO: property based test that fasteval should be the same as slow
@@ -28,7 +26,11 @@ x = {
     "A": traces.TimeSeries([(0, 1), (0.1, 1), (0.2, 4)]),
     "B": traces.TimeSeries([(0, 2), (0.1, 4), (0.2, 2)]),
     "C": traces.TimeSeries([(0, True), (0.1, True), (0.2, False)]),
-    'D': traces.TimeSeries({0.0: 2, 13.8: 3, 19.7: 2}),
+    'D': traces.TimeSeries({
+        0.0: 2,
+        13.8: 3,
+        19.7: 2
+    }),
 }
 
 
@@ -56,4 +58,3 @@ def test_temporal_identities(phi):
     stl_eval3 = stl.fastboolean_eval.pointwise_sat(~stl.alw(~phi, lo=0, hi=4))
     stl_eval4 = stl.fastboolean_eval.pointwise_sat(stl.env(phi, lo=0, hi=4))
     assert stl_eval4(x, 0) == stl_eval3(x, 0)
-

@@ -1,5 +1,7 @@
-import stl
 import unittest
+
+import stl
+
 
 class TestSTLAST(unittest.TestCase):
     def test_and(self):

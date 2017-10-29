@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 # TODO: supress + given a + (-b). i.e. want a - b
 
-from collections import namedtuple, deque
-from itertools import repeat
-from enum import Enum
+from collections import namedtuple
 
 import funcy as fn
 from sympy import Symbol
@@ -13,7 +11,9 @@ t_sym = Symbol('t', positive=True)
 
 
 def flatten_binary(phi, op, dropT, shortT):
-    f = lambda x: x.args if isinstance(x, op) else [x]
+    def f(x):
+        return x.args if isinstance(x, op) else [x]
+
     args = [arg for arg in phi.args if arg is not dropT]
 
     if any(arg is shortT for arg in args):
@@ -97,7 +97,13 @@ class Var(namedtuple("Var", ["coeff", "id"])):
     __slots__ = ()
 
     def __repr__(self):
-        return f"{self.coeff}*{self.id}"
+        if self.coeff == -1:
+            coeff_str = "-"
+        elif self.coeff == +1:
+            coeff_str = ""
+        else:
+            coeff_str = f"{self.coeff}*"
+        return f"{coeff_str}{self.id}"
 
 
 class Interval(namedtuple('I', ['lower', 'upper'])):
@@ -147,7 +153,7 @@ class And(NaryOpSTL):
 class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
     __slots__ = ()
     OP = '?'
-    
+
     def __repr__(self):
         return f"{self.OP}{self.interval}({self.arg})"
 
@@ -213,6 +219,17 @@ class Next(namedtuple('Next', ['arg']), AST):
     @property
     def children(self):
         return {self.arg}
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
+
+
+class Param(namedtuple('Param', ['name']), AST):
+    __slots__ = ()
+
+    def __repr__(self):
+        return self.name
 
     def __hash__(self):
         # TODO: compute hash based on contents

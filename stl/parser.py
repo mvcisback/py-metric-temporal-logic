@@ -5,17 +5,11 @@
 # TODO: Allow -x = -1*x
 
 from functools import partialmethod
-from collections import namedtuple
-import operator as op
 
-from parsimonious import Grammar, NodeVisitor
-from funcy import flatten
 from lenses import lens
-
-from sympy import Symbol, Number
-
+from parsimonious import Grammar, NodeVisitor
 from stl import ast
-from stl.utils import implies, xor, iff, env, alw
+from stl.utils import alw, env, iff, implies, xor
 
 STL_GRAMMAR = Grammar(u'''
 phi = (timed_until / until / neg / next / g / f / lineq / AP / or / and
@@ -45,8 +39,7 @@ interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 const_or_unbound = unbound / "inf" / const
 
 lineq = terms _ op _ const_or_unbound
-term =  coeff? var
-coeff = ((dt __ "*" __)? const __ "*" __) / (dt __ "*")
+term =  const? var
 terms = (term __ pm __ terms) / term
 
 var = id
@@ -56,16 +49,18 @@ pm = "+" / "-"
 dt = "dt"
 unbound = id "?"
 id = ~r"[a-zA-z\d]+"
-const = ~r"[\+\-]?\d*(\.\d+)?"
+const = ~r"[-+]?\d*\.\d+|\d+"
 op = ">=" / "<=" / "<" / ">" / "="
 _ = ~r"\s"+
 __ = ~r"\s"*
 EOL = "\\n"
 ''')
 
+oo = float('inf')
+
 
 class STLVisitor(NodeVisitor):
-    def __init__(self, H=float('inf')):
+    def __init__(self, H=oo):
         super().__init__()
         self.default_interval = ast.Interval(0.0, H)
 
@@ -92,7 +87,7 @@ class STLVisitor(NodeVisitor):
         return node.text
 
     def visit_unbound(self, node, _):
-        return Symbol(node.text)
+        return ast.Param(node.text)
 
     visit_op = get_text
 
@@ -128,23 +123,15 @@ class STLVisitor(NodeVisitor):
         return env(psi, lo=lo, hi=hi) & alw(ast.Until(phi, psi), lo=0, hi=lo)
 
     def visit_id(self, name, _):
-        return Symbol(name.text)
+        return name.text
 
     def visit_const(self, const, children):
         return float(const.text)
 
     def visit_term(self, _, children):
-        coeffs, (iden, time) = children
-        c = coeffs[0] if coeffs else Number(1)
-        return ast.Var(coeff=c, id=iden, time=time)
-
-    def visit_coeff(self, _, children):
-        dt, coeff, *_ = children[0]
-        if not isinstance(dt, Symbol):
-            dt = dt[0][0] if dt else Number(1)
-            return dt * coeff
-        else:
-            return dt
+        coeffs, iden = children
+        c = coeffs[0] if coeffs else 1
+        return ast.Var(coeff=c, id=iden)
 
     def visit_terms(self, _, children):
         if isinstance(children[0], list):
@@ -159,7 +146,7 @@ class STLVisitor(NodeVisitor):
         return ast.LinEq(tuple(terms), op, const[0])
 
     def visit_pm(self, node, _):
-        return Number(1) if node.text == "+" else Number(-1)
+        return 1 if node.text == "+" else -1
 
     def visit_AP(self, *args):
         return ast.AtomicPred(self.visit_id(*args))
@@ -171,5 +158,5 @@ class STLVisitor(NodeVisitor):
         return ast.Next(children[1])
 
 
-def parse(stl_str: str, rule: str = "phi", H=float('inf')) -> "STL":
+def parse(stl_str: str, rule: str = "phi", H=oo) -> "STL":
     return STLVisitor(H).visit(STL_GRAMMAR[rule].parse(stl_str))

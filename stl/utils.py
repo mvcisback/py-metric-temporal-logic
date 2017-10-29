@@ -1,18 +1,17 @@
-from typing import List, Type, Dict, Mapping, T, TypeVar
-from collections import deque
 import operator as op
+from collections import deque
 from functools import reduce
+from typing import List, Mapping, Type, TypeVar
 
-import lenses
-from lenses import lens
 import funcy as fn
-import sympy
 import traces
 
+import lenses
 import stl.ast
-from stl.ast import (LinEq, And, Or, NaryOpSTL, F, G, Interval, Neg,
-                     AtomicPred)
-from stl.types import STL, STL_Generator, MTL
+from lenses import lens
+from stl.ast import (AST, And, F, G, Interval, LinEq, NaryOpSTL,
+                     Neg, Or, Param)
+from stl.types import STL, STL_Generator
 
 Lens = TypeVar('Lens')
 
@@ -37,13 +36,19 @@ def type_pred(*args: List[Type]) -> Mapping[Type, bool]:
     return lambda x: type(x) in ast_types
 
 
-def ast_lens(phi: STL, bind=True, *, pred=None, focus_lens=None) -> Lens:
+def ast_lens(phi: STL, bind=True, *, pred=None, focus_lens=None,
+             getter=False) -> Lens:
     if focus_lens is None:
-        focus_lens = lambda _: [lens]
+        def focus_lens(_):
+            return [lens]
+
     if pred is None:
-        pred = lambda _: False
-    l = lenses.bind(phi) if bind else lens
-    return l.Tuple(*_ast_lens(phi, pred=pred, focus_lens=focus_lens))
+        def pred(_):
+            return False
+
+    child_lenses = _ast_lens(phi, pred=pred, focus_lens=focus_lens)
+    phi = lenses.bind(phi) if bind else lens
+    return (phi.Tuple if getter else phi.Fork)(*child_lenses)
 
 
 def _ast_lens(phi: STL, pred, focus_lens) -> Lens:
@@ -67,9 +72,9 @@ def _ast_lens(phi: STL, pred, focus_lens) -> Lens:
         yield from [l & cl for cl in _ast_lens(l.get()(phi), pred, focus_lens)]
 
 
-lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq))
-AP_lens = fn.partial(ast_lens, pred=type_pred(stl.ast.AtomicPred))
-and_or_lens = fn.partial(ast_lens, pred=type_pred(And, Or))
+lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq), getter=True)
+AP_lens = fn.partial(ast_lens, pred=type_pred(stl.ast.AtomicPred), getter=True)
+and_or_lens = fn.partial(ast_lens, pred=type_pred(And, Or), getter=True)
 
 
 def terms_lens(phi: STL, bind: bool = True) -> Lens:
@@ -77,23 +82,19 @@ def terms_lens(phi: STL, bind: bool = True) -> Lens:
 
 
 def param_lens(phi: STL) -> Lens:
-    is_sym = lambda x: isinstance(x, sympy.Symbol)
-
     def focus_lens(leaf):
-        return [lens.const] if isinstance(leaf, LinEq) else [
+        candidates = [lens.const] if isinstance(leaf, LinEq) else [
             lens.GetAttr('interval')[0],
             lens.GetAttr('interval')[1]
         ]
+        return (x for x in candidates if isinstance(x.get()(leaf), Param))
 
-    return ast_lens(
-        phi, pred=type_pred(LinEq, F, G),
-        focus_lens=focus_lens).filter_(is_sym)
+    return ast_lens(phi, pred=type_pred(LinEq, F, G), focus_lens=focus_lens)
 
 
-def set_params(stl_or_lens, val) -> STL:
-    l = stl_or_lens if isinstance(stl_or_lens,
-                                  Lens) else param_lens(stl_or_lens)
-    return l.modify(lambda x: float(val.get(x, val.get(str(x), x))))
+def set_params(phi, val) -> STL:
+    phi = param_lens(phi) if isinstance(phi, AST) else phi
+    return phi.modify(lambda x: float(val.get(x, val.get(str(x), x))))
 
 
 def f_neg_or_canonical_form(phi: STL) -> STL:
@@ -130,7 +131,10 @@ def linear_stl_lipschitz(phi):
 
 def inline_context(phi, context):
     phi2 = None
-    update = lambda ap: context.get(ap, ap)
+
+    def update(ap):
+        return context.get(ap, ap)
+
     while phi2 != phi:
         phi2, phi = phi, AP_lens(phi).modify(update)
     # TODO: this is hack to flatten the AST. Fix!

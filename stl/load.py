@@ -1,4 +1,5 @@
-from traces import TimeSeries, Domain
+from traces import Domain, TimeSeries
+
 
 def from_pandas(df, compact=True):
     '''TODO'''
