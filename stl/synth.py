@@ -4,41 +4,6 @@ from stl.utils import set_params, param_lens
 from stl.boolean_eval import pointwise_sat
 
 from lenses import lens
-import numpy as np
-from copy as deepcopy
-
-var_val_update = lambda val_vec, ind, rep_elem : np.put(val_vec, ind, rep_elem)
-# Returns True when lo_i <= hi_i
-compute_var_polarity = lambda stleval, lo, hi, ind: stleval(lo) <= stleval(
-    var_val_update(lo, ind, hi[ind]))
-# Vector of True and False
-compute_polarity = lambda stleval, lo, hi: np.array([compute_var_polarity(
-                                                                stleval,
-                                                                deepcopy(lo),
-                                                                hi, i)
-                                            for i in range(len(hi))])
-
-# Project from unit cube
-project_ub = lambda lo, hi, theta: (np.array(hi) - np.array(lo))*np.array(
-    theta) + np.array(lo)
-
-# Update the lo, hi based on polarity
-def update_lo_hi(stleval, lo, hi):
-    var_polarities = compute_polarity(stleval, lo, hi)
-    updated_lo = lo*(var_polarities) + hi*(~var_polarities)*-1
-    updated_hi = lo*(~var_polarities)*-1 + hi*(var_polarities)
-
-    return updated_lo, updated_hi, var_polarities
-
-# Monotone threshold function
-def thres_func(stleval, lo, hi):
-    updated_hi, updated_lo, var_pol = thres_func(stleval, lo, hi)
-    # elem is the sample point
-    def g(stleval, theta):
-        updated_elem = theta*(var_pol) + theta*(~var_pol)*-1
-        proj_elem = project_ub(updated_lo, updated_hi, updated_elem)
-        return stleval(proj_elem)
-    return g
 
 def binsearch(stleval, *, tol=1e-3, lo, hi, polarity):
     """Only run search if tightest robustness was positive."""
