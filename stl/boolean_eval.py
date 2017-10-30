@@ -7,7 +7,7 @@ from functools import singledispatch
 import funcy as fn
 import stl
 import stl.ast
-from lenses import lens
+from lenses import bind
 
 oo = float('inf')
 
@@ -129,7 +129,7 @@ def eval_stl_lineq(lineq):
 
 
 def eval_terms(lineq, x, t):
-    terms = lens(lineq).terms.each_().get_all()
+    terms = bind(lineq).terms.Each().collect()
     return sum(eval_term(term, x, t) for term in terms)
 
 
