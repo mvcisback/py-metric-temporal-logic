@@ -6,7 +6,7 @@
 
 from functools import partialmethod
 
-from lenses import lens
+from lenses import bind
 from parsimonious import Grammar, NodeVisitor
 from stl import ast
 from stl.utils import alw, env, iff, implies, xor
@@ -77,10 +77,6 @@ class STLVisitor(NodeVisitor):
         _, _, (left, ), _, _, _, (right, ), _, _ = children
         left = left if left != [] else float("inf")
         right = right if right != [] else float("inf")
-        if isinstance(left, int):
-            left = float(left)
-        if isinstance(right, int):
-            left = float(right)
         return ast.Interval(left, right)
 
     def get_text(self, node, _):
@@ -136,7 +132,7 @@ class STLVisitor(NodeVisitor):
     def visit_terms(self, _, children):
         if isinstance(children[0], list):
             term, _1, sgn, _2, terms = children[0]
-            terms = lens(terms)[0].coeff * sgn
+            terms = bind(terms)[0].coeff * sgn
             return [term] + terms
         else:
             return children

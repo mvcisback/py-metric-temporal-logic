@@ -140,7 +140,7 @@ class Var(namedtuple("Var", ["coeff", "id"])):
         elif self.coeff == +1:
             coeff_str = ""
         else:
-            coeff_str = f"{self.coeff}*"
+            coeff_str = f"{self.coeff}"
         return f"{coeff_str}{self.id}"
 
 

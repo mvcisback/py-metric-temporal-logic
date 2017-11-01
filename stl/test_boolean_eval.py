@@ -23,14 +23,13 @@ TODO: Automatically generate input time series.
 """
 
 x = {
-    "A": traces.TimeSeries([(0, 1), (0.1, 1), (0.2, 4)]),
-    "B": traces.TimeSeries([(0, 2), (0.1, 4), (0.2, 2)]),
-    "C": traces.TimeSeries([(0, True), (0.1, True), (0.2, False)]),
-    'D': traces.TimeSeries({
-        0.0: 2,
-        13.8: 3,
-        19.7: 2
-    }),
+    "x": traces.TimeSeries([(0, 1), (0.1, 1), (0.2, 4)]),
+    "y": traces.TimeSeries([(0, 2), (0.1, 4), (0.2, 2)]),
+    "AP1": traces.TimeSeries([(0, True), (0.1, True), (0.2, False)]),
+    "AP2": traces.TimeSeries([(0, False), (0.2, True), (0.5, False)]),
+    "AP3": traces.TimeSeries([(0, True), (0.1, True), (0.3, False)]),
+    "AP4": traces.TimeSeries([(0, False), (0.1, False), (0.3, False)]),
+    "AP5": traces.TimeSeries([(0, False), (0.1, False), (0.1, True)]),
 }
 
 
