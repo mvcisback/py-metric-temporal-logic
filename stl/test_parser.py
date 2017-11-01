@@ -9,3 +9,8 @@ from stl.hypothesis import SignalTemporalLogicStrategy
 def test_invertable_repr(phi):
     event(str(phi))
     assert str(phi) == str(stl.parse(str(phi)))
+
+
+@given(SignalTemporalLogicStrategy)
+def test_hash_inheritance(phi):
+    assert hash(repr(phi)) == hash(phi)

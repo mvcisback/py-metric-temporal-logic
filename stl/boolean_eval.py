@@ -13,7 +13,7 @@ oo = float('inf')
 
 
 def pointwise_sat(phi):
-    ap_names = [z.id.name for z in stl.utils.AP_lens(phi).Each().collect()]
+    ap_names = [z.id.name for z in stl.ast.AP_lens(phi).Each().collect()]
 
     def _eval_stl(x, t):
         evaluated = stl.utils.eval_lineqs(phi, x)
