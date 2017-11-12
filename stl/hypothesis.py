@@ -18,5 +18,5 @@ GRAMMAR = {
 SignalTemporalLogicStrategy = st.builds(lambda term: stl.parse(''.join(term)),
                                         ContextFreeGrammarStrategy(
                                             GRAMMAR,
-                                            max_length=35,
+                                            max_length=15,
                                             start='phi'))
