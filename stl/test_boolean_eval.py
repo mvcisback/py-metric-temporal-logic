@@ -1,6 +1,6 @@
 import hypothesis.strategies as st
 import traces
-from hypothesis import given
+from hypothesis import given, settings, Verbosity, Phase
 from pytest import raises
 
 import stl
@@ -81,6 +81,11 @@ def test_eval_smoke_tests(phi):
 
 
 @given(SignalTemporalLogicStrategy)
+@settings(
+    max_shrinks=0,
+    verbosity=Verbosity.verbose,
+    perform_health_check=False,
+    phases=[Phase.generate])
 def test_temporal_identities(phi):
     stl_eval = stl.boolean_eval.pointwise_sat(phi)
     stl_eval2 = stl.boolean_eval.pointwise_sat(~phi)
@@ -93,10 +98,13 @@ def test_temporal_identities(phi):
     assert not stl_eval5(x, 0)
     stl_eval6 = stl.boolean_eval.pointwise_sat(phi | ~phi)
     assert stl_eval6(x, 0)
+    stl_eval7 = stl.boolean_eval.pointwise_sat(stl.ast.Until(stl.TOP, phi))
+    stl_eval8 = stl.boolean_eval.pointwise_sat(stl.env(phi))
+    assert stl_eval7(x, 0) == stl_eval8(x, 0)
 
 
 @given(st.just(stl.BOT))
-def test_temporal_identities2(phi):
+def test_fastboolean_equiv(phi):
     stl_eval = stl.fastboolean_eval.pointwise_sat(stl.alw(phi, lo=0, hi=4))
     stl_eval2 = stl.fastboolean_eval.pointwise_sat(~stl.env(~phi, lo=0, hi=4))
     assert stl_eval2(x, 0) == stl_eval(x, 0)

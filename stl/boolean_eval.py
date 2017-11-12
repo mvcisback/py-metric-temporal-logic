@@ -116,18 +116,25 @@ def eval_stl_g(phi, dt):
         )])
         for (start, val), (end, val2) in intervals:
             start2, end2 = start - b, end + a
-            if end2 > start2 and start2:
+            if end2 > start2:
                 yield (start2, val)
 
-    def _eval(x):
-        y = f(x)
-        if len(y) <= 1:
-            return y
+    if b == float('inf'):
+        def _eval(x):
+            y = f(x)
+            val = len(y.slice(a, b)) == 1 and y[a]
+            return traces.TimeSeries(
+                [(y.domain.start(), val)], domain=y.domain)
+    else:
+        def _eval(x):
+            y = f(x)
+            if len(y) <= 1:
+                return y
 
-        out = traces.TimeSeries(process_intervals(y)).slice(
-            y.domain.start(), y.domain.end())
-        out.compact()
-        return out
+            out = traces.TimeSeries(process_intervals(y)).slice(
+                y.domain.start(), y.domain.end())
+            out.compact()
+            return out
 
     return _eval
 
@@ -150,7 +157,8 @@ def eval_stl_next(phi, dt):
 
     def _eval(x):
         y = f(x)
-        out = traces.TimeSeries(((t + dt, v) for t, v in y), domain=y.domain)
+        out = traces.TimeSeries(((t - dt, v) for t, v in y))
+        out = out.slice(y.domain.start(), y.domain.end())
         out.compact()
 
         return out
