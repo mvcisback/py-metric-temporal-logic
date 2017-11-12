@@ -78,7 +78,10 @@ def eval_stl_g(phi, dt):
     a, b = phi.interval
 
     def process_intervals(x):
-        for (start, val), (end, val2) in x.iterintervals():
+        # Need to add last interval
+        intervals = fn.chain(x.iterintervals(),
+                             [(x.last(), (float('inf'), None),)])
+        for (start, val), (end, val2) in intervals:
             start2, end2 = start - b, end + a
             if end2 > start2:
                 yield (start2, val)

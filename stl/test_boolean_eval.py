@@ -30,7 +30,7 @@ x = {
     "AP2": traces.TimeSeries([(0, False), (0.2, True), (0.5, False)]),
     "AP3": traces.TimeSeries([(0, True), (0.1, True), (0.3, False)]),
     "AP4": traces.TimeSeries([(0, False), (0.1, False), (0.3, False)]),
-    "AP5": traces.TimeSeries([(0, False), (0.1, False), (0.1, True)]),
+    "AP5": traces.TimeSeries([(0, False), (0.1, False), (0.3, True)]),
 }
 
 
@@ -69,6 +69,11 @@ def test_boolean_identities(phi):
     phi5 = stl.parse('G[0.1, 0.03](~(AP4))')
     stl_eval12 = stl.boolean_eval.pointwise_sat(phi5)
     assert stl_eval12(x, 0)
+
+    phi6 = stl.parse('G[0.1, 0.03](~(AP5))')
+    stl_eval13 = stl.boolean_eval.pointwise_sat(phi6)
+    assert stl_eval13(x, 0)
+    assert not stl_eval13(x, 0.4)
 
 
 @given(st.just(stl.BOT))
