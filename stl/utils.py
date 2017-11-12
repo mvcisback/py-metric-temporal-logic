@@ -9,6 +9,9 @@ from stl.ast import (And, F, G, Interval, LinEq, Neg, Or, AP_lens)
 from stl.types import STL
 
 
+oo = float('inf')
+
+
 def f_neg_or_canonical_form(phi: STL) -> STL:
     if isinstance(phi, LinEq):
         return phi
@@ -67,15 +70,15 @@ def get_times(x):
     return sorted(times)
 
 
-def const_trace(x):
-    oo = float('inf')
-    return traces.TimeSeries([(-oo, x)])
+def const_trace(x, start=0):
+    return traces.TimeSeries([(start, x)], domain=traces.Domain(start, oo))
 
 
 def eval_lineq(lineq, x, domain, compact=True):
     lhs = sum(const_trace(term.coeff)*x[term.id] for term in lineq.terms)
     compare = op_lookup.get(lineq.op)
     output = lhs.operation(const_trace(lineq.const), compare)
+    output.domain = domain
 
     if compact:
         output.compact()
@@ -99,10 +102,6 @@ def alw(phi, *, lo=0, hi=float('inf')):
 
 def env(phi, *, lo=0, hi=float('inf')):
     return F(Interval(lo, hi), phi)
-
-
-def until(phi1, phi2, *, lo, hi):
-    return stl.ast.Until(Interval(lo, hi), phi1, phi2)
 
 
 def andf(*args):

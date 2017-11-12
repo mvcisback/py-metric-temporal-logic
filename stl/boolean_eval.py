@@ -11,13 +11,14 @@ import stl
 import stl.ast
 from stl.utils import const_trace, andf, orf
 
-
 TRUE_TRACE = const_trace(True)
 FALSE_TRACE = const_trace(False)
 
 
 def negate_trace(x):
-    return x.operation(TRUE_TRACE, op.xor)
+    out = x.operation(TRUE_TRACE, op.xor)
+    out.domain = x.domain
+    return out
 
 
 def pointwise_sat(phi, dt=0.1):
@@ -37,16 +38,28 @@ def eval_stl(phi, dt):
     raise NotImplementedError
 
 
+def or_traces(xs):
+    out = orf(*xs)
+    out.domain = xs[0].domain
+    return out
+
+
 @eval_stl.register(stl.Or)
 def eval_stl_or(phi, dt):
     fs = [eval_stl(arg, dt) for arg in phi.args]
 
     def _eval(x):
-        out = orf(*(f(x) for f in fs))
+        out = or_traces([f(x) for f in fs])
         out.compact()
         return out
 
     return _eval
+
+
+def and_traces(xs):
+    out = andf(*xs)
+    out.domain = xs[0].domain
+    return out
 
 
 @eval_stl.register(stl.And)
@@ -54,16 +67,34 @@ def eval_stl_and(phi, dt):
     fs = [eval_stl(arg, dt) for arg in phi.args]
 
     def _eval(x):
-        out = andf(*(f(x) for f in fs))
+        out = and_traces([f(x) for f in fs])
         out.compact()
         return out
 
     return _eval
 
 
+def apply_until(y):
+    periods = list(y.iterperiods())
+    phi2_next = False
+    for t, _, (phi1, phi2) in periods[::-1]:
+        yield (t, phi2 or (phi1 and phi2_next))
+        phi2_next = phi2
+
+
 @eval_stl.register(stl.Until)
 def eval_stl_until(phi, dt):
-    raise NotImplementedError
+    f1, f2 = eval_stl(phi.arg1, dt), eval_stl(phi.arg2, dt)
+
+    def _eval(x):
+        y1, y2 = f1(x), f2(x)
+        y = y1.operation(y2, lambda a, b: (a, b))
+        out = traces.TimeSeries(apply_until(y), domain=y1.domain)
+        out.compact()
+
+        return out
+
+    return _eval
 
 
 @eval_stl.register(stl.F)
@@ -79,11 +110,13 @@ def eval_stl_g(phi, dt):
 
     def process_intervals(x):
         # Need to add last interval
-        intervals = fn.chain(x.iterintervals(),
-                             [(x.last(), (float('inf'), None),)])
+        intervals = fn.chain(x.iterintervals(), [(
+            x.last(),
+            (float('inf'), None),
+        )])
         for (start, val), (end, val2) in intervals:
             start2, end2 = start - b, end + a
-            if end2 > start2:
+            if end2 > start2 and start2:
                 yield (start2, val)
 
     def _eval(x):
@@ -91,7 +124,8 @@ def eval_stl_g(phi, dt):
         if len(y) <= 1:
             return y
 
-        out = traces.TimeSeries(process_intervals(y))
+        out = traces.TimeSeries(process_intervals(y)).slice(
+            y.domain.start(), y.domain.end())
         out.compact()
         return out
 
@@ -115,8 +149,10 @@ def eval_stl_next(phi, dt):
     f = eval_stl(phi.arg, dt)
 
     def _eval(x):
-        out = traces.TimeSeries((t + dt, v) for t, v in f(x))
+        y = f(x)
+        out = traces.TimeSeries(((t + dt, v) for t, v in y), domain=y.domain)
         out.compact()
+
         return out
 
     return _eval
@@ -126,6 +162,17 @@ def eval_stl_next(phi, dt):
 def eval_stl_ap(phi, _):
     def _eval(x):
         out = x[str(phi.id)]
+        out.compact()
+
+        return out
+
+    return _eval
+
+
+@eval_stl.register(stl.LinEq)
+def eval_stl_lineq(phi, _):
+    def _eval(x):
+        out = x[phi]
         out.compact()
         return out
 
