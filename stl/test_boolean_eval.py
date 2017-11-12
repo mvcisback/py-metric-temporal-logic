@@ -1,11 +1,12 @@
 import hypothesis.strategies as st
 import traces
 
-from hypothesis import given
+from hypothesis import given  # , settings, Verbosity, Phase
 
 import stl
 import stl.boolean_eval
 import stl.fastboolean_eval
+# from stl.hypothesis import SignalTemporalLogicStrategy
 
 """
 TODO: property based test that fasteval should be the same as slow
@@ -33,7 +34,11 @@ x = {
 }
 
 
-@given(st.just(stl.BOT))
+@given(st.just(stl.ast.Next(stl.BOT) | stl.ast.Next(stl.TOP)))
+# @given(SignalTemporalLogicStrategy)
+# @settings(max_shrinks=0, verbosity=Verbosity.verbose,
+#           perform_health_check=False,
+#           phases=[Phase.generate])
 def test_boolean_identities(phi):
     stl_eval = stl.boolean_eval.pointwise_sat(phi)
     stl_eval2 = stl.boolean_eval.pointwise_sat(~phi)
@@ -46,6 +51,24 @@ def test_boolean_identities(phi):
     assert not stl_eval5(x, 0)
     stl_eval6 = stl.boolean_eval.pointwise_sat(phi | ~phi)
     assert stl_eval6(x, 0)
+
+    # phi2 = stl.alw(stl.ast.Next(phi))
+    # phi3 = stl.ast.Next(stl.alw(phi))
+    # stl_eval7 = stl.boolean_eval.pointwise_sat(phi2)
+    # stl_eval8 = stl.boolean_eval.pointwise_sat(phi3)
+    # assert stl_eval7(x, 0) == stl_eval8(x, 0)
+
+    stl_eval9 = stl.boolean_eval.pointwise_sat(stl.ast.Next(phi))
+    stl_eval10 = stl.boolean_eval.pointwise_sat(~stl.ast.Next(phi))
+    assert stl_eval9(x, 0) != stl_eval10(x, 0)
+
+    phi4 = stl.parse('~(AP4)')
+    stl_eval11 = stl.boolean_eval.pointwise_sat(phi4)
+    assert stl_eval11(x, 0)
+
+    phi5 = stl.parse('G[0.1, 0.03](~(AP4))')
+    stl_eval12 = stl.boolean_eval.pointwise_sat(phi5)
+    assert stl_eval12(x, 0)
 
 
 @given(st.just(stl.BOT))

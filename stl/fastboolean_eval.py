@@ -1,10 +1,49 @@
+import operator as op
 from functools import reduce, singledispatch
 from operator import and_, or_
 
+import funcy as fn
 from bitarray import bitarray
+from lenses import bind
 
 import stl.ast
-from stl.boolean_eval import eval_terms, get_times, op_lookup
+
+oo = float('inf')
+op_lookup = {
+    ">": op.gt,
+    ">=": op.ge,
+    "<": op.lt,
+    "<=": op.le,
+    "=": op.eq,
+}
+
+
+def eval_terms(lineq, x, t):
+    terms = bind(lineq).terms.Each().collect()
+    return sum(eval_term(term, x, t) for term in terms)
+
+
+def eval_term(term, x, t):
+    return float(term.coeff) * x[term.id][t]
+
+
+def get_times(x, tau, lo=None, hi=None):
+    domain = fn.first(x.values()).domain
+    if lo is None or lo is -oo:
+        lo = domain.start()
+    if hi is None or hi is oo:
+        hi = domain.end()
+    end = min(v.domain.end() for v in x.values())
+    hi = hi + tau if hi + tau <= end else end
+    lo = lo + tau if lo + tau <= end else end
+
+    if lo > hi:
+        return []
+    elif hi == lo:
+        return [lo]
+
+    all_times = fn.cat(v.slice(lo, hi).items() for v in x.values())
+    return sorted(set(fn.pluck(0, all_times)))
 
 
 def pointwise_sat(stl):

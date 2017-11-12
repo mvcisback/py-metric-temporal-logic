@@ -35,6 +35,8 @@ class AST(object):
         return flatten_binary(And((self, other)), And, TOP, BOT)
 
     def __invert__(self):
+        if isinstance(self, Neg):
+            return self.arg
         return Neg(self)
 
     @property
@@ -69,10 +71,6 @@ class AST(object):
         return phi.modify(lambda x: float(val.get(x, val.get(str(x), x))))
 
     @property
-    def terms(self):
-        return set(terms_lens(self).Each().collect())
-
-    @property
     def lineqs(self):
         return set(lineq_lens(self).Each().collect())
 
@@ -87,6 +85,10 @@ class _Top(AST):
     def __repr__(self):
         return "⊤"
 
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
+
     def __invert__(self):
         return BOT
 
@@ -96,6 +98,10 @@ class _Bot(AST):
 
     def __repr__(self):
         return "⊥"
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
 
     def __invert__(self):
         return TOP
@@ -110,6 +116,10 @@ class AtomicPred(namedtuple("AP", ["id"]), AST):
 
     def __repr__(self):
         return f"{self.id}"
+
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
 
     @property
     def children(self):
@@ -149,10 +159,6 @@ class Interval(namedtuple('I', ['lower', 'upper'])):
 
     def __repr__(self):
         return f"[{self.lower},{self.upper}]"
-
-    @property
-    def children(self):
-        return {self.lower, self.upper}
 
 
 class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
@@ -274,16 +280,16 @@ class Param(namedtuple('Param', ['name']), AST):
         return hash(repr(self))
 
 
-def ast_lens(phi, bind=True, *, pred=None, focus_lens=None, getter=False):
+def ast_lens(phi,
+             bind=True,
+             *,
+             pred=lambda _: False,
+             focus_lens=None,
+             getter=False):
     if focus_lens is None:
 
         def focus_lens(_):
             return [lens]
-
-    if pred is None:
-
-        def pred(_):
-            return False
 
     child_lenses = _ast_lens(phi, pred=pred, focus_lens=focus_lens)
     phi = lenses.bind(phi) if bind else lens
@@ -297,9 +303,7 @@ def _ast_lens(phi, pred, focus_lens):
     if phi is None or not phi.children:
         return
 
-    if phi is TOP or phi is BOT:
-        child_lenses = [lens]
-    elif isinstance(phi, Until):
+    if isinstance(phi, Until):
         child_lenses = [lens.GetAttr('arg1'), lens.GetAttr('arg2')]
     elif isinstance(phi, NaryOpSTL):
         child_lenses = [
@@ -324,11 +328,6 @@ def param_lens(phi, *, getter=False):
         phi, pred=type_pred(LinEq, F, G), focus_lens=focus_lens, getter=getter)
 
 
-def vars_in_phi(phi):
-    focus = terms_lens(phi)
-    return set(focus.tuple_(lens.id, lens.time).get_all())
-
-
 def type_pred(*args):
     ast_types = set(args)
     return lambda x: type(x) in ast_types
@@ -337,7 +336,3 @@ def type_pred(*args):
 lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq), getter=True)
 AP_lens = fn.partial(ast_lens, pred=type_pred(AtomicPred), getter=True)
 and_or_lens = fn.partial(ast_lens, pred=type_pred(And, Or), getter=True)
-
-
-def terms_lens(phi, bind=True):
-    return lineq_lens(phi, bind).Each().terms.Each()

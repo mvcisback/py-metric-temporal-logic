@@ -1,13 +1,14 @@
-from stl.fastboolean_eval import pointwise_sat
+from stl import pointwise_sat
 
-def featurize_trace(phi, x):
+
+def ordered_evaluator(phi):
     params = {ap.name for ap in phi.params}
     order = tuple(params)
 
     def vec_to_dict(theta):
         return {k: v for k, v in zip(order, theta)}
 
-    def eval_phi(theta):
+    def eval_phi(theta, x):
         return pointwise_sat(phi.set_params(vec_to_dict(theta)))(x, 0)
 
-    return eval_phi
+    return eval_phi, order

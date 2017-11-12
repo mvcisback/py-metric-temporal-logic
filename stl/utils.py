@@ -2,7 +2,7 @@ import operator as op
 from functools import reduce
 
 import traces
-from lenses import lens, bind
+from lenses import bind
 
 import stl.ast
 from stl.ast import (And, F, G, Interval, LinEq, Neg, Or, AP_lens)
@@ -67,38 +67,37 @@ def get_times(x):
     return sorted(times)
 
 
-def eval_lineq(lineq, x, compact=True):
-    def eval_term(term, t):
-        return float(term.coeff) * x[term.id.name][t]
+def const_trace(x):
+    oo = float('inf')
+    return traces.TimeSeries([(-oo, x)])
 
-    terms = lens(lineq).Each().terms.Each().collect()
 
-    def f(t):
-        lhs = sum(eval_term(term, t) for term in terms)
-        return op_lookup[lineq.op](lhs, lineq.const)
-
-    output = traces.TimeSeries(map(f, x), domain=x.domain)
+def eval_lineq(lineq, x, domain, compact=True):
+    lhs = sum(const_trace(term.coeff)*x[term.id] for term in lineq.terms)
+    compare = op_lookup.get(lineq.op)
+    output = lhs.operation(const_trace(lineq.const), compare)
 
     if compact:
         output.compact()
     return output
 
 
-def eval_lineqs(phi, x, times=None):
-    if times is None:
-        times = get_times(x)
+def eval_lineqs(phi, x):
     lineqs = phi.lineqs
-    return {lineq: eval_lineq(lineq, x, times=times) for lineq in lineqs}
+    start = max(y.domain.start() for y in x.values())
+    end = min(y.domain.end() for y in x.values())
+    domain = traces.Domain(start, end)
+    return {lineq: eval_lineq(lineq, x, domain) for lineq in lineqs}
 
 
 # EDSL
 
 
-def alw(phi, *, lo, hi):
+def alw(phi, *, lo=0, hi=float('inf')):
     return G(Interval(lo, hi), phi)
 
 
-def env(phi, *, lo, hi):
+def env(phi, *, lo=0, hi=float('inf')):
     return F(Interval(lo, hi), phi)
 
 
@@ -124,3 +123,7 @@ def xor(x, y):
 
 def iff(x, y):
     return (x & y) | (~x & ~y)
+
+
+def timed_until(phi, psi, lo, hi):
+    return env(psi, lo=lo, hi=hi) & alw(stl.ast.Until(phi, psi), lo=0, hi=lo)

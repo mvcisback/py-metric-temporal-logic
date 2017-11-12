@@ -14,3 +14,9 @@ def test_invertable_repr(phi):
 @given(SignalTemporalLogicStrategy)
 def test_hash_inheritance(phi):
     assert hash(repr(phi)) == hash(phi)
+
+
+def test_sugar_smoke_test():
+    stl.parse('(x) <-> (x)')
+    stl.parse('(x) -> (x)')
+    stl.parse('(x) ^ (x)')

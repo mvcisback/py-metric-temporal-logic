@@ -9,11 +9,11 @@ from functools import partialmethod
 from lenses import bind
 from parsimonious import Grammar, NodeVisitor
 from stl import ast
-from stl.utils import alw, env, iff, implies, xor
+from stl.utils import iff, implies, xor
 
 STL_GRAMMAR = Grammar(u'''
 phi = (timed_until / until / neg / next / g / f / lineq / AP / or / and
-     / implies / xor / iff / paren_phi)
+     / implies / xor / iff / paren_phi / bot / top)
 
 paren_phi = "(" __ phi __ ")"
 
@@ -45,11 +45,14 @@ terms = (term __ pm __ terms) / term
 var = id
 AP = ~r"[a-zA-z\d]+"
 
+bot = "⊥"
+top = "⊤"
+
 pm = "+" / "-"
 dt = "dt"
 unbound = id "?"
 id = ~r"[a-zA-z\d]+"
-const = ~r"[-+]?\d*\.\d+|\d+"
+const = ~r"[-+]?(\d*\.\d+|\d+)"
 op = ">=" / "<=" / "<" / ">" / "="
 _ = ~r"\s"+
 __ = ~r"\s"*
@@ -72,6 +75,12 @@ class STLVisitor(NodeVisitor):
 
     visit_phi = partialmethod(children_getter, i=0)
     visit_paren_phi = partialmethod(children_getter, i=2)
+
+    def visit_bot(self, *_):
+        return ast.BOT
+
+    def visit_top(self, *_):
+        return ast.TOP
 
     def visit_interval(self, _, children):
         _, _, (left, ), _, _, _, (right, ), _, _ = children
@@ -114,10 +123,6 @@ class STLVisitor(NodeVisitor):
         phi1, _, _, _, phi2 = children
         return ast.Until(phi1, phi2)
 
-    def visit_timed_until(self, _, children):
-        phi, _, _, (lo, hi), _, psi = children
-        return env(psi, lo=lo, hi=hi) & alw(ast.Until(phi, psi), lo=0, hi=lo)
-
     def visit_id(self, name, _):
         return name.text
 
@@ -148,7 +153,7 @@ class STLVisitor(NodeVisitor):
         return ast.AtomicPred(self.visit_id(*args))
 
     def visit_neg(self, _, children):
-        return ast.Neg(children[1])
+        return ~children[1]
 
     def visit_next(self, _, children):
         return ast.Next(children[1])
