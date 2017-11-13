@@ -41,7 +41,7 @@ class AST(object):
 
     @property
     def children(self):
-        return set()
+        return tuple()
 
     def walk(self):
         """Walk of the AST."""
@@ -123,7 +123,7 @@ class AtomicPred(namedtuple("AP", ["id"]), AST):
 
     @property
     def children(self):
-        return set()
+        return tuple()
 
 
 class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
@@ -134,7 +134,7 @@ class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
 
     @property
     def children(self):
-        return set()
+        return tuple()
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -171,7 +171,7 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
 
     @property
     def children(self):
-        return set(self.args)
+        return tuple(self.args)
 
 
 class Or(NaryOpSTL):
@@ -203,7 +203,7 @@ class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
 
     @property
     def children(self):
-        return {self.arg}
+        return (self.arg,)
 
 
 class F(ModalOp):
@@ -232,7 +232,7 @@ class Until(namedtuple('ModalOp', ['arg1', 'arg2']), AST):
 
     @property
     def children(self):
-        return {self.arg1, self.arg2}
+        return (self.arg1, self.arg2)
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -247,7 +247,7 @@ class Neg(namedtuple('Neg', ['arg']), AST):
 
     @property
     def children(self):
-        return {self.arg}
+        return (self.arg,)
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -262,7 +262,7 @@ class Next(namedtuple('Next', ['arg']), AST):
 
     @property
     def children(self):
-        return {self.arg}
+        return (self.arg,)
 
     def __hash__(self):
         # TODO: compute hash based on contents

@@ -5,7 +5,9 @@ import traces
 from lenses import bind
 
 import stl.ast
-from stl.ast import (And, F, G, Interval, LinEq, Neg, Or, AP_lens)
+from stl.ast import (And, F, G, Interval, LinEq, Neg,
+                     Or, AP_lens, Next, Until, AtomicPred,
+                     _Top, _Bot)
 from stl.types import STL
 
 
@@ -13,24 +15,28 @@ oo = float('inf')
 
 
 def f_neg_or_canonical_form(phi: STL) -> STL:
-    if isinstance(phi, LinEq):
+    if isinstance(phi, (LinEq, AtomicPred, _Top, _Bot)):
         return phi
 
     children = [f_neg_or_canonical_form(s) for s in phi.children]
     if isinstance(phi, (And, G)):
         children = [Neg(s) for s in children]
-    children = tuple(children)
+    children = tuple(sorted(children, key=str))
 
     if isinstance(phi, Or):
         return Or(children)
     elif isinstance(phi, And):
         return Neg(Or(children))
     elif isinstance(phi, Neg):
-        return Neg(children[0])
+        return Neg(*children)
+    elif isinstance(phi, Next):
+        return Next(*children)
+    elif isinstance(phi, Until):
+        return Until(*children)
     elif isinstance(phi, F):
-        return F(phi.interval, children[0])
+        return F(phi.interval, *children)
     elif isinstance(phi, G):
-        return Neg(F(phi.interval, children[0]))
+        return Neg(F(phi.interval, *children))
     else:
         raise NotImplementedError
 
