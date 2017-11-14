@@ -6,7 +6,7 @@ from lenses import bind
 
 import stl.ast
 from stl.ast import (And, F, G, Interval, LinEq, Neg,
-                     Or, AP_lens, Next, Until, AtomicPred,
+                     Or, Next, Until, AtomicPred,
                      _Top, _Bot)
 from stl.types import STL
 
@@ -48,18 +48,6 @@ def _lineq_lipschitz(lineq):
 def linear_stl_lipschitz(phi):
     """Infinity norm lipschitz bound of linear inequality predicate."""
     return float(max(map(_lineq_lipschitz, phi.lineqs)))
-
-
-def inline_context(phi, context):
-    phi2 = None
-
-    def update(ap):
-        return context.get(ap, ap)
-
-    while phi2 != phi:
-        phi2, phi = phi, AP_lens(phi).modify(update)
-    # TODO: this is hack to flatten the AST. Fix!
-    return stl.parse(str(phi))
 
 
 op_lookup = {

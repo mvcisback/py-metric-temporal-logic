@@ -78,6 +78,17 @@ class AST(object):
     def atomic_predicates(self):
         return set(AP_lens(self).Each().collect())
 
+    def inline_context(self, context):
+        phi, phi2 = self, None
+
+        def update(aps):
+            return tuple(context.get(ap, ap) for ap in aps)
+
+        while phi2 != phi:
+            phi2, phi = phi, AP_lens(phi).modify(update)
+        # TODO: this is hack to flatten the AST. Fix!
+        return phi
+
 
 class _Top(AST):
     __slots__ = ()
