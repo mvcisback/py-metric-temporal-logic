@@ -43,3 +43,21 @@ def test_inline_context_rigid():
 def test_inline_context(phi):
     phi2 = phi.inline_context(CONTEXT)
     assert not (APS & phi2.atomic_predicates)
+
+
+def test_linear_stl_lipschitz_rigid():
+    phi = stl.parse('(x + 3y - 4z < 3)')
+    assert stl.utils.linear_stl_lipschitz(phi) == (8)
+
+
+@given(SignalTemporalLogicStrategy, SignalTemporalLogicStrategy)
+def test_linear_stl_lipschitz(phi1, phi2):
+    lip1 = stl.utils.linear_stl_lipschitz(phi1)
+    lip2 = stl.utils.linear_stl_lipschitz(phi2)
+    phi3 = phi1 | phi2
+    assert stl.utils.linear_stl_lipschitz(phi3) == max(lip1, lip2)
+
+
+@given(SignalTemporalLogicStrategy, SignalTemporalLogicStrategy)
+def test_timed_until_smoke_test(phi1, phi2):
+    stl.utils.timed_until(phi1, phi2, lo=2, hi=20)

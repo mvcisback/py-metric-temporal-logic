@@ -112,3 +112,11 @@ def test_fastboolean_equiv(phi):
     stl_eval3 = stl.fastboolean_eval.pointwise_sat(~stl.alw(~phi, lo=0, hi=4))
     stl_eval4 = stl.fastboolean_eval.pointwise_sat(stl.env(phi, lo=0, hi=4))
     assert stl_eval4(x, 0) == stl_eval3(x, 0)
+
+
+def test_implicit_validity_domain_rigid():
+    phi = stl.parse('G[0, a?](x > b?)')
+    vals = {'a?': 3, 'b?': 20}
+    stl_eval = stl.pointwise_sat(phi.set_params(vals))
+    oracle, order = stl.utils.implicit_validity_domain(phi, x)
+    assert stl_eval(x, 0) == oracle([vals.get(k) for k in order])
