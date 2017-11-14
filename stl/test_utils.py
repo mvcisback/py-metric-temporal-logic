@@ -2,6 +2,7 @@ import stl
 from stl.hypothesis import SignalTemporalLogicStrategy
 
 from hypothesis import given
+from pytest import raises
 
 
 CONTEXT = {
@@ -21,6 +22,11 @@ def test_f_neg_or_canonical_form(phi):
     assert phi2 == phi3
     assert not any(
         isinstance(x, (stl.ast.G, stl.ast.And)) for x in phi2.walk())
+
+
+def test_f_neg_or_canonical_form_not_implemented():
+    with raises(NotImplementedError):
+        stl.utils.f_neg_or_canonical_form(stl.ast.AST())
 
 
 def test_inline_context_rigid():

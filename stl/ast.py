@@ -89,16 +89,16 @@ class AST(object):
         # TODO: this is hack to flatten the AST. Fix!
         return phi
 
+    def __hash__(self):
+        # TODO: compute hash based on contents
+        return hash(repr(self))
+
 
 class _Top(AST):
     __slots__ = ()
 
     def __repr__(self):
         return "⊤"
-
-    def __hash__(self):
-        # TODO: compute hash based on contents
-        return hash(repr(self))
 
     def __invert__(self):
         return BOT
@@ -109,10 +109,6 @@ class _Bot(AST):
 
     def __repr__(self):
         return "⊥"
-
-    def __hash__(self):
-        # TODO: compute hash based on contents
-        return hash(repr(self))
 
     def __invert__(self):
         return TOP
