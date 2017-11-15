@@ -28,11 +28,6 @@ def eval_term(term, x, t):
 
 
 def get_times(x, tau, lo=None, hi=None):
-    domain = fn.first(x.values()).domain
-    if lo is None or lo is -oo:
-        lo = domain.start()
-    if hi is None or hi is oo:
-        hi = domain.end()
     end = min(v.domain.end() for v in x.values())
     hi = hi + tau if hi + tau <= end else end
     lo = lo + tau if lo + tau <= end else end
@@ -102,6 +97,11 @@ def pointwise_satf_neg(stl):
 @pointwise_satf.register(stl.AtomicPred)
 def pointwise_satf_(phi):
     return lambda x, t: bitarray(x[str(phi.id)][tau] for tau in t)
+
+
+@pointwise_satf.register(stl.Until)
+def pointwise_satf_until(phi):
+    raise NotImplementedError
 
 
 @pointwise_satf.register(type(stl.TOP))

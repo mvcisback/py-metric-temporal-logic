@@ -114,8 +114,18 @@ def test_fastboolean_equiv(phi):
     assert stl_eval4(x, 0) == stl_eval3(x, 0)
 
 
+def test_fastboolean_smoketest():
+    phi = stl.parse(
+        '(G[0, 4](x > 0)) & ((F[2, 1](AP1)) | (AP2)) & (G[0,0](AP2))')
+    stl_eval = stl.fastboolean_eval.pointwise_sat(phi)
+    assert not stl_eval(x, 0)
+
+    with raises(NotImplementedError):
+        stl.fastboolean_eval.pointwise_sat(stl.ast.AST())
+
+
 def test_implicit_validity_domain_rigid():
-    phi = stl.parse('G[0, a?](x > b?)')
+    phi = stl.parse('(G[0, a?](x > b?)) & ((F(AP1)) | (AP2))')
     vals = {'a?': 3, 'b?': 20}
     stl_eval = stl.pointwise_sat(phi.set_params(vals))
     oracle, order = stl.utils.implicit_validity_domain(phi, x)
