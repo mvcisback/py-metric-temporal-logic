@@ -93,6 +93,9 @@ def test_scope():
     phi = stl.parse('X(AP1)')
     assert stl.utils.scope(phi, dt) == 0.3
 
+    phi = stl.parse('X((X(AP1)) | (AP2))')
+    assert stl.utils.scope(phi, dt) == 0.6
+
     phi = stl.parse('G[0.3, 1.2](F[0.6, 1.5](AP1))')
     assert stl.utils.scope(phi, dt) == 1.2 + 1.5
 
