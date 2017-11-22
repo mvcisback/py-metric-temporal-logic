@@ -86,6 +86,16 @@ def test_discretize():
     phi = stl.parse('G[0.3, 1.2]((AP1) U (AP2))')
     assert not stl.utils.is_discretizable(phi, dt)
 
+    phi = stl.parse('G[0.3, 0.6](~(F[0, 0.3](A)))')
+    assert stl.utils.is_discretizable(phi, dt)
+    phi2 = stl.utils.discretize(phi, dt, distribute=True)
+    phi3 = stl.utils.discretize(phi2, dt, distribute=True)
+    assert phi2 == phi3
+    assert phi2 == stl.parse(
+        '(~((X(A)) ∨ (X(X(A))))) ∧ (~((X(X(A))) ∨ (X(X(X(A))))))')
+
+
+
 
 def test_scope():
     dt = 0.3

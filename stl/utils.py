@@ -122,8 +122,9 @@ def scope(phi, dt, *, _t=0):
 
 
 @require_discretizable
-def discretize(phi, dt):
-    return _discretize(phi, dt)
+def discretize(phi, dt, distribute=False):
+    phi = _discretize(phi, dt)
+    return _distribute_next(phi) if distribute else phi
 
 
 def _discretize(phi, dt):
@@ -149,6 +150,20 @@ def _interval_discretizable(itvl, dt):
     if not (isfinite(l) and isfinite(u)):
         return False
     return np.isclose(l, round(l)) and np.isclose(u, round(u))
+
+
+def _distribute_next(phi, i=0):
+    if isinstance(phi, (LinEq, AtomicPred)):
+        return stl.utils.next(phi, i=i)
+    elif isinstance(phi, Next):
+        return _distribute_next(phi.arg, i=i+1)
+
+    children = tuple(_distribute_next(c, i) for c in phi.children)
+
+    if isinstance(phi, (And, Or)):
+        return bind(phi).args.set(children)
+    elif isinstance(phi, (Neg, Next)):
+        return bind(phi).arg.set(children[0])
 
 
 def is_discretizable(phi, dt):
