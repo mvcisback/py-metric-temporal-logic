@@ -95,8 +95,6 @@ def test_discretize():
         '(~((X(A)) ∨ (X(X(A))))) ∧ (~((X(X(A))) ∨ (X(X(X(A))))))')
 
 
-
-
 def test_scope():
     dt = 0.3
 
