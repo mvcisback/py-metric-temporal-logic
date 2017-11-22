@@ -2,7 +2,6 @@
 
 # TODO: allow multiplication to be distributive
 # TODO: support variables on both sides of ineq
-# TODO: Allow -x = -1*x
 
 from functools import partialmethod
 
@@ -24,12 +23,13 @@ iff = paren_phi _ ("⇔" / "<->" / "iff") _ (and / paren_phi)
 xor = paren_phi _ ("⊕" / "^" / "xor") _ (and / paren_phi)
 
 neg = ("~" / "¬") paren_phi
-next = "X" paren_phi
+next = next_sym paren_phi
 f = F interval? phi
 g = G interval? phi
 until = paren_phi __ U __ paren_phi
 timed_until = paren_phi __ U interval __ paren_phi
 
+next_sym = "X" / "◯"
 F = "F" / "◇"
 G = "G" / "□"
 U = "U"

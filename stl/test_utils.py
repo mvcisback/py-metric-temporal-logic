@@ -4,7 +4,6 @@ from stl.hypothesis import SignalTemporalLogicStrategy
 from hypothesis import given
 from pytest import raises
 
-
 CONTEXT = {
     stl.parse('AP1'): stl.parse('F(x > 4)'),
     stl.parse('AP2'): stl.parse('(AP1) U (AP1)'),
@@ -61,3 +60,28 @@ def test_linear_stl_lipschitz(phi1, phi2):
 @given(SignalTemporalLogicStrategy, SignalTemporalLogicStrategy)
 def test_timed_until_smoke_test(phi1, phi2):
     stl.utils.timed_until(phi1, phi2, lo=2, hi=20)
+
+
+def test_discretize():
+    dt = 0.3
+
+    phi = stl.parse('X(AP1)')
+    assert stl.utils.is_discretizable(phi, dt)
+    phi2 = stl.utils.discretize(phi, dt)
+    phi3 = stl.utils.discretize(phi2, dt)
+    assert phi2 == phi3
+
+    phi = stl.parse('G[0.3, 1.2](F[0.6, 1.5](AP1))')
+    assert stl.utils.is_discretizable(phi, dt)
+    phi2 = stl.utils.discretize(phi, dt)
+    phi3 = stl.utils.discretize(phi2, dt)
+    assert phi2 == phi3
+
+    phi = stl.parse('G[0.3, 1.4](F[0.6, 1.5](AP1))')
+    assert not stl.utils.is_discretizable(phi, dt)
+
+    phi = stl.parse('G[0.3, 1.2](F(AP1))')
+    assert not stl.utils.is_discretizable(phi, dt)
+
+    phi = stl.parse('G[0.3, 1.2]((AP1) U (AP2))')
+    assert not stl.utils.is_discretizable(phi, dt)

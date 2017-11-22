@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# TODO: supress + given a + (-b). i.e. want a - b
 
 from collections import deque, namedtuple
 from functools import lru_cache
@@ -265,7 +264,7 @@ class Next(namedtuple('Next', ['arg']), AST):
     __slots__ = ()
 
     def __repr__(self):
-        return f"X({self.arg})"
+        return f"◯({self.arg})"
 
     @property
     def children(self):
@@ -291,13 +290,8 @@ def ast_lens(phi,
              bind=True,
              *,
              pred=lambda _: False,
-             focus_lens=None,
+             focus_lens=lambda _: [lens],
              getter=False):
-    if focus_lens is None:
-
-        def focus_lens(_):
-            return [lens]
-
     child_lenses = _ast_lens(phi, pred=pred, focus_lens=focus_lens)
     phi = lenses.bind(phi) if bind else lens
     return (phi.Tuple if getter else phi.Fork)(*child_lenses)

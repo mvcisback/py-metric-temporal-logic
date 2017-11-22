@@ -1,15 +1,15 @@
 import operator as op
 from functools import reduce
+from math import isfinite
 
 import traces
+import numpy as np
 from lenses import bind
 
 import stl.ast
-from stl.ast import (And, F, G, Interval, LinEq, Neg,
-                     Or, Next, Until, AtomicPred,
-                     _Top, _Bot)
+from stl.ast import (And, F, G, Interval, LinEq, Neg, Or, Next, Until,
+                     AtomicPred, _Top, _Bot)
 from stl.types import STL
-
 
 oo = float('inf')
 
@@ -67,7 +67,7 @@ def const_trace(x, start=0):
 
 
 def eval_lineq(lineq, x, domain, compact=True):
-    lhs = sum(const_trace(term.coeff)*x[term.id] for term in lineq.terms)
+    lhs = sum(const_trace(term.coeff) * x[term.id] for term in lineq.terms)
     compare = op_lookup.get(lineq.op)
     output = lhs.operation(const_trace(lineq.const), compare)
     output.domain = domain
@@ -96,6 +96,48 @@ def implicit_validity_domain(phi, trace):
         return stl.pointwise_sat(phi.set_params(vec_to_dict(theta)))(trace, 0)
 
     return oracle, order
+
+
+# Code to discretize a bounded STL formula
+
+
+def discretize(phi, dt):
+    assert is_discretizable(phi, dt)
+    return _discretize(phi, dt)
+
+
+def _discretize(phi, dt):
+    if isinstance(phi, (LinEq, AtomicPred)):
+        return phi
+
+    children = tuple(_discretize(arg, dt) for arg in phi.children)
+    if isinstance(phi, (And, Or)):
+        return bind(phi).args.set(children)
+    elif isinstance(phi, (Neg, Next)):
+        return bind(phi).arg.set(children[0])
+
+    # Only remaining cases are G and F
+    psi = children[0]
+    l, u = round(phi.interval.lower / dt), round(phi.interval.upper / dt)
+    psis = (next(psi, i) for i in range(l, u + 1))
+    opf = andf if isinstance(phi, G) else orf
+    return opf(*psis)
+
+
+def _interval_discretizable(itvl, dt):
+    l, u = itvl.lower / dt, itvl.upper / dt
+    if not (isfinite(l) and isfinite(u)):
+        return False
+    return np.isclose(l, round(l)) and np.isclose(u, round(u))
+
+
+def is_discretizable(phi, dt):
+    if any(c for c in phi.walk() if isinstance(c, Until)):
+        return False
+
+    return all(
+        _interval_discretizable(c.interval, dt) for c in phi.walk()
+        if isinstance(c, (F, G)))
 
 
 # EDSL
@@ -127,6 +169,12 @@ def xor(x, y):
 
 def iff(x, y):
     return (x & y) | (~x & ~y)
+
+
+def next(phi, i=1):
+    for _ in range(i):
+        phi = Next(phi)
+    return phi
 
 
 def timed_until(phi, psi, lo, hi):
