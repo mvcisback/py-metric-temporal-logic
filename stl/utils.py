@@ -1,5 +1,5 @@
 import operator as op
-from functools import reduce
+from functools import reduce, wraps
 from math import isfinite
 
 import traces
@@ -98,11 +98,31 @@ def implicit_validity_domain(phi, trace):
     return oracle, order
 
 
+def require_discretizable(func):
+    @wraps(func)
+    def _func(phi, dt, *args, **kwargs):
+        assert is_discretizable(phi, dt)
+        return func(phi, dt, *args, **kwargs)
+
+    return _func
+
+
+def scope(phi, dt, *, _t=0):
+    if isinstance(phi, Next):
+        _t += dt
+    elif isinstance(phi, (G, F)):
+        _t += phi.interval.upper
+    elif isinstance(phi, Until):
+        _t += float('inf')
+
+    return max((scope(c, dt, _t=_t) for c in phi.children), default=_t)
+
+
 # Code to discretize a bounded STL formula
 
 
+@require_discretizable
 def discretize(phi, dt):
-    assert is_discretizable(phi, dt)
     return _discretize(phi, dt)
 
 
