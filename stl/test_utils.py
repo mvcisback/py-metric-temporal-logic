@@ -94,6 +94,18 @@ def test_discretize():
     assert phi2 == stl.parse(
         '(~((X(A)) ∨ (X(X(A))))) ∧ (~((X(X(A))) ∨ (X(X(X(A))))))')
 
+    phi = stl.TOP
+    assert stl.utils.is_discretizable(phi, dt)
+    phi2 = stl.utils.discretize(phi, dt)
+    phi3 = stl.utils.discretize(phi2, dt)
+    assert phi2 == phi3
+
+    phi = stl.BOT
+    assert stl.utils.is_discretizable(phi, dt)
+    phi2 = stl.utils.discretize(phi, dt)
+    phi3 = stl.utils.discretize(phi2, dt)
+    assert phi2 == phi3
+
 
 def test_scope():
     dt = 0.3

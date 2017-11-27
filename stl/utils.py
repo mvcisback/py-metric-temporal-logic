@@ -128,7 +128,7 @@ def discretize(phi, dt, distribute=False):
 
 
 def _discretize(phi, dt):
-    if isinstance(phi, (LinEq, AtomicPred)):
+    if isinstance(phi, (LinEq, AtomicPred, _Top, _Bot)):
         return phi
 
     children = tuple(_discretize(arg, dt) for arg in phi.children)
