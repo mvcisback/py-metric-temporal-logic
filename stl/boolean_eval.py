@@ -24,7 +24,7 @@ def negate_trace(x):
 def pointwise_sat(phi, dt=0.1):
     ap_names = [z.id for z in phi.atomic_predicates]
 
-    def _eval_stl(x, t, dt=0.1):
+    def _eval_stl(x, t=0):
         evaluated = stl.utils.eval_lineqs(phi, x)
 
         evaluated.update(fn.project(x, ap_names))

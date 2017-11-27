@@ -91,7 +91,7 @@ class AST(object):
 
         while phi2 != phi:
             phi2, phi = phi, AP_lens(phi).modify(update)
-        # TODO: this is hack to flatten the AST. Fix!
+
         return phi
 
     def __hash__(self):
