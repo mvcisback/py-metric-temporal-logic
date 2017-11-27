@@ -5,7 +5,7 @@ from functools import lru_cache
 
 import funcy as fn
 import lenses
-from lenses import lens
+from lenses import lens, bind
 
 
 def flatten_binary(phi, op, dropT, shortT):
@@ -76,6 +76,12 @@ class AST(object):
     @property
     def atomic_predicates(self):
         return set(AP_lens(self).Each().collect())
+
+    @property
+    def var_names(self):
+        symbols = set(bind(self.lineqs).Each().terms.Each().collect())
+        symbols |= self.atomic_predicates
+        return set(bind(symbols).Each().id.collect())
 
     def inline_context(self, context):
         phi, phi2 = self, None

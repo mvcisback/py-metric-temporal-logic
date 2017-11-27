@@ -45,3 +45,9 @@ def test_walk():
     phi = stl.parse(
         '((G[0, 1](x + y > a?)) & (F[1,2](z - x > 0))) | ((X(AP1)) U (AP2))')
     assert len(list((~phi).walk())) == 11
+
+
+def test_var_names():
+    phi = stl.parse(
+        '((G[0, 1](x + y > a?)) & (F[1,2](z - x > 0))) | ((X(AP1)) U (AP2))')
+    assert phi.var_names == {'x', 'y', 'z', 'x', 'AP1', 'AP2'}
