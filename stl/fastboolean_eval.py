@@ -94,6 +94,10 @@ def pointwise_satf_g(stl):
 def pointwise_satf_neg(stl):
     return lambda x, t: ~pointwise_satf(stl.arg)(x, t)
 
+@pointwise_satf.register(stl.Next)
+def pointwise_satf_next(stl):
+    return lambda x, t: pointwise_satf(stl.arg)(x, get_times(x, t, 1, 1))
+
 
 @pointwise_satf.register(stl.AtomicPred)
 def pointwise_satf_(phi):
