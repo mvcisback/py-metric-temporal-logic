@@ -5,6 +5,7 @@ from operator import and_, or_
 import funcy as fn
 from bitarray import bitarray
 from lenses import bind
+import numpy as np
 
 import stl.ast
 
@@ -100,8 +101,25 @@ def pointwise_satf_(phi):
 
 
 @pointwise_satf.register(stl.Until)
-def pointwise_satf_until(phi):
-    raise NotImplementedError
+def pointwise_satf_until(stl):
+    lo, hi = stl.interval
+    f1 = pointwise_satf(stl.arg1)
+    f2 = pointwise_satf(stl.arg2)
+
+    def sat_comp(x, t):
+        # Split arg1 U_[lo, hi] arg2 =
+        # G_[0, lo] arg1 and F_[lo, hi] untimed_until
+        untimed_until = np.array([or_(bitarray.all(f1(x, get_times(x, tau, lo,
+                            hi))), f2(x, get_times(x, tau, hi, hi)))
+                            for tau in t])
+        # F_[lo, hi] untimed_until
+        f_uu = bitarray(untimed_until[list(get_times(x, tau, lo, hi))].any()
+                        for tau in t)
+        # G_[0, lo] arg1
+        g_arg1 = bitarray(bitarray.all(f1(x, get_times(x, tau, lo, hi))) for
+                          tau in t)
+        return and_(g_arg1, f_uu)
+    raise sat_comp
 
 
 @pointwise_satf.register(type(stl.TOP))
