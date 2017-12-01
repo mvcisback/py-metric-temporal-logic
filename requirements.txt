@@ -2,7 +2,7 @@
 -e git://github.com/mvcisback/multidim-threshold@master#egg=multidim-threshold
 bitarray==0.8.1
 funcy==1.9.1
-lenses==0.3.0
+lenses==0.4.0
 pandas==0.19.2
 parsimonious==0.7.0
 sympy==1.0

@@ -4,7 +4,6 @@ from collections import deque, namedtuple
 from functools import lru_cache
 
 import funcy as fn
-import lenses
 from lenses import lens, bind
 
 
@@ -71,11 +70,11 @@ class AST(object):
 
     @property
     def lineqs(self):
-        return set(lineq_lens(self).Each().collect())
+        return set(lineq_lens.collect()(self))
 
     @property
     def atomic_predicates(self):
-        return set(AP_lens(self).Each().collect())
+        return set(AP_lens.collect()(self))
 
     @property
     def var_names(self):
@@ -86,11 +85,11 @@ class AST(object):
     def inline_context(self, context):
         phi, phi2 = self, None
 
-        def update(aps):
-            return tuple(context.get(ap, ap) for ap in aps)
+        def update(ap):
+            return context.get(ap, ap)
 
         while phi2 != phi:
-            phi2, phi = phi, AP_lens(phi).modify(update)
+            phi2, phi = phi, AP_lens.modify(update)(phi)
 
         return phi
 
@@ -292,47 +291,9 @@ class Param(namedtuple('Param', ['name']), AST):
         return hash(repr(self))
 
 
-def ast_lens(phi,
-             bind=True,
-             *,
-             pred=lambda _: False,
-             focus_lens=lambda _: [lens],
-             getter=False):
-    child_lenses = _ast_lens(phi, pred=pred, focus_lens=focus_lens)
-    phi = lenses.bind(phi) if bind else lens
-    return (phi.Tuple if getter else phi.Fork)(*child_lenses)
-
-
-def _ast_lens(phi, pred, focus_lens):
-    if pred(phi):
-        yield from focus_lens(phi)
-
-    if phi is None or not phi.children:
-        return
-
-    if isinstance(phi, Until):
-        child_lenses = [lens.GetAttr('arg1'), lens.GetAttr('arg2')]
-    elif isinstance(phi, NaryOpSTL):
-        child_lenses = [
-            lens.GetAttr('args')[j] for j, _ in enumerate(phi.args)
-        ]
-    else:
-        child_lenses = [lens.GetAttr('arg')]
-    for l in child_lenses:
-        yield from [l & cl for cl in _ast_lens(l.get()(phi), pred, focus_lens)]
-
-
 @lru_cache()
 def param_lens(phi, *, getter=False):
-    def focus_lens(leaf):
-        candidates = [lens.const] if isinstance(leaf, LinEq) else [
-            lens.GetAttr('interval')[0],
-            lens.GetAttr('interval')[1]
-        ]
-        return (x for x in candidates if isinstance(x.get()(leaf), Param))
-
-    return ast_lens(
-        phi, pred=type_pred(LinEq, F, G), focus_lens=focus_lens, getter=getter)
+    return bind(phi).Recur(Param)
 
 
 def type_pred(*args):
@@ -340,6 +301,5 @@ def type_pred(*args):
     return lambda x: type(x) in ast_types
 
 
-lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq), getter=True)
-AP_lens = fn.partial(ast_lens, pred=type_pred(AtomicPred), getter=True)
-and_or_lens = fn.partial(ast_lens, pred=type_pred(And, Or), getter=True)
+lineq_lens = lens.Recur(LinEq)
+AP_lens = lens.Recur(AtomicPred)
