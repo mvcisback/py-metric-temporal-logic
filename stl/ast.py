@@ -71,7 +71,7 @@ class AST(object):
 
     @property
     def lineqs(self):
-        return set(lineq_lens.collect()(self))
+        return set(lineq_lens(self).Each().collect())
 
     @property
     def atomic_predicates(self):
@@ -340,7 +340,6 @@ def type_pred(*args):
     return lambda x: type(x) in ast_types
 
 
-# lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq), getter=True)
-lineq_lens = lens.Recur(LinEq)
+lineq_lens = fn.partial(ast_lens, pred=type_pred(LinEq), getter=True)
 AP_lens = fn.partial(ast_lens, pred=type_pred(AtomicPred), getter=True)
 and_or_lens = fn.partial(ast_lens, pred=type_pred(And, Or), getter=True)
