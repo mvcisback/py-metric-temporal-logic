@@ -37,6 +37,16 @@ class AST(object):
             return self.arg
         return Neg(self)
 
+    def __rshift__(self, t):
+        if self in (BOT, TOP):
+            return self
+
+        phi = self
+        for _ in range(t):
+            phi = Next(phi)
+
+        return phi
+
     @property
     def children(self):
         return tuple()

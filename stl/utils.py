@@ -207,9 +207,7 @@ def iff(x, y):
 
 
 def next(phi, i=1):
-    for _ in range(i):
-        phi = Next(phi)
-    return phi
+    return phi >> i
 
 
 def timed_until(phi, psi, lo, hi):
