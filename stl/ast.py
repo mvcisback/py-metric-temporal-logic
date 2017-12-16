@@ -48,7 +48,7 @@ class AST(object):
 
         return phi
 
-    def __call__(self, trace, time):
+    def __call__(self, trace, time=0):
         return stl.pointwise_sat(self)(trace, time)
 
     @property
