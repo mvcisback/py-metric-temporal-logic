@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-
 from collections import deque, namedtuple
 from functools import lru_cache
 
 import funcy as fn
 from lenses import lens, bind
+
+import stl
 
 
 def flatten_binary(phi, op, dropT, shortT):
@@ -46,6 +47,9 @@ class AST(object):
             phi = Next(phi)
 
         return phi
+
+    def __call__(self, trace, time):
+        return stl.pointwise_sat(self)(trace, time)
 
     @property
     def children(self):

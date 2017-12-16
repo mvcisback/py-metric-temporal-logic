@@ -1,6 +1,6 @@
 import hypothesis.strategies as st
 import traces
-from hypothesis import given, settings, Verbosity, Phase
+from hypothesis import given
 from pytest import raises
 
 import stl
@@ -81,11 +81,6 @@ def test_eval_smoke_tests(phi):
 
 
 @given(SignalTemporalLogicStrategy)
-@settings(
-    max_shrinks=0,
-    verbosity=Verbosity.verbose,
-    perform_health_check=False,
-    phases=[Phase.generate])
 def test_temporal_identities(phi):
     stl_eval = stl.boolean_eval.pointwise_sat(phi)
     stl_eval2 = stl.boolean_eval.pointwise_sat(~phi)
@@ -122,6 +117,12 @@ def test_fastboolean_smoketest():
 
     with raises(NotImplementedError):
         stl.fastboolean_eval.pointwise_sat(stl.ast.AST())
+
+
+def test_callable_interface():
+    phi = stl.parse(
+        '(G[0, 4](x > 0)) & ((F[2, 1](AP1)) | (AP2)) & (G[0,0](AP2))')
+    assert not phi(x, 0)
 
 
 def test_implicit_validity_domain_rigid():
