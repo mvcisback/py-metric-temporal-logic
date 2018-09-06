@@ -17,6 +17,6 @@ def test_hash_inheritance(phi):
 
 
 def test_sugar_smoke():
-    stl.parse('(x) <-> (x)')
-    stl.parse('(x) -> (x)')
-    stl.parse('(x) ^ (x)')
+    stl.parse('(x <-> x)')
+    stl.parse('(x -> x)')
+    stl.parse('(x ^ x)')

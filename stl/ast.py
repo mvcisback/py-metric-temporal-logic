@@ -72,9 +72,6 @@ class AST(object):
                     yield leaf.interval[0]
                 if isinstance(leaf.interval[1], Param):
                     yield leaf.interval[1]
-            elif isinstance(leaf, LinEq):
-                if isinstance(leaf.const, Param):
-                    yield leaf.const
 
         return set(fn.mapcat(get_params, self.walk()))
 
@@ -83,18 +80,8 @@ class AST(object):
         return phi.modify(lambda x: float(val.get(x, val.get(str(x), x))))
 
     @property
-    def lineqs(self):
-        return set(lineq_lens.collect()(self))
-
-    @property
     def atomic_predicates(self):
         return set(AP_lens.collect()(self))
-
-    @property
-    def var_names(self):
-        symbols = set(bind(self.lineqs).Each().terms.Each().collect())
-        symbols |= self.atomic_predicates
-        return set(bind(symbols).Each().id.collect())
 
     def inline_context(self, context):
         phi, phi2 = self, None
@@ -116,7 +103,7 @@ class _Top(AST):
     __slots__ = ()
 
     def __repr__(self):
-        return "⊤"
+        return "1"
 
     def __invert__(self):
         return BOT
@@ -126,7 +113,7 @@ class _Bot(AST):
     __slots__ = ()
 
     def __repr__(self):
-        return "⊥"
+        return "0"
 
     def __invert__(self):
         return TOP
@@ -192,7 +179,7 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
     OP = "?"
 
     def __repr__(self):
-        return f" {self.OP} ".join(f"({x})" for x in self.args)
+        return "(" + f" {self.OP} ".join(f"{x}" for x in self.args) + ")"
 
     @property
     def children(self):
@@ -202,7 +189,7 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
 class Or(NaryOpSTL):
     __slots__ = ()
 
-    OP = "∨"
+    OP = "|"
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -212,7 +199,7 @@ class Or(NaryOpSTL):
 class And(NaryOpSTL):
     __slots__ = ()
 
-    OP = "∧"
+    OP = "&"
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -224,7 +211,9 @@ class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
     OP = '?'
 
     def __repr__(self):
-        return f"{self.OP}{self.interval}({self.arg})"
+        if self.interval.lower == 0 and self.interval.upper == float('inf'):
+            return f"{self.OP}{self.arg}"
+        return f"{self.OP}{self.interval}{self.arg}"
 
     @property
     def children(self):
@@ -233,7 +222,7 @@ class ModalOp(namedtuple('ModalOp', ['interval', 'arg']), AST):
 
 class F(ModalOp):
     __slots__ = ()
-    OP = "◇"
+    OP = "< >"
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -242,7 +231,7 @@ class F(ModalOp):
 
 class G(ModalOp):
     __slots__ = ()
-    OP = "□"
+    OP = "[ ]"
 
     def __hash__(self):
         # TODO: compute hash based on contents
@@ -253,7 +242,7 @@ class Until(namedtuple('ModalOp', ['arg1', 'arg2']), AST):
     __slots__ = ()
 
     def __repr__(self):
-        return f"({self.arg1}) U ({self.arg2})"
+        return f"({self.arg1} U {self.arg2})"
 
     @property
     def children(self):
@@ -268,7 +257,7 @@ class Neg(namedtuple('Neg', ['arg']), AST):
     __slots__ = ()
 
     def __repr__(self):
-        return f"¬({self.arg})"
+        return f"~{self.arg}"
 
     @property
     def children(self):
@@ -283,7 +272,7 @@ class Next(namedtuple('Next', ['arg']), AST):
     __slots__ = ()
 
     def __repr__(self):
-        return f"◯({self.arg})"
+        return f"@{self.arg}"
 
     @property
     def children(self):

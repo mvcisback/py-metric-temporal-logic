@@ -85,19 +85,6 @@ def eval_lineqs(phi, x):
     return {lineq: eval_lineq(lineq, x, domain) for lineq in lineqs}
 
 
-def implicit_validity_domain(phi, trace):
-    params = {ap.name for ap in phi.params}
-    order = tuple(params)
-
-    def vec_to_dict(theta):
-        return {k: v for k, v in zip(order, theta)}
-
-    def oracle(theta):
-        return stl.pointwise_sat(phi.set_params(vec_to_dict(theta)))(trace, 0)
-
-    return oracle, order
-
-
 def require_discretizable(func):
     @wraps(func)
     def _func(phi, dt, *args, **kwargs):

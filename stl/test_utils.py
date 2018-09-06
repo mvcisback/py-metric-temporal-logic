@@ -5,11 +5,11 @@ from hypothesis import given
 from pytest import raises
 
 CONTEXT = {
-    stl.parse('AP1'): stl.parse('F(x > 4)'),
-    stl.parse('AP2'): stl.parse('(AP1) U (AP1)'),
-    stl.parse('AP3'): stl.parse('y < 4'),
-    stl.parse('AP4'): stl.parse('y < 3'),
-    stl.parse('AP5'): stl.parse('y + x > 4'),
+    stl.parse('ap1'): stl.parse('x'),
+    stl.parse('ap2'): stl.parse('(y U z)'),
+    stl.parse('ap3'): stl.parse('x'),
+    stl.parse('ap4'): stl.parse('(x -> y -> z)'),
+    stl.parse('ap5'): stl.parse('(ap1 <-> y <-> z)'),
 }
 APS = set(CONTEXT.keys())
 
@@ -29,32 +29,19 @@ def test_f_neg_or_canonical_form_not_implemented():
 
 
 def test_inline_context_rigid():
-    phi = stl.parse('G(AP1)')
+    phi = stl.parse('G ap1')
     phi2 = phi.inline_context(CONTEXT)
-    assert phi2 == stl.parse('G(F(x > 4))')
+    assert phi2 == stl.parse('G x')
 
-    phi = stl.parse('G(AP2)')
+    phi = stl.parse('G ap5')
     phi2 = phi.inline_context(CONTEXT)
-    assert phi2 == stl.parse('G((F(x > 4)) U (F(x > 4)))')
+    assert phi2 == stl.parse('G(x <-> y <-> z)')
 
 
 @given(SignalTemporalLogicStrategy)
 def test_inline_context(phi):
     phi2 = phi.inline_context(CONTEXT)
     assert not (APS & phi2.atomic_predicates)
-
-
-def test_linear_stl_lipschitz_rigid():
-    phi = stl.parse('(x + 3y - 4z < 3)')
-    assert stl.utils.linear_stl_lipschitz(phi) == (8)
-
-
-@given(SignalTemporalLogicStrategy, SignalTemporalLogicStrategy)
-def test_linear_stl_lipschitz(phi1, phi2):
-    lip1 = stl.utils.linear_stl_lipschitz(phi1)
-    lip2 = stl.utils.linear_stl_lipschitz(phi2)
-    phi3 = phi1 | phi2
-    assert stl.utils.linear_stl_lipschitz(phi3) == max(lip1, lip2)
 
 
 @given(SignalTemporalLogicStrategy, SignalTemporalLogicStrategy)
@@ -65,34 +52,34 @@ def test_timed_until_smoke_test(phi1, phi2):
 def test_discretize():
     dt = 0.3
 
-    phi = stl.parse('X(AP1)')
+    phi = stl.parse('@ ap1')
     assert stl.utils.is_discretizable(phi, dt)
     phi2 = stl.utils.discretize(phi, dt)
     phi3 = stl.utils.discretize(phi2, dt)
     assert phi2 == phi3
 
-    phi = stl.parse('G[0.3, 1.2](F[0.6, 1.5](AP1))')
+    phi = stl.parse('G[0.3, 1.2] F[0.6, 1.5] ap1')
     assert stl.utils.is_discretizable(phi, dt)
     phi2 = stl.utils.discretize(phi, dt)
     phi3 = stl.utils.discretize(phi2, dt)
     assert phi2 == phi3
 
-    phi = stl.parse('G[0.3, 1.4](F[0.6, 1.5](AP1))')
+    phi = stl.parse('G[0.3, 1.4] F[0.6, 1.5] ap1')
     assert not stl.utils.is_discretizable(phi, dt)
 
-    phi = stl.parse('G[0.3, 1.2](F(AP1))')
+    phi = stl.parse('G[0.3, 1.2] F ap1')
     assert not stl.utils.is_discretizable(phi, dt)
 
-    phi = stl.parse('G[0.3, 1.2]((AP1) U (AP2))')
+    phi = stl.parse('G[0.3, 1.2] (ap1 U ap2)')
     assert not stl.utils.is_discretizable(phi, dt)
 
-    phi = stl.parse('G[0.3, 0.6](~(F[0, 0.3](A)))')
+    phi = stl.parse('G[0.3, 0.6] ~F[0, 0.3] a')
     assert stl.utils.is_discretizable(phi, dt)
     phi2 = stl.utils.discretize(phi, dt, distribute=True)
     phi3 = stl.utils.discretize(phi2, dt, distribute=True)
     assert phi2 == phi3
     assert phi2 == stl.parse(
-        '(~((X(A)) ∨ (X(X(A))))) ∧ (~((X(X(A))) ∨ (X(X(X(A))))))')
+        '(~(@a | @@a) & ~(@@a | @@@a))')
 
     phi = stl.TOP
     assert stl.utils.is_discretizable(phi, dt)
@@ -110,17 +97,17 @@ def test_discretize():
 def test_scope():
     dt = 0.3
 
-    phi = stl.parse('X(AP1)')
+    phi = stl.parse('@ap1')
     assert stl.utils.scope(phi, dt) == 0.3
 
-    phi = stl.parse('X((X(AP1)) | (AP2))')
+    phi = stl.parse('(@@ap1 | ap2)')
     assert stl.utils.scope(phi, dt) == 0.6
 
-    phi = stl.parse('G[0.3, 1.2](F[0.6, 1.5](AP1))')
+    phi = stl.parse('G[0.3, 1.2] F[0.6, 1.5] ap1')
     assert stl.utils.scope(phi, dt) == 1.2 + 1.5
 
-    phi = stl.parse('G[0.3, 1.2](F(AP1))')
+    phi = stl.parse('G[0.3, 1.2] F ap1')
     assert stl.utils.scope(phi, dt) == float('inf')
 
-    phi = stl.parse('G[0.3, 1.2]((AP1) U (AP2))')
+    phi = stl.parse('G[0.3, 1.2] (ap1 U ap2)')
     assert stl.utils.scope(phi, dt) == float('inf')

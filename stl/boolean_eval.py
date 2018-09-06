@@ -25,9 +25,7 @@ def pointwise_sat(phi, dt=0.1):
     ap_names = [z.id for z in phi.atomic_predicates]
 
     def _eval_stl(x, t=0):
-        evaluated = stl.utils.eval_lineqs(phi, x)
-
-        evaluated.update(fn.project(x, ap_names))
+        evaluated = fn.project(x, ap_names)
         return bool(eval_stl(phi, dt)(evaluated)[t])
 
     return _eval_stl
@@ -107,6 +105,8 @@ def eval_stl_f(phi, dt):
 def eval_stl_g(phi, dt):
     f = eval_stl(phi.arg, dt)
     a, b = phi.interval
+    if b < a:
+        return lambda _: TRUE_TRACE
 
     def process_intervals(x):
         # Need to add last interval

@@ -9,26 +9,11 @@ from lenses import bind
 import stl.ast
 
 oo = float('inf')
-op_lookup = {
-    ">": op.gt,
-    ">=": op.ge,
-    "<": op.lt,
-    "<=": op.le,
-    "=": op.eq,
-}
 
-
-def eval_terms(lineq, x, t):
-    terms = bind(lineq).terms.Each().collect()
-    return sum(eval_term(term, x, t) for term in terms)
-
-
-def eval_term(term, x, t):
-    return float(term.coeff) * x[term.id][t]
-
-
-def get_times(x, tau, lo=None, hi=None):
+def get_times(x, tau, lo, hi):
     end = min(v.domain.end() for v in x.values())
+
+    lo, hi = map(float, (lo, hi))
     hi = hi + tau if hi + tau <= end else end
     lo = lo + tau if lo + tau <= end else end
 
@@ -112,10 +97,3 @@ def pointwise_satf_top(_):
 @pointwise_satf.register(type(stl.BOT))
 def pointwise_satf_bot(_):
     return lambda _, t: bitarray([False] * len(t))
-
-
-@pointwise_satf.register(stl.LinEq)
-def pointwise_satf_lineq(stl):
-    def op(a):
-        return op_lookup[stl.op](a, stl.const)
-    return lambda x, t: bitarray(op(eval_terms(stl, x, tau)) for tau in t)

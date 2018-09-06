@@ -4,19 +4,21 @@ from hypothesis_cfg import ContextFreeGrammarStrategy
 import stl
 
 GRAMMAR = {
-    'phi': (('Unary', '(', 'phi', ')'), ('(', 'phi', ')', 'Binary', '(', 'phi',
-                                         ')'), ('AP', ), ('LINEQ', ), ('⊥', ),
-            ('⊤', )),
+    'phi': (
+        ('Unary', 'phi'),
+        ('(', 'phi', 'Binary', 'phi', ')'),
+        ('AP', ), ('0', ), ('1', )
+    ),
     'Unary': (('~', ), ('G', 'Interval'), ('F', 'Interval'), ('X', )),
     'Interval': (('', ), ('[1, 3]', )),
-    'Binary': ((' | ', ), (' & ', ), (' U ', ), (' -> ', ), (' <-> ',),
-               (' ^ ',)),
-    'AP': (('AP1', ), ('AP2', ), ('AP3', ), ('AP4', ), ('AP5', )),
-    'LINEQ': (('x > 4', ), ('y < 2', ), ('y >= 3', ), ('x + 2.0y >= 2', )),
+    'Binary': (
+        (' | ', ), (' & ', ), (' -> ', ), (' <-> ',), (' ^ ',),
+        (' U ',),
+    ),
+    'AP': (('ap1', ), ('ap2', ), ('ap3', ), ('ap4', ), ('ap5', )),
 }
 
-SignalTemporalLogicStrategy = st.builds(lambda term: stl.parse(''.join(term)),
-                                        ContextFreeGrammarStrategy(
-                                            GRAMMAR,
-                                            max_length=14,
-                                            start='phi'))
+SignalTemporalLogicStrategy = st.builds(
+    lambda term: stl.parse(''.join(term)),
+    ContextFreeGrammarStrategy(GRAMMAR, max_length=14, start='phi')
+)
