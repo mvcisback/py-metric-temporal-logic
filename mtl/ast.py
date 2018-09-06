@@ -5,7 +5,7 @@ from functools import lru_cache
 import funcy as fn
 from lenses import lens, bind
 
-import stl
+import mtl
 
 
 def flatten_binary(phi, op, dropT, shortT):
@@ -49,7 +49,7 @@ class AST(object):
         return phi
 
     def __call__(self, trace, time=0):
-        return stl.pointwise_sat(self)(trace, time)
+        return mtl.pointwise_sat(self)(trace, time)
 
     @property
     def children(self):
@@ -145,7 +145,7 @@ class Interval(namedtuple('I', ['lower', 'upper'])):
         return f"[{self.lower},{self.upper}]"
 
 
-class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
+class NaryOpMTL(namedtuple('NaryOp', ['args']), AST):
     __slots__ = ()
 
     OP = "?"
@@ -158,7 +158,7 @@ class NaryOpSTL(namedtuple('NaryOp', ['args']), AST):
         return tuple(self.args)
 
 
-class Or(NaryOpSTL):
+class Or(NaryOpMTL):
     __slots__ = ()
 
     OP = "|"
@@ -168,7 +168,7 @@ class Or(NaryOpSTL):
         return hash(repr(self))
 
 
-class And(NaryOpSTL):
+class And(NaryOpMTL):
     __slots__ = ()
 
     OP = "&"

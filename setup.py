@@ -1,10 +1,10 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='py-stl',
+    name='metric-temporal-logic',
     version='0.2',
     description='TODO',
-    url='http://github.com/mvcisback/py-stl',
+    url='http://github.com/mvcisback/py-mtl',
     author='Marcell Vazquez-Chanlatte',
     author_email='marcell.vc@eecs.berkeley.edu',
     license='MIT',
@@ -12,7 +12,6 @@ setup(
         'funcy',
         'parsimonious',
         'lenses',
-        'sympy',
         'bitarray',
         'traces',
     ],

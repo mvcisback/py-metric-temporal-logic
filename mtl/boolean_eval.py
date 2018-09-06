@@ -7,9 +7,9 @@ from functools import singledispatch
 import funcy as fn
 import traces
 
-import stl
-import stl.ast
-from stl.utils import const_trace, andf, orf
+import mtl
+import mtl.ast
+from mtl.utils import const_trace, andf, orf
 
 TRUE_TRACE = const_trace(True)
 FALSE_TRACE = const_trace(False)
@@ -24,15 +24,15 @@ def negate_trace(x):
 def pointwise_sat(phi, dt=0.1):
     ap_names = [z.id for z in phi.atomic_predicates]
 
-    def _eval_stl(x, t=0):
+    def _eval_mtl(x, t=0):
         evaluated = fn.project(x, ap_names)
-        return bool(eval_stl(phi, dt)(evaluated)[t])
+        return bool(eval_mtl(phi, dt)(evaluated)[t])
 
-    return _eval_stl
+    return _eval_mtl
 
 
 @singledispatch
-def eval_stl(phi, dt):
+def eval_mtl(phi, dt):
     raise NotImplementedError
 
 
@@ -42,9 +42,9 @@ def or_traces(xs):
     return out
 
 
-@eval_stl.register(stl.Or)
-def eval_stl_or(phi, dt):
-    fs = [eval_stl(arg, dt) for arg in phi.args]
+@eval_mtl.register(mtl.Or)
+def eval_mtl_or(phi, dt):
+    fs = [eval_mtl(arg, dt) for arg in phi.args]
 
     def _eval(x):
         out = or_traces([f(x) for f in fs])
@@ -60,9 +60,9 @@ def and_traces(xs):
     return out
 
 
-@eval_stl.register(stl.And)
-def eval_stl_and(phi, dt):
-    fs = [eval_stl(arg, dt) for arg in phi.args]
+@eval_mtl.register(mtl.And)
+def eval_mtl_and(phi, dt):
+    fs = [eval_mtl(arg, dt) for arg in phi.args]
 
     def _eval(x):
         out = and_traces([f(x) for f in fs])
@@ -80,9 +80,9 @@ def apply_until(y):
         phi2_next = phi2
 
 
-@eval_stl.register(stl.Until)
-def eval_stl_until(phi, dt):
-    f1, f2 = eval_stl(phi.arg1, dt), eval_stl(phi.arg2, dt)
+@eval_mtl.register(mtl.Until)
+def eval_mtl_until(phi, dt):
+    f1, f2 = eval_mtl(phi.arg1, dt), eval_mtl(phi.arg2, dt)
 
     def _eval(x):
         y1, y2 = f1(x), f2(x)
@@ -95,15 +95,15 @@ def eval_stl_until(phi, dt):
     return _eval
 
 
-@eval_stl.register(stl.F)
-def eval_stl_f(phi, dt):
-    phi = ~stl.G(phi.interval, ~phi.arg)
-    return eval_stl(phi, dt)
+@eval_mtl.register(mtl.F)
+def eval_mtl_f(phi, dt):
+    phi = ~mtl.G(phi.interval, ~phi.arg)
+    return eval_mtl(phi, dt)
 
 
-@eval_stl.register(stl.G)
-def eval_stl_g(phi, dt):
-    f = eval_stl(phi.arg, dt)
+@eval_mtl.register(mtl.G)
+def eval_mtl_g(phi, dt):
+    f = eval_mtl(phi.arg, dt)
     a, b = phi.interval
     if b < a:
         return lambda _: TRUE_TRACE
@@ -139,9 +139,9 @@ def eval_stl_g(phi, dt):
     return _eval
 
 
-@eval_stl.register(stl.Neg)
-def eval_stl_neg(phi, dt):
-    f = eval_stl(phi.arg, dt)
+@eval_mtl.register(mtl.Neg)
+def eval_mtl_neg(phi, dt):
+    f = eval_mtl(phi.arg, dt)
 
     def _eval(x):
         out = negate_trace(f(x))
@@ -151,9 +151,9 @@ def eval_stl_neg(phi, dt):
     return _eval
 
 
-@eval_stl.register(stl.ast.Next)
-def eval_stl_next(phi, dt):
-    f = eval_stl(phi.arg, dt)
+@eval_mtl.register(mtl.ast.Next)
+def eval_mtl_next(phi, dt):
+    f = eval_mtl(phi.arg, dt)
 
     def _eval(x):
         y = f(x)
@@ -166,8 +166,8 @@ def eval_stl_next(phi, dt):
     return _eval
 
 
-@eval_stl.register(stl.AtomicPred)
-def eval_stl_ap(phi, _):
+@eval_mtl.register(mtl.AtomicPred)
+def eval_mtl_ap(phi, _):
     def _eval(x):
         out = x[str(phi.id)]
         out.compact()
@@ -177,11 +177,11 @@ def eval_stl_ap(phi, _):
     return _eval
 
 
-@eval_stl.register(type(stl.TOP))
-def eval_stl_top(_, _1):
+@eval_mtl.register(type(mtl.TOP))
+def eval_mtl_top(_, _1):
     return lambda *_: TRUE_TRACE
 
 
-@eval_stl.register(type(stl.BOT))
-def eval_stl_bot(_, _1):
+@eval_mtl.register(type(mtl.BOT))
+def eval_mtl_bot(_, _1):
     return lambda *_: FALSE_TRACE

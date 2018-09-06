@@ -6,8 +6,8 @@ import traces
 import numpy as np
 from lenses import bind
 
-import stl.ast
-from stl.ast import (And, F, G, Interval, Neg, Or, Next, Until,
+import mtl.ast
+from mtl.ast import (And, F, G, Interval, Neg, Or, Next, Until,
                      AtomicPred, _Top, _Bot)
 
 oo = float('inf')
@@ -40,48 +40,8 @@ def f_neg_or_canonical_form(phi):
         raise NotImplementedError
 
 
-def _lineq_lipschitz(lineq):
-    return sum(map(abs, bind(lineq).terms.Each().coeff.collect()))
-
-
-def linear_stl_lipschitz(phi):
-    """Infinity norm lipschitz bound of linear inequality predicate."""
-    if any(isinstance(psi, (AtomicPred, _Top, _Bot)) for psi in phi.walk()):
-        return float('inf')
-
-    return float(max(map(_lineq_lipschitz, phi.lineqs), default=float('inf')))
-
-
-op_lookup = {
-    ">": op.gt,
-    ">=": op.ge,
-    "<": op.lt,
-    "<=": op.le,
-    "=": op.eq,
-}
-
-
 def const_trace(x, start=0):
     return traces.TimeSeries([(start, x)], domain=traces.Domain(start, oo))
-
-
-def eval_lineq(lineq, x, domain, compact=True):
-    lhs = sum(const_trace(term.coeff) * x[term.id] for term in lineq.terms)
-    compare = op_lookup.get(lineq.op)
-    output = lhs.operation(const_trace(lineq.const), compare)
-    output.domain = domain
-
-    if compact:
-        output.compact()
-    return output
-
-
-def eval_lineqs(phi, x):
-    lineqs = phi.lineqs
-    start = max(y.domain.start() for y in x.values())
-    end = min(y.domain.end() for y in x.values())
-    domain = traces.Domain(start, end)
-    return {lineq: eval_lineq(lineq, x, domain) for lineq in lineqs}
 
 
 def require_discretizable(func):
@@ -106,7 +66,7 @@ def scope(phi, dt, *, _t=0, horizon=oo):
     return min(_scope, horizon)
 
 
-# Code to discretize a bounded STL formula
+# Code to discretize a bounded MTL formula
 
 
 @require_discretizable
@@ -153,7 +113,7 @@ def _interval_discretizable(itvl, dt):
 
 def _distribute_next(phi, i=0):
     if isinstance(phi, AtomicPred):
-        return stl.utils.next(phi, i=i)
+        return mtl.utils.next(phi, i=i)
     elif isinstance(phi, Next):
         return _distribute_next(phi.arg, i=i+1)
 
@@ -185,11 +145,11 @@ def env(phi, *, lo=0, hi=float('inf')):
 
 
 def andf(*args):
-    return reduce(op.and_, args) if args else stl.TOP
+    return reduce(op.and_, args) if args else mtl.TOP
 
 
 def orf(*args):
-    return reduce(op.or_, args) if args else stl.TOP
+    return reduce(op.or_, args) if args else mtl.TOP
 
 
 def implies(x, y):
@@ -209,4 +169,4 @@ def next(phi, i=1):
 
 
 def timed_until(phi, psi, lo, hi):
-    return env(psi, lo=lo, hi=hi) & alw(stl.ast.Until(phi, psi), lo=0, hi=lo)
+    return env(psi, lo=lo, hi=hi) & alw(mtl.ast.Until(phi, psi), lo=0, hi=lo)

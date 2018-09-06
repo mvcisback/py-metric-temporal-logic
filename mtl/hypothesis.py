@@ -1,7 +1,7 @@
 import hypothesis.strategies as st
 from hypothesis_cfg import ContextFreeGrammarStrategy
 
-import stl
+import mtl
 
 GRAMMAR = {
     'phi': (
@@ -18,7 +18,7 @@ GRAMMAR = {
     'AP': (('ap1', ), ('ap2', ), ('ap3', ), ('ap4', ), ('ap5', )),
 }
 
-SignalTemporalLogicStrategy = st.builds(
-    lambda term: stl.parse(''.join(term)),
+MetricTemporalLogicStrategy = st.builds(
+    lambda term: mtl.parse(''.join(term)),
     ContextFreeGrammarStrategy(GRAMMAR, max_length=14, start='phi')
 )

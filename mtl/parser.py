@@ -3,10 +3,10 @@ import operator as op
 from functools import partialmethod, reduce
 
 from parsimonious import Grammar, NodeVisitor
-from stl import ast
-from stl.utils import iff, implies, xor, timed_until
+from mtl import ast
+from mtl.utils import iff, implies, xor, timed_until
 
-STL_GRAMMAR = Grammar(u'''
+MTL_GRAMMAR = Grammar(u'''
 phi = (neg / paren_phi / next / bot / top
      / xor_outer / iff_outer / implies_outer / and_outer / or_outer
      / timed_until / until / g / f / AP)
@@ -53,7 +53,7 @@ EOL = "\\n"
 oo = float('inf')
 
 
-class STLVisitor(NodeVisitor):
+class MTLVisitor(NodeVisitor):
     def __init__(self, H=oo):
         super().__init__()
         self.default_interval = ast.Interval(0.0, H)
@@ -137,5 +137,5 @@ class STLVisitor(NodeVisitor):
         return ast.Next(children[2])
 
 
-def parse(stl_str: str, rule: str = "phi", H=oo) -> "STL":
-    return STLVisitor(H).visit(STL_GRAMMAR[rule].parse(stl_str))
+def parse(mtl_str: str, rule: str = "phi", H=oo) -> "MTL":
+    return MTLVisitor(H).visit(MTL_GRAMMAR[rule].parse(mtl_str))
