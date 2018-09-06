@@ -24,6 +24,7 @@ def test_identities(phi):
     assert (phi | phi) | phi == phi | (phi | phi)
     assert ~~phi == phi
 
+
 def test_walk():
     phi = stl.parse(
         '(([ ][0, 1] ap1 & < >[1,2] ap2) | (@ap1 U ap2))')

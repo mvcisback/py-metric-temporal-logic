@@ -177,16 +177,6 @@ def eval_stl_ap(phi, _):
     return _eval
 
 
-@eval_stl.register(stl.LinEq)
-def eval_stl_lineq(phi, _):
-    def _eval(x):
-        out = x[phi]
-        out.compact()
-        return out
-
-    return _eval
-
-
 @eval_stl.register(type(stl.TOP))
 def eval_stl_top(_, _1):
     return lambda *_: TRUE_TRACE

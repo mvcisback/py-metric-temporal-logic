@@ -1,14 +1,13 @@
-import operator as op
 from functools import reduce, singledispatch
 from operator import and_, or_
 
 import funcy as fn
 from bitarray import bitarray
-from lenses import bind
 
 import stl.ast
 
 oo = float('inf')
+
 
 def get_times(x, tau, lo, hi):
     end = min(v.domain.end() for v in x.values())

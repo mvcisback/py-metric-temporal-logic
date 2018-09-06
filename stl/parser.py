@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
-
-# TODO: allow multiplication to be distributive
-# TODO: support variables on both sides of ineq
 import operator as op
 from functools import partialmethod, reduce
 
-from lenses import bind
 from parsimonious import Grammar, NodeVisitor
 from stl import ast
 from stl.utils import iff, implies, xor, timed_until
 
 STL_GRAMMAR = Grammar(u'''
 phi = (neg / paren_phi / next / bot / top
-     / xor_outer / iff_outer / implies_outer / and_outer / or_outer 
+     / xor_outer / iff_outer / implies_outer / and_outer / or_outer
      / timed_until / until / g / f / AP)
 
 paren_phi = "(" __ phi __ ")"
