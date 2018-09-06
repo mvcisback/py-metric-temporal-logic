@@ -7,15 +7,14 @@ import numpy as np
 from lenses import bind
 
 import stl.ast
-from stl.ast import (And, F, G, Interval, LinEq, Neg, Or, Next, Until,
+from stl.ast import (And, F, G, Interval, Neg, Or, Next, Until,
                      AtomicPred, _Top, _Bot)
-from stl.types import STL
 
 oo = float('inf')
 
 
-def f_neg_or_canonical_form(phi: STL) -> STL:
-    if isinstance(phi, (LinEq, AtomicPred, _Top, _Bot)):
+def f_neg_or_canonical_form(phi):
+    if isinstance(phi, (AtomicPred, _Top, _Bot)):
         return phi
 
     children = [f_neg_or_canonical_form(s) for s in phi.children]
@@ -120,7 +119,7 @@ def discretize(phi, dt, distribute=False, *, horizon=None):
 
 
 def _discretize(phi, dt, horizon):
-    if isinstance(phi, (LinEq, AtomicPred, _Top, _Bot)):
+    if isinstance(phi, (AtomicPred, _Top, _Bot)):
         return phi
 
     if not isinstance(phi, (F, G, Until)):
@@ -153,7 +152,7 @@ def _interval_discretizable(itvl, dt):
 
 
 def _distribute_next(phi, i=0):
-    if isinstance(phi, (LinEq, AtomicPred)):
+    if isinstance(phi, AtomicPred):
         return stl.utils.next(phi, i=i)
     elif isinstance(phi, Next):
         return _distribute_next(phi.arg, i=i+1)

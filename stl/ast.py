@@ -138,34 +138,6 @@ class AtomicPred(namedtuple("AP", ["id"]), AST):
         return tuple()
 
 
-class LinEq(namedtuple("LinEquality", ["terms", "op", "const"]), AST):
-    __slots__ = ()
-
-    def __repr__(self):
-        return " + ".join(map(str, self.terms)) + f" {self.op} {self.const}"
-
-    @property
-    def children(self):
-        return tuple()
-
-    def __hash__(self):
-        # TODO: compute hash based on contents
-        return hash(repr(self))
-
-
-class Var(namedtuple("Var", ["coeff", "id"])):
-    __slots__ = ()
-
-    def __repr__(self):
-        if self.coeff == -1:
-            coeff_str = "-"
-        elif self.coeff == +1:
-            coeff_str = ""
-        else:
-            coeff_str = f"{self.coeff}"
-        return f"{coeff_str}{self.id}"
-
-
 class Interval(namedtuple('I', ['lower', 'upper'])):
     __slots__ = ()
 
@@ -304,5 +276,4 @@ def type_pred(*args):
     return lambda x: type(x) in ast_types
 
 
-lineq_lens = lens.Recur(LinEq)
 AP_lens = lens.Recur(AtomicPred)
