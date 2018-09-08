@@ -40,8 +40,8 @@ const_or_unbound = const / "inf" / id
 
 AP = ~r"[a-z][a-z\d]*"
 
-bot = "False"
-top = "True"
+bot = "FALSE"
+top = "TRUE"
 
 id = ~r"[a-z\d]+"
 const = ~r"[-+]?(\d*\.\d+|\d+)"

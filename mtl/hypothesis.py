@@ -7,7 +7,7 @@ GRAMMAR = {
     'phi': (
         ('Unary', 'phi'),
         ('(', 'phi', 'Binary', 'phi', ')'),
-        ('AP', ), ('0', ), ('1', )
+        ('AP', ), ('FALSE', ), ('TRUE', )
     ),
     'Unary': (('~', ), ('G', 'Interval'), ('F', 'Interval'), ('X', )),
     'Interval': (('', ), ('[1, 3]', )),

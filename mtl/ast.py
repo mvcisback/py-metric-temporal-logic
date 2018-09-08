@@ -103,7 +103,7 @@ class _Top(AST):
     __slots__ = ()
 
     def __repr__(self):
-        return "1"
+        return "TRUE"
 
     def __invert__(self):
         return BOT
@@ -113,7 +113,7 @@ class _Bot(AST):
     __slots__ = ()
 
     def __repr__(self):
-        return "0"
+        return "FALSE"
 
     def __invert__(self):
         return TOP
