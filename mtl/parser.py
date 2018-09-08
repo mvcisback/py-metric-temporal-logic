@@ -38,10 +38,10 @@ interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 
 const_or_unbound = const / "inf" / id
 
-AP = ~r"[a-z\d]+"
+AP = ~r"[a-z][a-z\d]*"
 
-bot = "0"
-top = "1"
+bot = "False"
+top = "True"
 
 id = ~r"[a-z\d]+"
 const = ~r"[-+]?(\d*\.\d+|\d+)"
