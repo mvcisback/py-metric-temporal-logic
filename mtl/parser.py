@@ -59,7 +59,7 @@ class MTLVisitor(NodeVisitor):
         self.default_interval = ast.Interval(0.0, H)
 
     def binop_inner(self, _, children):
-        if isinstance(children[0], ast.AST):
+        if not isinstance(children[0], list):
             return children
 
         ((left, _, _, _, right),) = children

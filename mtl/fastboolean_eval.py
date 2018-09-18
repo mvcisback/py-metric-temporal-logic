@@ -10,7 +10,7 @@ oo = float('inf')
 
 
 def get_times(x, tau, lo, hi):
-    end = min(v.domain.end() for v in x.values())
+    end = min(v.last_key() for v in x.values())
 
     lo, hi = map(float, (lo, hi))
     hi = hi + tau if hi + tau <= end else end

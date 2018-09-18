@@ -16,17 +16,14 @@ FALSE_TRACE = const_trace(False)
 
 
 def negate_trace(x):
-    out = x.operation(TRUE_TRACE, op.xor)
-    out.domain = x.domain
-    return out
+    return x.operation(TRUE_TRACE, op.xor)
 
 
 def pointwise_sat(phi, dt=0.1):
     ap_names = [z.id for z in phi.atomic_predicates]
 
     def _eval_mtl(x, t=0):
-        evaluated = fn.project(x, ap_names)
-        return bool(eval_mtl(phi, dt)(evaluated)[t])
+        return bool(eval_mtl(phi, dt)(x)[t])
 
     return _eval_mtl
 
@@ -37,9 +34,7 @@ def eval_mtl(phi, dt):
 
 
 def or_traces(xs):
-    out = orf(*xs)
-    out.domain = xs[0].domain
-    return out
+    return orf(*xs)
 
 
 @eval_mtl.register(mtl.Or)
@@ -55,9 +50,7 @@ def eval_mtl_or(phi, dt):
 
 
 def and_traces(xs):
-    out = andf(*xs)
-    out.domain = xs[0].domain
-    return out
+    return andf(*xs)
 
 
 @eval_mtl.register(mtl.And)
@@ -73,6 +66,10 @@ def eval_mtl_and(phi, dt):
 
 
 def apply_until(y):
+    if len(y) == 1:
+        left, right = y.first_value()
+        yield (0, min(left, right))
+        return
     periods = list(y.iterperiods())
     phi2_next = False
     for t, _, (phi1, phi2) in periods[::-1]:
@@ -87,7 +84,7 @@ def eval_mtl_until(phi, dt):
     def _eval(x):
         y1, y2 = f1(x), f2(x)
         y = y1.operation(y2, lambda a, b: (a, b))
-        out = traces.TimeSeries(apply_until(y), domain=y1.domain)
+        out = traces.TimeSeries(apply_until(y))
         out.compact()
 
         return out
@@ -111,7 +108,7 @@ def eval_mtl_g(phi, dt):
     def process_intervals(x):
         # Need to add last interval
         intervals = fn.chain(x.iterintervals(), [(
-            x.last(),
+            x.first_item(),
             (float('inf'), None),
         )])
         for (start, val), (end, val2) in intervals:
@@ -121,10 +118,10 @@ def eval_mtl_g(phi, dt):
 
     if b == float('inf'):
         def _eval(x):
-            y = f(x)
-            val = len(y.slice(a, b)) == 1 and y[a]
-            return traces.TimeSeries(
-                [(y.domain.start(), val)], domain=y.domain)
+            y = f(x).slice(a, b)
+            y.compact()
+            val = len(y) == 1 and y[a]
+            return const_trace(val)
     else:
         def _eval(x):
             y = f(x)
@@ -132,7 +129,8 @@ def eval_mtl_g(phi, dt):
                 return y
 
             out = traces.TimeSeries(process_intervals(y)).slice(
-                y.domain.start(), y.domain.end())
+                y.first_key(), float('inf')
+            )
             out.compact()
             return out
 
@@ -158,7 +156,7 @@ def eval_mtl_next(phi, dt):
     def _eval(x):
         y = f(x)
         out = traces.TimeSeries(((t - dt, v) for t, v in y))
-        out = out.slice(y.domain.start(), y.domain.end())
+        out = out.slice(0, float('inf'))
         out.compact()
 
         return out

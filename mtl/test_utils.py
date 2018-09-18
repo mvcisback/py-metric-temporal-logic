@@ -5,43 +5,25 @@ from hypothesis import given
 from pytest import raises
 
 CONTEXT = {
-    mtl.parse('ap1'): mtl.parse('x'),
-    mtl.parse('ap2'): mtl.parse('(y U z)'),
-    mtl.parse('ap3'): mtl.parse('x'),
-    mtl.parse('ap4'): mtl.parse('(x -> y -> z)'),
-    mtl.parse('ap5'): mtl.parse('(ap1 <-> y <-> z)'),
+    'ap1': mtl.parse('x'),
+    'ap2': mtl.parse('(y U z)'),
+    'ap3': mtl.parse('x'),
+    'ap4': mtl.parse('(x -> y -> z)'),
+    'ap5': mtl.parse('(ap1 <-> y <-> z)'),
 }
 APS = set(CONTEXT.keys())
 
-
-@given(MetricTemporalLogicStrategy)
-def test_f_neg_or_canonical_form(phi):
-    phi2 = mtl.utils.f_neg_or_canonical_form(phi)
-    phi3 = mtl.utils.f_neg_or_canonical_form(phi2)
-    assert phi2 == phi3
-    assert not any(
-        isinstance(x, (mtl.ast.G, mtl.ast.And)) for x in phi2.walk())
-
-
-def test_f_neg_or_canonical_form_not_implemented():
-    with raises(NotImplementedError):
-        mtl.utils.f_neg_or_canonical_form(mtl.ast.AST())
-
-
 def test_inline_context_rigid():
     phi = mtl.parse('G ap1')
-    phi2 = phi.inline_context(CONTEXT)
-    assert phi2 == mtl.parse('G x')
+    assert phi[CONTEXT] == mtl.parse('G x')
 
     phi = mtl.parse('G ap5')
-    phi2 = phi.inline_context(CONTEXT)
-    assert phi2 == mtl.parse('G(x <-> y <-> z)')
+    assert phi[CONTEXT] == mtl.parse('G(x <-> y <-> z)')
 
 
 @given(MetricTemporalLogicStrategy)
 def test_inline_context(phi):
-    phi2 = phi.inline_context(CONTEXT)
-    assert not (APS & phi2.atomic_predicates)
+    assert not (APS & phi[CONTEXT].atomic_predicates)
 
 
 @given(MetricTemporalLogicStrategy, MetricTemporalLogicStrategy)

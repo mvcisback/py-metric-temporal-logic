@@ -23,23 +23,17 @@ TODO: Automatically generate input time series.
 """
 
 x = {
-    "x":
-    traces.TimeSeries([(0, 1), (0.1, 1), (0.2, 4)], domain=(0, 10)),
-    "y":
-    traces.TimeSeries([(0, 2), (0.1, 4), (0.2, 2)], domain=(0, 10)),
-    "ap1":
-    traces.TimeSeries([(0, True), (0.1, True), (0.2, False)], domain=(0, 10)),
+    "ap1": traces.TimeSeries([(0, True), (0.1, True), (0.2, False)]),
     "ap2":
-    traces.TimeSeries([(0, False), (0.2, True), (0.5, False)], domain=(0, 10)),
+    traces.TimeSeries([(0, False), (0.2, True), (0.5, False)]),
     "ap3":
-    traces.TimeSeries([(0, True), (0.1, True), (0.3, False)], domain=(0, 10)),
+    traces.TimeSeries([(0, True), (0.1, True), (0.3, False)]),
     "ap4":
-    traces.TimeSeries(
-        [(0, False), (0.1, False), (0.3, False)], domain=(0, 10)),
+    traces.TimeSeries([(0, False), (0.1, False), (0.3, False)]),
     "ap5":
-    traces.TimeSeries([(0, False), (0.1, False), (0.3, True)], domain=(0, 10)),
+    traces.TimeSeries([(0, False), (0.1, False), (0.3, True)]),
     "ap6":
-    traces.TimeSeries([(0, True)], domain=(0, 10)),
+    traces.TimeSeries([(0, True), (float('inf'), True)]),
 }
 
 
@@ -118,7 +112,7 @@ def test_fastboolean_smoketest():
     assert not mtl_eval(x, 0)
 
     with raises(NotImplementedError):
-        mtl.fastboolean_eval.pointwise_sat(mtl.ast.AST())
+        mtl.fastboolean_eval.pointwise_sat(None)
 
 
 def test_callable_interface():

@@ -13,35 +13,8 @@ from mtl.ast import (And, F, G, Interval, Neg, Or, Next, Until,
 oo = float('inf')
 
 
-def f_neg_or_canonical_form(phi):
-    if isinstance(phi, (AtomicPred, _Top, _Bot)):
-        return phi
-
-    children = [f_neg_or_canonical_form(s) for s in phi.children]
-    if isinstance(phi, (And, G)):
-        children = [Neg(s) for s in children]
-    children = tuple(sorted(children, key=str))
-
-    if isinstance(phi, Or):
-        return Or(children)
-    elif isinstance(phi, And):
-        return Neg(Or(children))
-    elif isinstance(phi, Neg):
-        return Neg(*children)
-    elif isinstance(phi, Next):
-        return Next(*children)
-    elif isinstance(phi, Until):
-        return Until(*children)
-    elif isinstance(phi, F):
-        return F(phi.interval, *children)
-    elif isinstance(phi, G):
-        return Neg(F(phi.interval, *children))
-    else:
-        raise NotImplementedError
-
-
-def const_trace(x, start=0):
-    return traces.TimeSeries([(start, x)], domain=traces.Domain(start, oo))
+def const_trace(x):
+    return traces.TimeSeries([(0, x), (oo, x)])
 
 
 def require_discretizable(func):
@@ -85,9 +58,9 @@ def _discretize(phi, dt, horizon):
     if not isinstance(phi, (F, G, Until)):
         children = tuple(_discretize(arg, dt, horizon) for arg in phi.children)
         if isinstance(phi, (And, Or)):
-            return bind(phi).args.set(children)
+            return phi.evolve(args=children)
         elif isinstance(phi, (Neg, Next)):
-            return bind(phi).arg.set(children[0])
+            return phi.evolve(arg=children[0])
 
         raise NotImplementedError
 
@@ -120,9 +93,9 @@ def _distribute_next(phi, i=0):
     children = tuple(_distribute_next(c, i) for c in phi.children)
 
     if isinstance(phi, (And, Or)):
-        return bind(phi).args.set(children)
+        return phi.evolve(args=children)
     elif isinstance(phi, (Neg, Next)):
-        return bind(phi).arg.set(children[0])
+        return phi.evolve(arg=children[0])
 
 
 def is_discretizable(phi, dt):
