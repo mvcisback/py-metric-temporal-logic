@@ -7,14 +7,12 @@ import numpy as np
 from lenses import bind
 
 import mtl.ast
-from mtl.ast import (And, F, G, Interval, Neg, Or, Next, Until,
-                     AtomicPred, _Top, _Bot)
 
 oo = float('inf')
 
 
 def const_trace(x):
-    return traces.TimeSeries([(0, x), (oo, x)])
+    return traces.TimeSeries([(0, x)])
 
 
 def require_discretizable(func):
@@ -106,40 +104,9 @@ def is_discretizable(phi, dt):
         _interval_discretizable(c.interval, dt) for c in phi.walk()
         if isinstance(c, (F, G)))
 
-# EDSL
-
-
-def alw(phi, *, lo=0, hi=float('inf')):
-    return G(Interval(lo, hi), phi)
-
-
-def env(phi, *, lo=0, hi=float('inf')):
-    return F(Interval(lo, hi), phi)
-
-
 def andf(*args):
     return reduce(op.and_, args) if args else mtl.TOP
 
 
 def orf(*args):
     return reduce(op.or_, args) if args else mtl.TOP
-
-
-def implies(x, y):
-    return ~x | y
-
-
-def xor(x, y):
-    return (x | y) & ~(x & y)
-
-
-def iff(x, y):
-    return (x & y) | (~x & ~y)
-
-
-def next(phi, i=1):
-    return phi >> i
-
-
-def timed_until(phi, psi, lo, hi):
-    return env(psi, lo=lo, hi=hi) & alw(mtl.ast.Until(phi, psi), lo=0, hi=lo)

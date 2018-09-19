@@ -5,8 +5,7 @@ from pytest import raises
 
 import mtl
 import mtl.boolean_eval
-import mtl.fastboolean_eval
-from mtl.hypothesis import MetricTemporalLogicStrategy
+from mtl.hypothesis import MetricTemporalLogicStrategy, APTraceStrategy
 """
 TODO: property based test that fasteval should be the same as slow
 TODO: property based test that x |= phi == ~(x |= ~phi)
@@ -23,99 +22,99 @@ TODO: Automatically generate input time series.
 """
 
 x = {
-    "ap1": traces.TimeSeries([(0, True), (0.1, True), (0.2, False)]),
+    "ap1": traces.TimeSeries([(0, 1), (0.1, 1), (0.2, -1)]),
     "ap2":
-    traces.TimeSeries([(0, False), (0.2, True), (0.5, False)]),
+    traces.TimeSeries([(0, -1), (0.2, 1), (0.5, -1)]),
     "ap3":
-    traces.TimeSeries([(0, True), (0.1, True), (0.3, False)]),
+    traces.TimeSeries([(0, 1), (0.1, 1), (0.3, -1)]),
     "ap4":
-    traces.TimeSeries([(0, False), (0.1, False), (0.3, False)]),
+    traces.TimeSeries([(0, -1), (0.1, -1), (0.3, -1)]),
     "ap5":
-    traces.TimeSeries([(0, False), (0.1, False), (0.3, True)]),
+    traces.TimeSeries([(0, -1), (0.1, -1), (0.3, 1)]),
     "ap6":
-    traces.TimeSeries([(0, True), (float('inf'), True)]),
+    traces.TimeSeries([(0, 1), (float('inf'), 1)]),
 }
 
 
-@given(st.just(mtl.ast.Next(mtl.BOT) | mtl.ast.Next(mtl.TOP)))
+def test_apply_weak_since():
+    y1 = traces.TimeSeries([(0, -1), (1, 1), (4, -1), (5, 1)])
+    y2 = traces.TimeSeries([(0, -1), (2, 1), (3, -1), (6, 1)])
+    y3 = traces.TimeSeries(mtl.boolean_eval.apply_weak_since(y1, y2))
+    y4 = traces.TimeSeries([(0, 1), (2, 1), (4, -1), (6, 1)])
+
+    y3.compact()
+    y4.compact()
+    assert y3 == y4
+
+
+
+@given(MetricTemporalLogicStrategy)
 def test_eval_smoke_tests(phi):
-    mtl_eval9 = mtl.boolean_eval.pointwise_sat(mtl.ast.Next(phi))
-    mtl_eval10 = mtl.boolean_eval.pointwise_sat(~mtl.ast.Next(phi))
-    assert mtl_eval9(x, 0) != mtl_eval10(x, 0)
+    mtl_eval9 = mtl.boolean_eval.pointwise_sat(phi << 1)
+    mtl_eval10 = mtl.boolean_eval.pointwise_sat(~(phi << 1))
+    assert mtl_eval9(x) != mtl_eval10(x)
 
     phi4 = mtl.parse('~ap4')
     mtl_eval11 = mtl.boolean_eval.pointwise_sat(phi4)
-    assert mtl_eval11(x, 0)
+    assert mtl_eval11(x) == 1
 
-    phi5 = mtl.parse('G[0.1, 0.03] ~ap4')
+    phi5 = mtl.parse('H[0.1, 0.03] ~ap4')
     mtl_eval12 = mtl.boolean_eval.pointwise_sat(phi5)
-    assert mtl_eval12(x, 0)
+    assert mtl_eval12(x) == 1
 
-    phi6 = mtl.parse('G[0.1, 0.03] ~ap5')
+    phi6 = mtl.parse('H[0.1, 0.03] ~ap5')
     mtl_eval13 = mtl.boolean_eval.pointwise_sat(phi6)
-    assert mtl_eval13(x, 0)
-    assert mtl_eval13(x, 0.4)
+    assert mtl_eval13(x) == 1
+    assert mtl_eval13(x, 0.4) == 1
 
-    phi7 = mtl.parse('G ~ap4')
+    phi7 = mtl.parse('H ~ap4')
     mtl_eval14 = mtl.boolean_eval.pointwise_sat(phi7)
-    assert mtl_eval14(x, 0)
+    assert mtl_eval14(x) == 1
 
-    phi8 = mtl.parse('F ap5')
+    phi8 = mtl.parse('P ap5')
     mtl_eval15 = mtl.boolean_eval.pointwise_sat(phi8)
-    assert mtl_eval15(x, 0)
+    assert mtl_eval15(x) == 1
 
-    phi9 = mtl.parse('(ap1 U ap2)')
+    phi9 = mtl.parse('(ap1 M ap2)')
     mtl_eval16 = mtl.boolean_eval.pointwise_sat(phi9)
-    assert mtl_eval16(x, 0)
+    assert mtl_eval16(x) == -1
 
-    phi10 = mtl.parse('(ap2 U ap2)')
+    phi10 = mtl.parse('(ap6 M ap5)')
     mtl_eval17 = mtl.boolean_eval.pointwise_sat(phi10)
-    assert not mtl_eval17(x, 0)
+    assert mtl_eval17(x) == 1
 
     with raises(NotImplementedError):
         mtl.boolean_eval.eval_mtl(None, None)
 
 
-@given(MetricTemporalLogicStrategy)
-def test_temporal_identities(phi):
+@given(MetricTemporalLogicStrategy, APTraceStrategy)
+def test_temporal_identities(phi, x):
     mtl_eval = mtl.boolean_eval.pointwise_sat(phi)
     mtl_eval2 = mtl.boolean_eval.pointwise_sat(~phi)
-    assert mtl_eval2(x, 0) == (not mtl_eval(x, 0))
+    assert mtl_eval2(x) == -mtl_eval(x)
+
+
     mtl_eval3 = mtl.boolean_eval.pointwise_sat(~~phi)
-    assert mtl_eval3(x, 0) == mtl_eval(x, 0)
+    assert mtl_eval3(x) == mtl_eval(x)
+
     mtl_eval4 = mtl.boolean_eval.pointwise_sat(phi & phi)
-    assert mtl_eval4(x, 0) == mtl_eval(x, 0)
+    assert mtl_eval4(x) == mtl_eval(x)
     mtl_eval5 = mtl.boolean_eval.pointwise_sat(phi & ~phi)
-    assert not mtl_eval5(x, 0)
+    assert mtl_eval5(x) == -1
+
     mtl_eval6 = mtl.boolean_eval.pointwise_sat(phi | ~phi)
-    assert mtl_eval6(x, 0)
-    mtl_eval7 = mtl.boolean_eval.pointwise_sat(mtl.ast.Until(mtl.TOP, phi))
-    mtl_eval8 = mtl.boolean_eval.pointwise_sat(mtl.env(phi))
-    assert mtl_eval7(x, 0) == mtl_eval8(x, 0)
+    assert mtl_eval6(x)
 
+    mtl_eval7 = mtl.boolean_eval.pointwise_sat(phi.weak_since(mtl.BOT))
+    assert mtl_eval7(x) == 1
 
-@given(st.just(mtl.BOT))
-def test_fastboolean_equiv(phi):
-    mtl_eval = mtl.fastboolean_eval.pointwise_sat(mtl.alw(phi, lo=0, hi=4))
-    mtl_eval2 = mtl.fastboolean_eval.pointwise_sat(~mtl.env(~phi, lo=0, hi=4))
-    assert mtl_eval2(x, 0) == mtl_eval(x, 0)
+    mtl_eval8 = mtl.boolean_eval.pointwise_sat(phi.hist())
+    mtl_eval9 = mtl.boolean_eval.pointwise_sat(~((~phi).once()))
+    assert mtl_eval8(x) == mtl_eval9(x)
 
-    mtl_eval3 = mtl.fastboolean_eval.pointwise_sat(~mtl.alw(~phi, lo=0, hi=4))
-    mtl_eval4 = mtl.fastboolean_eval.pointwise_sat(mtl.env(phi, lo=0, hi=4))
-    assert mtl_eval4(x, 0) == mtl_eval3(x, 0)
-
-
-def test_fastboolean_smoketest():
-    phi = mtl.parse(
-        '(((G[0, 4] ap6 & F[2, 1] ap1) | ap2) & G[0,0](ap2))')
-    mtl_eval = mtl.fastboolean_eval.pointwise_sat(phi)
-    assert not mtl_eval(x, 0)
-
-    with raises(NotImplementedError):
-        mtl.fastboolean_eval.pointwise_sat(None)
 
 
 def test_callable_interface():
     phi = mtl.parse(
-        '(((G[0, 4] ap6 & F[2, 1] ap1) | ap2) & G[0,0](ap2))')
+        '(((H[0, 4] ap6 & P[2, 1] ap1) | ap2) & H[0,0](ap2))')
     assert not phi(x, 0)

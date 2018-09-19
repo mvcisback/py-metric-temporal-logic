@@ -4,16 +4,16 @@ from functools import partialmethod, reduce
 
 from parsimonious import Grammar, NodeVisitor
 from mtl import ast
-from mtl.utils import iff, implies, xor, timed_until
+from mtl import sugar
 
 MTL_GRAMMAR = Grammar(u'''
-phi = (neg / paren_phi / next / bot / top
+phi = (neg / paren_phi / vyesterday / bot / top
      / xor_outer / iff_outer / implies_outer / and_outer / or_outer
-     / timed_until / until / g / f / AP)
+     / weak_since / hist / once / AP)
 
 paren_phi = "(" __ phi __ ")"
 neg = ("~" / "¬") __ phi
-next = ("@" / "X") __ phi
+vyesterday = "Z" __ phi
 
 and_outer = "(" __ and_inner __ ")"
 and_inner = (phi __ ("∧" / "and" / "&") __ and_inner) / phi
@@ -30,10 +30,9 @@ iff_inner = (phi __ ("⇔" / "<->" / "iff") __ iff_inner) / phi
 xor_outer = "(" __ xor_inner __ ")"
 xor_inner = (phi __ ("⊕" / "^" / "xor") __ xor_inner) / phi
 
-f = ("< >" / "F") interval? __ phi
-g = ("[ ]" / "G") interval? __ phi
-until = "(" __ phi _ "U" _ phi __ ")"
-timed_until = "(" __ phi _ "U" interval _ phi __ ")"
+once = "P" interval? __ phi
+hist = "H" interval? __ phi
+weak_since = "(" __ phi _ "M" _ phi __ ")"
 interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 
 const_or_unbound = const / "inf" / id
@@ -56,7 +55,6 @@ oo = float('inf')
 class MTLVisitor(NodeVisitor):
     def __init__(self, H=oo):
         super().__init__()
-        self.default_interval = ast.Interval(0.0, H)
 
     def binop_inner(self, _, children):
         if not isinstance(children[0], list):
@@ -79,10 +77,10 @@ class MTLVisitor(NodeVisitor):
     visit_xor_inner = binop_inner
 
     visit_and_outer = partialmethod(binop_outer, binop=op.and_)
-    visit_iff_outer = partialmethod(binop_outer, binop=iff)
-    visit_implies_outer = partialmethod(binop_outer, binop=implies)
+    visit_iff_outer = partialmethod(binop_outer, binop=sugar.iff)
+    visit_implies_outer = partialmethod(binop_outer, binop=sugar.implies)
     visit_or_outer = partialmethod(binop_outer, binop=op.or_)
-    visit_xor_outer = partialmethod(binop_outer, binop=xor)
+    visit_xor_outer = partialmethod(binop_outer, binop=sugar.xor)
 
     def generic_visit(self, _, children):
         return children
@@ -110,19 +108,15 @@ class MTLVisitor(NodeVisitor):
 
     def unary_temp_op_visitor(self, _, children, op):
         _, i, _, phi = children
-        i = self.default_interval if not i else i[0]
-        return op(i, phi)
+        i = None if not i else i[0]
+        return getattr(phi, op)(i)
 
-    visit_f = partialmethod(unary_temp_op_visitor, op=ast.F)
-    visit_g = partialmethod(unary_temp_op_visitor, op=ast.G)
+    visit_hist = partialmethod(unary_temp_op_visitor, op='hist')
+    visit_once = partialmethod(unary_temp_op_visitor, op='once')
 
-    def visit_until(self, _, children):
+    def visit_weak_since(self, _, children):
         _, _, phi1, _, _, _, phi2, _, _ = children
-        return ast.Until(phi1, phi2)
-
-    def visit_timed_until(self, _, children):
-        _, _, phi1, _, _, itvl, _, phi2, _, _ = children
-        return timed_until(phi1, phi2, itvl.lower, itvl.upper)
+        return phi1.weak_since(phi2)
 
     def visit_id(self, name, _):
         return name.text
@@ -133,8 +127,8 @@ class MTLVisitor(NodeVisitor):
     def visit_neg(self, _, children):
         return ~children[2]
 
-    def visit_next(self, _, children):
-        return ast.Next(children[2])
+    def visit_vyesterday(self, _, children):
+        return children[2] << 1
 
 
 def parse(mtl_str: str, rule: str = "phi", H=oo) -> "MTL":

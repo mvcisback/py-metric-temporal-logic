@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from collections import deque, namedtuple
-from functools import lru_cache
 from typing import Union, NamedTuple
 
 import attr
@@ -8,44 +7,33 @@ import funcy as fn
 from lenses import lens, bind
 
 import mtl
-
-
-def flatten_binary(phi, op, dropT, shortT):
-    def f(x):
-        return x.args if isinstance(x, op) else [x]
-
-    args = [arg for arg in phi.args if arg is not dropT]
-
-    if any(arg is shortT for arg in args):
-        return shortT
-    elif not args:
-        return dropT
-    elif len(args) == 1:
-        return args[0]
-    else:
-        return op(tuple(fn.mapcat(f, phi.args)))
-
-
-def _or(exp1, exp2):
-    return flatten_binary(Or((exp1, exp2)), Or, BOT, TOP)
+from mtl import sugar
 
 
 def _and(exp1, exp2):
-    return flatten_binary(And((exp1, exp2)), And, TOP, BOT)
+    phi = And((exp1, exp2))
+    def f(x):
+        return x.args if isinstance(x, And) else [x]
+
+    args = [arg for arg in phi.args if arg != TOP]
+
+    if any(arg == BOT for arg in args):
+        return BOT
+    elif not args:
+        return TOP
+    elif len(args) == 1:
+        return args[0]
+    else:
+        return And(tuple(fn.mapcat(f, phi.args)))
 
 
 def _neg(exp):
-    if isinstance(exp, _Bot):
-        return _Top()
-    elif isinstance(exp, _Top):
-        return _Bot()
-    elif isinstance(exp, Neg):
-        return exp.arg
-    return Neg(exp)
+    return exp.arg if isinstance(exp, Neg) else Neg(exp)
 
 
 def _eval(exp, trace, time=0):
-    return mtl.pointwise_sat(exp)(trace, time)
+    from mtl import boolean_eval
+    return boolean_eval.pointwise_sat(exp)(trace, time)
 
 
 def _timeshift(exp, t):
@@ -53,7 +41,7 @@ def _timeshift(exp, t):
         return exp
 
     for _ in range(t):
-        exp = Next(exp)
+        exp = VariantYesterday(exp)
     return exp
 
 
@@ -114,22 +102,28 @@ class Param(NamedTuple):
         return self.name
 
 
+def _hist(expr, itvl=None):
+    return Hist(itvl, expr)
+
+
 def ast_class(cls):
-    cls.__or__ = _or
+    cls.__or__ = sugar._or
     cls.__and__ = _and
     cls.__invert__ = _neg
     cls.__call__ = _eval
-    cls.__rshift__ = _timeshift
+    cls.__lshift__ = _timeshift
     cls.__getitem__ = _inline_context
     cls.walk = _walk
     cls.params = property(_params)
     cls.atomic_predicates = property(_atomic_predicates)
     cls.evolve = attr.evolve
+    cls.weak_since = lambda phi1, phi2: WeakSince(phi1, phi2)
+    cls.hist = _hist
+    cls.once = sugar._once
+
 
     if not hasattr(cls, "children"):
         cls.children = property(lambda _: ())
-
-
 
     return attr.s(frozen=True, auto_attribs=True, repr=False, slots=True)(cls)
 
@@ -146,19 +140,9 @@ def _update_itvl(itvl, lookup):
 
 
 @ast_class
-class _Top:
-    def __repr__(self):
-        return "TRUE"
-
-
-@ast_class
 class _Bot:
     def __repr__(self):
         return "FALSE"
-
-
-TOP = _Top()
-BOT = _Bot()
 
 
 @ast_class
@@ -190,10 +174,6 @@ class NaryOpMTL:
         return tuple(self.args)
 
 
-class Or(NaryOpMTL):
-    OP = "|"
-
-
 class And(NaryOpMTL):
     OP = "&"
 
@@ -201,11 +181,11 @@ class And(NaryOpMTL):
 @ast_class
 class ModalOp:
     OP = '?'
-    interval: Interval
+    interval: Union[None, Interval]
     arg: "Node"
 
     def __repr__(self):
-        if self.interval.lower == 0 and self.interval.upper == float('inf'):
+        if self.interval is None:
             return f"{self.OP}{self.arg}"
         return f"{self.OP}{self.interval}{self.arg}"
 
@@ -214,25 +194,8 @@ class ModalOp:
         return (self.arg,)
 
 
-class F(ModalOp):
-    OP = "< >"
-
-
-class G(ModalOp):
-    OP = "[ ]"
-
-
-@ast_class
-class Until:
-    arg1: "Node"
-    arg2: "Node"
-
-    def __repr__(self):
-        return f"({self.arg1} U {self.arg2})"
-
-    @property
-    def children(self):
-        return (self.arg1, self.arg2)
+class Hist(ModalOp):
+    OP = "H"
 
 
 @ast_class
@@ -248,17 +211,29 @@ class Neg:
 
 
 @ast_class
-class Next:
+class VariantYesterday:
     arg: "Node"
 
     def __repr__(self):
-        return f"@{self.arg}"
+        return f"Z{self.arg}"
 
     @property
     def children(self):
         return (self.arg,)
 
 
-def type_pred(*args):
-    ast_types = set(args)
-    return lambda x: type(x) in ast_types
+@ast_class
+class WeakSince:
+    arg1: "Node"
+    arg2: "Node"
+
+    def __repr__(self):
+        return f"({self.arg1} M {self.arg2})"
+
+    @property
+    def children(self):
+        return (self.arg1, self.arg2)
+
+
+BOT = _Bot()
+TOP = ~BOT
