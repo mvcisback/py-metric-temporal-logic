@@ -4,7 +4,6 @@ from math import isfinite
 
 import traces
 import numpy as np
-from lenses import bind
 
 import mtl.ast
 from mtl.ast import (And, F, G, Interval, Neg, Or, Next, Until,

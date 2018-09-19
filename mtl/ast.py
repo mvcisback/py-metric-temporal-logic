@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from collections import deque, namedtuple
-from functools import lru_cache
+from collections import deque
 from typing import Union, NamedTuple
 
 import attr
 import funcy as fn
-from lenses import lens, bind
+from lenses import bind
 
 import mtl
 
@@ -90,7 +89,7 @@ def _set_symbols(node, val):
         return val.get(node.id, node)
     elif hasattr(node, 'args'):
         return node.evolve(args=children)
-    elif hasattr(node, 'arg'): 
+    elif hasattr(node, 'arg'):
         return node.evolve(arg=children[0])
     return node
 
@@ -128,8 +127,6 @@ def ast_class(cls):
 
     if not hasattr(cls, "children"):
         cls.children = property(lambda _: ())
-
-
 
     return attr.s(frozen=True, auto_attribs=True, repr=False, slots=True)(cls)
 

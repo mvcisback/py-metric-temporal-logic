@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from hypothesis import event, given
+from hypothesis import given
 from traces import TimeSeries
 
 import mtl
@@ -19,7 +19,7 @@ TS = {
 def test_stablizing_repr(phi):
     for _ in range(10):
         phi, phi2 = mtl.parse(str(phi)), phi
-        
+
     assert phi == phi2
 
 

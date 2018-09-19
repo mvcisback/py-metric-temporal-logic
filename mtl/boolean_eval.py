@@ -20,8 +20,6 @@ def negate_trace(x):
 
 
 def pointwise_sat(phi, dt=0.1):
-    ap_names = [z.id for z in phi.atomic_predicates]
-
     def _eval_mtl(x, t=0):
         return bool(eval_mtl(phi, dt)(x)[t])
 

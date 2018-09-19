@@ -1,5 +1,4 @@
 import mtl
-from mtl.hypothesis import MetricTemporalLogicStrategy
 
 import hypothesis.strategies as st
 from hypothesis import given
@@ -13,4 +12,3 @@ def test_params1(a, b, c):
     phi2 = phi[{'a': a, 'b': b}]
     assert phi2.params == set()
     assert phi2 == mtl.parse(f'G[{a}, {b}](x)')
-    

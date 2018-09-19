@@ -2,7 +2,6 @@ import mtl
 from mtl.hypothesis import MetricTemporalLogicStrategy
 
 from hypothesis import given
-from pytest import raises
 
 CONTEXT = {
     'ap1': mtl.parse('x'),
@@ -12,6 +11,7 @@ CONTEXT = {
     'ap5': mtl.parse('(ap1 <-> y <-> z)'),
 }
 APS = set(CONTEXT.keys())
+
 
 def test_inline_context_rigid():
     phi = mtl.parse('G ap1')

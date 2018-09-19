@@ -1,11 +1,11 @@
 -e git://github.com/mvcisback/hypothesis-cfg@master#egg=hypothesis-cfg
--e git://github.com/mvcisback/multidim-threshold@master#egg=multidim-threshold
 bitarray==0.8.1
 funcy==1.9.1
 lenses==0.4.0
 parsimonious==0.7.0
 traces==0.3.1
 hypothesis==3.32.1
+numpy==1.15.0
 
 pytest==3.2.3
 pytest-bpdb==0.1.4
