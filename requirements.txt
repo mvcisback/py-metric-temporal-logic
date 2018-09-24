@@ -1,8 +1,8 @@
 -e git://github.com/mvcisback/hypothesis-cfg@master#egg=hypothesis-cfg
+-e git://github.com/mvcisback/DiscreteSignals@master#egg=discrete-signals
 funcy==1.9.1
 lenses==0.4.0
 parsimonious==0.7.0
-discrete-signals==0.7.2
 hypothesis==3.32.1
 
 pytest==3.2.3
