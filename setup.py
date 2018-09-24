@@ -12,8 +12,7 @@ setup(
         'funcy',
         'parsimonious',
         'lenses',
-        'bitarray',
-        'traces',
+        'discrete-signals',
     ],
     packages=find_packages(),
 )

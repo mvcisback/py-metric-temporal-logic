@@ -6,14 +6,12 @@ import attr
 import funcy as fn
 from lenses import bind
 
-import mtl
-
 
 def flatten_binary(phi, op, dropT, shortT):
     def f(x):
         return x.args if isinstance(x, op) else [x]
 
-    args = [arg for arg in phi.args if arg is not dropT]
+    args = [arg for arg in phi.args if arg != dropT]
 
     if any(arg is shortT for arg in args):
         return shortT
@@ -26,7 +24,7 @@ def flatten_binary(phi, op, dropT, shortT):
 
 
 def _or(exp1, exp2):
-    return flatten_binary(Or((exp1, exp2)), Or, BOT, TOP)
+    return ~(~exp1 & ~exp2)
 
 
 def _and(exp1, exp2):
@@ -34,21 +32,18 @@ def _and(exp1, exp2):
 
 
 def _neg(exp):
-    if isinstance(exp, _Bot):
-        return _Top()
-    elif isinstance(exp, _Top):
-        return _Bot()
-    elif isinstance(exp, Neg):
+    if isinstance(exp, Neg):
         return exp.arg
     return Neg(exp)
 
 
-def _eval(exp, trace, time=0):
-    return mtl.pointwise_sat(exp)(trace, time)
+def _eval(exp, trace, time=0, *, dt=0.1, quantitative=True):
+    from mtl import evaluator
+    return evaluator.pointwise_sat(exp, dt)(trace, time, quantitative)
 
 
 def _timeshift(exp, t):
-    if exp in (BOT, TOP):
+    if exp == BOT:
         return exp
 
     for _ in range(t):
@@ -143,19 +138,9 @@ def _update_itvl(itvl, lookup):
 
 
 @ast_class
-class _Top:
-    def __repr__(self):
-        return "TRUE"
-
-
-@ast_class
 class _Bot:
     def __repr__(self):
         return "FALSE"
-
-
-TOP = _Top()
-BOT = _Bot()
 
 
 @ast_class
@@ -187,10 +172,6 @@ class NaryOpMTL:
         return tuple(self.args)
 
 
-class Or(NaryOpMTL):
-    OP = "|"
-
-
 class And(NaryOpMTL):
     OP = "&"
 
@@ -211,21 +192,17 @@ class ModalOp:
         return (self.arg,)
 
 
-class F(ModalOp):
-    OP = "< >"
-
-
 class G(ModalOp):
-    OP = "[ ]"
+    OP = "G"
 
 
 @ast_class
-class Until:
+class WeakUntil:
     arg1: "Node"
     arg2: "Node"
 
     def __repr__(self):
-        return f"({self.arg1} U {self.arg2})"
+        return f"({self.arg1} W {self.arg2})"
 
     @property
     def children(self):
@@ -249,7 +226,7 @@ class Next:
     arg: "Node"
 
     def __repr__(self):
-        return f"@{self.arg}"
+        return f"X{self.arg}"
 
     @property
     def children(self):
@@ -259,3 +236,7 @@ class Next:
 def type_pred(*args):
     ast_types = set(args)
     return lambda x: type(x) in ast_types
+
+
+BOT = _Bot()
+TOP = ~BOT

@@ -4,12 +4,13 @@ from functools import partialmethod, reduce
 
 from parsimonious import Grammar, NodeVisitor
 from mtl import ast
-from mtl.utils import iff, implies, xor, timed_until
+from mtl.utils import iff, implies, xor, timed_until, until
+from mtl.utils import env, alw
 
 MTL_GRAMMAR = Grammar(u'''
 phi = (neg / paren_phi / next / bot / top
      / xor_outer / iff_outer / implies_outer / and_outer / or_outer
-     / timed_until / until / g / f / AP)
+     / timed_until / until / weak_until / g / f / AP)
 
 paren_phi = "(" __ phi __ ")"
 neg = ("~" / "¬") __ phi
@@ -32,6 +33,7 @@ xor_inner = (phi __ ("⊕" / "^" / "xor") __ xor_inner) / phi
 
 f = ("< >" / "F") interval? __ phi
 g = ("[ ]" / "G") interval? __ phi
+weak_until = "(" __ phi _ "W" _ phi __ ")"
 until = "(" __ phi _ "U" _ phi __ ")"
 timed_until = "(" __ phi _ "U" interval _ phi __ ")"
 interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
@@ -97,7 +99,7 @@ class MTLVisitor(NodeVisitor):
         return ast.BOT
 
     def visit_top(self, *_):
-        return ast.TOP
+        return ~ast.BOT
 
     def visit_interval(self, _, children):
         _, _, left, _, _, _, right, _, _ = children
@@ -110,15 +112,19 @@ class MTLVisitor(NodeVisitor):
 
     def unary_temp_op_visitor(self, _, children, op):
         _, i, _, phi = children
-        i = self.default_interval if not i else i[0]
-        return op(i, phi)
+        lo, hi = self.default_interval if not i else i[0]
+        return op(phi, lo=lo, hi=hi)
 
-    visit_f = partialmethod(unary_temp_op_visitor, op=ast.F)
-    visit_g = partialmethod(unary_temp_op_visitor, op=ast.G)
+    visit_f = partialmethod(unary_temp_op_visitor, op=env)
+    visit_g = partialmethod(unary_temp_op_visitor, op=alw)
+
+    def visit_weak_until(self, _, children):
+        _, _, phi1, _, _, _, phi2, _, _ = children
+        return ast.WeakUntil(phi1, phi2)
 
     def visit_until(self, _, children):
         _, _, phi1, _, _, _, phi2, _, _ = children
-        return ast.Until(phi1, phi2)
+        return until(phi1, phi2)
 
     def visit_timed_until(self, _, children):
         _, _, phi1, _, _, itvl, _, phi2, _, _ = children

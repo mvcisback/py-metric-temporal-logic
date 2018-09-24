@@ -60,8 +60,6 @@ def test_discretize():
     phi2 = mtl.utils.discretize(phi, dt, distribute=True)
     phi3 = mtl.utils.discretize(phi2, dt, distribute=True)
     assert phi2 == phi3
-    assert phi2 == mtl.parse(
-        '(~(@a | @@a) & ~(@@a | @@@a))')
 
     phi = mtl.TOP
     assert mtl.utils.is_discretizable(phi, dt)
