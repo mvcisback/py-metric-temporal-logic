@@ -1,4 +1,5 @@
 -e git://github.com/mvcisback/hypothesis-cfg@master#egg=hypothesis-cfg
+attrs==18.1.0
 funcy==1.9.1
 lenses==0.4.0
 parsimonious==0.7.0
