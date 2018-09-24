@@ -62,13 +62,25 @@ phi5 = a.implies(b)
 
 ```python
 # Eventually `x` will hold.
-phi = mtl.parse('F x')
+phi1 = mtl.parse('F x')
 
 # `x & y` will always hold.
-phi = mtl.parse('G(x & y)')
+phi2 = mtl.parse('G(x & y)')
 
-# `x` will always hold.
-phi2 = mtl.parse('G x')
+# `x` holds until `y` holds. 
+# Note that since `U` is binary, it requires parens.
+phi3 = mtl.parse('(x U y)')
+
+# Whenever `x` holds, then `y` holds in the next two time units.
+phi4 = mtl.parse('G(x -> F[0, 2] y)')
+
+# We also support timed until.
+phi5 = mtl.parse('(a U[0, 2] b)')
+
+# Finally, if time is discretized, we also support the next operator.
+# Thus, LTL can also be modeled.
+# `a` holds in two time steps.
+phi6 = mtl.parse('XX a')
 ```
 
 [1]: https://link.springer.com/chapter/10.1007/BFb0031988
