@@ -1,9 +1,8 @@
 -e git://github.com/mvcisback/hypothesis-cfg@master#egg=hypothesis-cfg
-attrs==18.1.0
 funcy==1.9.1
 lenses==0.4.0
 parsimonious==0.7.0
-discrete-signals==0.7.1
+discrete-signals==0.7.2
 hypothesis==3.32.1
 
 pytest==3.2.3
