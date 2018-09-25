@@ -6,6 +6,8 @@ import attr
 import funcy as fn
 from lenses import bind
 
+from mtl import sugar
+
 
 def flatten_binary(phi, op, dropT, shortT):
     def f(x):
@@ -109,6 +111,7 @@ class Param(NamedTuple):
 
 
 def ast_class(cls):
+    cls.__xor__ = sugar.xor
     cls.__or__ = _or
     cls.__and__ = _and
     cls.__invert__ = _neg
@@ -119,6 +122,14 @@ def ast_class(cls):
     cls.params = property(_params)
     cls.atomic_predicates = property(_atomic_predicates)
     cls.evolve = attr.evolve
+    cls.iff = sugar.iff
+    cls.implies = sugar.implies
+    # Avoid circular dependence.
+    cls.weak_until = lambda a, b: WeakUntil(a, b)
+    cls.until = sugar.until
+    cls.timed_until = sugar.timed_until
+    cls.always = sugar.alw
+    cls.eventually = sugar.env
 
     if not hasattr(cls, "children"):
         cls.children = property(lambda _: ())

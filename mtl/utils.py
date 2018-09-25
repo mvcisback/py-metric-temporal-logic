@@ -70,7 +70,7 @@ def _discretize(phi, dt, horizon):
     upper = min(phi.interval.upper, horizon)
     l, u = round(phi.interval.lower / dt), round(upper / dt)
 
-    psis = (next(_discretize(phi.arg, dt, horizon - i), i)
+    psis = (_discretize(phi.arg, dt, horizon - i) >> i
             for i in range(l, u + 1))
     opf = andf if isinstance(phi, G) else orf
     return opf(*psis)
@@ -85,7 +85,7 @@ def _interval_discretizable(itvl, dt):
 
 def _distribute_next(phi, i=0):
     if isinstance(phi, AtomicPred):
-        return mtl.utils.next(phi, i=i)
+        return phi >> i
     elif isinstance(phi, Next):
         return _distribute_next(phi.arg, i=i+1)
 
@@ -105,44 +105,10 @@ def is_discretizable(phi, dt):
         _interval_discretizable(c.interval, dt) for c in phi.walk()
         if isinstance(c, G))
 
-# EDSL
-
-
-def alw(phi, *, lo=0, hi=float('inf')):
-    return G(Interval(lo, hi), phi)
-
-
-def env(phi, *, lo=0, hi=float('inf')):
-    return ~alw(~phi, lo=lo, hi=hi)
-
 
 def andf(*args):
-    return reduce(op.and_, args) if args else mtl.TOP
+    return reduce(op.and_, args) if args else ast.TOP
 
 
 def orf(*args):
-    return reduce(op.or_, args) if args else mtl.TOP
-
-
-def implies(x, y):
-    return ~x | y
-
-
-def xor(x, y):
-    return (x | y) & ~(x & y)
-
-
-def iff(x, y):
-    return (x & y) | (~x & ~y)
-
-
-def next(phi, i=1):
-    return phi >> i
-
-
-def until(phi, psi):
-    return mtl.ast.WeakUntil(phi, psi) & env(psi)
-
-
-def timed_until(phi, psi, lo, hi):
-    return env(psi, lo=lo, hi=hi) & alw(until(phi, psi), lo=0, hi=lo)
+    return reduce(op.or_, args) if args else ast.TOP

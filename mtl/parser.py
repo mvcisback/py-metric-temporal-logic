@@ -4,8 +4,7 @@ from functools import partialmethod, reduce
 
 from parsimonious import Grammar, NodeVisitor
 from mtl import ast
-from mtl.utils import iff, implies, xor, timed_until, until
-from mtl.utils import env, alw
+from mtl import sugar
 
 MTL_GRAMMAR = Grammar(u'''
 phi = (neg / paren_phi / next / bot / top
@@ -81,10 +80,10 @@ class MTLVisitor(NodeVisitor):
     visit_xor_inner = binop_inner
 
     visit_and_outer = partialmethod(binop_outer, binop=op.and_)
-    visit_iff_outer = partialmethod(binop_outer, binop=iff)
-    visit_implies_outer = partialmethod(binop_outer, binop=implies)
+    visit_iff_outer = partialmethod(binop_outer, binop=sugar.iff)
+    visit_implies_outer = partialmethod(binop_outer, binop=sugar.implies)
     visit_or_outer = partialmethod(binop_outer, binop=op.or_)
-    visit_xor_outer = partialmethod(binop_outer, binop=xor)
+    visit_xor_outer = partialmethod(binop_outer, binop=sugar.xor)
 
     def generic_visit(self, _, children):
         return children
@@ -115,20 +114,20 @@ class MTLVisitor(NodeVisitor):
         lo, hi = self.default_interval if not i else i[0]
         return op(phi, lo=lo, hi=hi)
 
-    visit_f = partialmethod(unary_temp_op_visitor, op=env)
-    visit_g = partialmethod(unary_temp_op_visitor, op=alw)
+    visit_f = partialmethod(unary_temp_op_visitor, op=sugar.env)
+    visit_g = partialmethod(unary_temp_op_visitor, op=sugar.alw)
 
     def visit_weak_until(self, _, children):
         _, _, phi1, _, _, _, phi2, _, _ = children
-        return ast.WeakUntil(phi1, phi2)
+        return phi1.weak_until(phi2)
 
     def visit_until(self, _, children):
         _, _, phi1, _, _, _, phi2, _, _ = children
-        return until(phi1, phi2)
+        return phi1.until(phi2)
 
     def visit_timed_until(self, _, children):
         _, _, phi1, _, _, itvl, _, phi2, _, _ = children
-        return timed_until(phi1, phi2, itvl.lower, itvl.upper)
+        return phi1.timed_until(phi2, itvl.lower, itvl.upper)
 
     def visit_id(self, name, _):
         return name.text
