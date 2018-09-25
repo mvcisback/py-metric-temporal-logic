@@ -13,7 +13,7 @@ pytest-colordots==1.1
 pytest-cov==2.6.0
 pytest-flake8==1.0.2
 pytest-forked==0.2
-pytest-isort==0.1.0
+pytest-isort==0.2.1
 pytest-pep8==1.0.6
 pytest-xdist==1.20.1
 python-dateutil==2.6.1
