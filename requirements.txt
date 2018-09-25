@@ -10,7 +10,7 @@ pytest==3.8.1
 pytest-bpdb==0.1.4
 pytest-cache==1.0
 pytest-colordots==1.1
-pytest-cov==2.5.1
+pytest-cov==2.6.0
 pytest-flake8==0.9
 pytest-forked==0.2
 pytest-isort==0.1.0
