@@ -1,5 +1,5 @@
 <figure>
-  <img src="assets/logo_text.svg" alt="py-metric-temporal logic logo" width=300px>
+  <img src="assets/logo.png" alt="py-metric-temporal logic logo" width=300px>
   <figcaption>
   A library for manipulating and evaluating metric temporal logic.
   </figcaption>
@@ -8,6 +8,10 @@
 
 [![Build Status](https://travis-ci.org/mvcisback/py-metric-temporal-logic.svg?branch=master)](https://travis-ci.org/mvcisback/py-metric-temporal-logic)
 [![codecov](https://codecov.io/gh/mvcisback/py-metric-temporal-logic/branch/master/graph/badge.svg)](https://codecov.io/gh/mvcisback/py-metric-temporal-logic)
+[![Updates](https://pyup.io/repos/github/mvcisback/py-aiger/shield.svg)](https://pyup.io/repos/github/mvcisback/py-aiger/)
+
+[![PyPI version](https://badge.fury.io/py/metric-temporal-logic.svg)](https://badge.fury.io/py/metric-temporal-logic)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # About
 
