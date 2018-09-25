@@ -1,5 +1,5 @@
 <figure>
-  <img src="assets/logo_text.svg" alt="py-metric-temporal logic logo" width=300px>
+  <img src="assets/logo.png" alt="py-metric-temporal logic logo" width=300px>
   <figcaption>
   A library for manipulating and evaluating metric temporal logic.
   </figcaption>
