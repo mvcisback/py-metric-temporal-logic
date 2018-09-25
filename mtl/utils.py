@@ -5,8 +5,8 @@ from math import isfinite
 from discrete_signals import signal
 import numpy as np
 
-import mtl.ast
-from mtl.ast import (And, G, Interval, Neg, Next, WeakUntil,
+from mtl import ast
+from mtl.ast import (And, G, Neg, Next, WeakUntil,
                      AtomicPred, _Bot)
 
 oo = float('inf')

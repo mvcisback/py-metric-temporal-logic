@@ -55,5 +55,5 @@ def test_temporal_identity4(phi):
 
 @given(MetricTemporalLogicStrategy)
 def test_temporal_identity5(phi):
-    assert mtl.until(mtl.TOP, phi)(x, 0, quantitative=False) \
-        == mtl.env(phi)(x, 0, quantitative=False)
+    assert mtl.TOP.until(phi)(x, 0, quantitative=False) \
+        == phi.eventually()(x, 0, quantitative=False)
