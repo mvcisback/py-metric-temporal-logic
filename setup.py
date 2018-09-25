@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='metric-temporal-logic',
-    version='0.1.0',
+    version='0.1.1',
     description='A library for manipulating and evaluating metric temporal logic.',
     url='http://github.com/mvcisback/py-metric-temporal-logic',
     author='Marcell Vazquez-Chanlatte',
