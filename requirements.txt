@@ -16,4 +16,4 @@ pytest-forked==0.2
 pytest-isort==0.2.1
 pytest-pep8==1.0.6
 pytest-xdist==1.23.0
-python-dateutil==2.6.1
+python-dateutil==2.7.3
