@@ -37,7 +37,7 @@ import mtl
 # - Lowercase strings denote atomic predicates.
 phi0 = mtl.parse('atomicpred')
 
-# - Binary operators need to be surrounded by parens.
+# - infix operators need to be surrounded by parens.
 phi1 = mtl.parse('((a & b & c) | d | e)')
 phi2 = mtl.parse('(a -> b) & (~a -> c)')
 phi3 = mtl.parse('(a -> b -> c)')
