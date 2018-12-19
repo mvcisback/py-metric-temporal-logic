@@ -2,7 +2,7 @@
 -e git://github.com/mvcisback/DiscreteSignals@master#egg=discrete-signals
 attrs==18.2.0
 codecov==2.0.15
-funcy==1.10.3
+funcy==1.11
 lenses==0.4.0
 hypothesis==3.66.30 # pyup: ignore
 parsimonious==0.8.1
