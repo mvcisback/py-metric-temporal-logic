@@ -33,8 +33,8 @@ import mtl
 ```
 
 There are **two** APIs for interacting with the `mtl` module. Namely, one can specify the MTL expression using:
-1. [Python Operators][#python-operator-api].
-2. [Strings + The parse API][#string-based-api].
+1. [Python Operators](#python-operator-api).
+2. [Strings + The parse API](#string-based-api).
 
 We begin with the Python Operator API:
 
