@@ -39,15 +39,15 @@ interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 
 const_or_unbound = const / "inf" / id
 
-AP = ~r"[a-z][a-z\d]*"
+AP = ~r"[a-z][a-z\\d]*"
 
 bot = "FALSE"
 top = "TRUE"
 
-id = ~r"[a-z\d]+"
-const = ~r"[-+]?(\d*\.\d+|\d+)"
-_ = ~r"\s"+
-__ = ~r"\s"*
+id = ~r"[a-z\\d]+"
+const = ~r"[-+]?(\\d*\\.\\d+|\\d+)"
+_ = ~r"\\s"+
+__ = ~r"\\s"*
 EOL = "\\n"
 ''')
 
