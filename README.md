@@ -32,7 +32,58 @@ To begin, we import `mtl`.
 import mtl
 ```
 
-## Propositional logic (using parse api)
+There are **two** APIs for interacting with the `mtl` module. Namely, one can specify the MTL expression using:
+1. [Python Operators](#python-operator-api).
+2. [Strings + The parse API](#string-based-api).
+
+We begin with the Python Operator API:
+
+## Python Operator API
+
+### Propositional logic (using python syntax)
+```python
+a, b = mtl.parse('a'), mtl.parse('b')
+phi0 = ~a
+phi1 = a & b
+phi2 = a | b
+
+# TODO: add
+phi3 = a ^ b
+phi4 = a.iff(b)
+phi5 = a.implies(b)
+```
+
+
+### Modal Logic (using python syntax)
+
+```python
+a, b = mtl.parse('a'), mtl.parse('b')
+
+# Eventually `a` will hold.
+phi1 = a.eventually()
+
+# `a & b` will always hold.
+phi2 = (a & b).always()
+
+# `a` until `b`
+phi3 = a.until()
+
+# `a` weak until `b`
+phi4 = a.weak_until(b)
+
+# Whenever `a` holds, then `b` holds in the next two time units.
+phi5 = (a.implies(b.eventually(lo=0, hi=2))).always()
+
+# We also support timed until.
+phi6 = a.timed_until(b, lo=0, hi=2)
+
+# `a` holds in two time steps.
+phi7 = a >> 2
+```
+
+## String based API
+
+### Propositional logic (parse api)
 ```python
 # - Lowercase strings denote atomic predicates.
 phi0 = mtl.parse('atomicpred')
@@ -49,20 +100,7 @@ phi6 = mtl.parse('~a')
 phi7 = mtl.parse('~(a)')
 ```
 
-## Propositional logic (using python syntax)
-```python
-a, b = mtl.parse('a'), mtl.parse('b')
-phi0 = ~a
-phi1 = a & b
-phi2 = a | b
-
-# TODO: add
-phi3 = a ^ b
-phi4 = a.iff(b)
-phi5 = a.implies(b)
-```
-
-## Modal Logic (parser api)
+### Modal Logic (parser api)
 
 ```python
 # Eventually `x` will hold.
@@ -90,34 +128,15 @@ phi6 = mtl.parse('(a U[0, 2] b)')
 phi7 = mtl.parse('XX a')
 ```
 
-## Modal Logic (using python syntax)
-
-```python
-a, b = mtl.parse('a'), mtl.parse('b')
-
-# Eventually `a` will hold.
-phi1 = a.eventually()
-
-# `a & b` will always hold.
-phi2 = (a & b).always()
-
-# `a` until `b`
-phi3 = a.until()
-
-# `a` weak until `b`
-phi4 = a.weak_until(b)
-
-# Whenever `a` holds, then `b` holds in the next two time units.
-phi5 = (a.implies(b.eventually(lo=0, hi=2))).always()
-
-# We also support timed until.
-phi6 = a.timed_until(b, lo=0, hi=2)
-
-# `a` holds in two time steps.
-phi7 = a >> 2
-```
 
 ## Boolean Evaluation
+
+Given a property `phi`, one can evaluate is a timeseries satisifies `phi`. Time Series can either be
+defined using a dictionary mapping atomic predicate names to lists of (`time`, `val`) pairs **or** using
+the [DiscreteSignals](https://github.com/mvcisback/DiscreteSignals) API (used internally).
+
+There are two types of evaluation. One uses the boolean semantics of MTL and the other uses Signal Temporal Logic like semantics.
+
 ```python
 # Assumes piece wise constant interpolation.
 data = {
@@ -139,7 +158,7 @@ print(phi(data, dt=0.2, quantitative=False))
 # output: True
 ```
 
-## Quantitative Evaluate
+## Quantitative Evaluate (Signal Temporal Logic)
 ```python
 # Assumes piece wise constant interpolation.
 data = {
