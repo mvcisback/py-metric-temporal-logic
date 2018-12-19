@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 import operator as op
 from functools import partialmethod, reduce
+from typing import TypeVar
 
 from parsimonious import Grammar, NodeVisitor
 from mtl import ast
 from mtl import sugar
+
+
+MTL = TypeVar("MTL")
+
 
 MTL_GRAMMAR = Grammar(u'''
 phi = (neg / paren_phi / next / bot / top
