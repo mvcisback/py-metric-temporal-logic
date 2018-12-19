@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from collections import deque
-from typing import Union, NamedTuple
+from typing import Union, NamedTuple, TypeVar
 
 import attr
 import funcy as fn
 from lenses import bind
 
 from mtl import sugar
+
+
+Node = TypeVar("Node")
 
 
 def flatten_binary(phi, op, dropT, shortT):
@@ -173,7 +176,7 @@ class Interval(NamedTuple):
 @ast_class
 class NaryOpMTL:
     OP = "?"
-    args: "Node"  # TODO: when 3.7 is more common replace with type union.
+    args: Node  # TODO: when 3.7 is more common replace with type union.
 
     def __repr__(self):
         return "(" + f" {self.OP} ".join(f"{x}" for x in self.args) + ")"
@@ -191,7 +194,7 @@ class And(NaryOpMTL):
 class ModalOp:
     OP = '?'
     interval: Interval
-    arg: "Node"
+    arg: Node
 
     def __repr__(self):
         if self.interval.lower == 0 and self.interval.upper == float('inf'):
@@ -209,8 +212,8 @@ class G(ModalOp):
 
 @ast_class
 class WeakUntil:
-    arg1: "Node"
-    arg2: "Node"
+    arg1: Node
+    arg2: Node
 
     def __repr__(self):
         return f"({self.arg1} W {self.arg2})"
@@ -222,7 +225,7 @@ class WeakUntil:
 
 @ast_class
 class Neg:
-    arg: "Node"
+    arg: Node
 
     def __repr__(self):
         return f"~{self.arg}"
@@ -234,7 +237,7 @@ class Neg:
 
 @ast_class
 class Next:
-    arg: "Node"
+    arg: Node
 
     def __repr__(self):
         return f"X{self.arg}"
