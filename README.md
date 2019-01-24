@@ -193,4 +193,15 @@ print(utils.discretize(mtl.parse('F[0, 0.2] a'), dt=0.1))
 # output: (a | X a | XX a)
 ```
 
+# Citing
+
+    @misc{pyMTL,
+      author       = {Marcell Vazquez-Chanlatte},
+      title        = {mvcisback/py-metric-temporal-logic: v0.1.1},
+      month        = jan,
+      year         = 2019,
+      doi          = {10.5281/zenodo.2548862},
+      url          = {https://doi.org/10.5281/zenodo.2548862}
+    }
+
 [1]: https://link.springer.com/chapter/10.1007/BFb0031988
