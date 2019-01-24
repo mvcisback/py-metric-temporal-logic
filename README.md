@@ -12,6 +12,7 @@
 
 [![PyPI version](https://badge.fury.io/py/metric-temporal-logic.svg)](https://badge.fury.io/py/metric-temporal-logic)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/72686883.svg)](https://zenodo.org/badge/latestdoi/72686883)
 
 # About
 
