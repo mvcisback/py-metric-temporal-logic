@@ -47,8 +47,6 @@ a, b = mtl.parse('a'), mtl.parse('b')
 phi0 = ~a
 phi1 = a & b
 phi2 = a | b
-
-# TODO: add
 phi3 = a ^ b
 phi4 = a.iff(b)
 phi5 = a.implies(b)
