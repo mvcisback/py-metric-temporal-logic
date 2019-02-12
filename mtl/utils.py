@@ -79,7 +79,7 @@ def _interval_discretizable(itvl, dt):
     l, u = itvl.lower / dt, itvl.upper / dt
     if not (isfinite(l) and isfinite(u)):
         return False
-    return max(abs(l - round(l)), abs(u - round(u)))
+    return max(abs(l - round(l)), abs(u - round(u))) < 1e-3
 
 
 def _distribute_next(phi, i=0):
