@@ -57,6 +57,9 @@ def pointwise_sat(phi, dt=0.1):
         if not quantitative:
             sig = booleanize_signal(sig)
 
+        if t is None:
+            return [(t, v[phi]) for t, v in f(sig).items()]
+
         res = interp(f(sig), t, phi)
         return res if quantitative else res > 0
 
