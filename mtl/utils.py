@@ -3,7 +3,6 @@ from functools import reduce, wraps
 from math import isfinite
 
 from discrete_signals import signal
-import numpy as np
 
 from mtl import ast
 from mtl.ast import (And, G, Neg, Next, WeakUntil,
@@ -80,7 +79,7 @@ def _interval_discretizable(itvl, dt):
     l, u = itvl.lower / dt, itvl.upper / dt
     if not (isfinite(l) and isfinite(u)):
         return False
-    return np.isclose(l, round(l)) and np.isclose(u, round(u))
+    return max(abs(l - round(l)), abs(u - round(u)))
 
 
 def _distribute_next(phi, i=0):
