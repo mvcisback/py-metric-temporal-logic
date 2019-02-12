@@ -4,10 +4,10 @@ attrs==18.2.0
 codecov==2.0.15
 funcy==1.11
 lenses==0.5.0
-hypothesis==3.66.30
+hypothesis==4.5.7
 parsimonious==0.8.1
 pytest==3.2.3
 pytest-cov==2.6.1
-pytest-flake8==0.9
-pytest-sugar==0.9.1
+pytest-flake8==1.0.4
 pytest-xdist==1.22.5
+pytest-sugar==0.9.2
