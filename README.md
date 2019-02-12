@@ -154,11 +154,11 @@ print(phi(data))
 # Note, quantitative parameter defaults to False
 
 # Evaluate at t=3. 
-print(phi(data, t=3))
+print(phi(data, time=3))
 # output: False
 
 # Compute sliding satisifaction.
-print(phi(data, t=None)
+print(phi(data, time=None)
 # output: [(0, True), (0.2, True), (4, False)]
 
 # Evaluate with discrete time
@@ -180,7 +180,7 @@ print(phi(data))
 # output: 100
 
 # Evaluate at t=3
-print(phi(data, t=3))
+print(phi(data, time=3))
 # output: 2
 
 # Evaluate with discrete time
