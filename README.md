@@ -157,7 +157,7 @@ print(phi(data))
 print(phi(data, t=3))
 # output: False
 
-# Compute satisifaction signal
+# Compute sliding satisifaction.
 print(phi(data, t=None)
 # output: [(0, True), (0.2, True), (4, False)]
 
