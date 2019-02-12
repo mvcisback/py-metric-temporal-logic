@@ -147,13 +147,23 @@ phi = mtl.parse('F(a | b)')
 print(phi(data, quantitative=False))
 # output: True
 
-# Evaluate at t=3
-print(phi(data, t=3, quantitative=False))
+phi = mtl.parse('F(a | b)')
+print(phi(data))
+# output: True
+
+# Note, quantitative parameter defaults to False
+
+# Evaluate at t=3. 
+print(phi(data, t=3))
 # output: False
+
+# Compute satisifaction signal
+print(phi(data, t=None)
+# output: [(0, True), (0.2, True), (4, False)]
 
 # Evaluate with discrete time
 phi = mtl.parse('X b')
-print(phi(data, dt=0.2, quantitative=False))
+print(phi(data, dt=0.2))
 # output: True
 ```
 
