@@ -25,7 +25,7 @@ def to_signal(ts_mapping):
 def interp(sig, t, tag=None):
     # TODO: return function that interpolates the whole signal.
     sig = sig.project({tag})
-    key = sig.data.iloc[sig.data.bisect_right(t) - 1]
+    key = sig.data.keys()[sig.data.bisect_right(t) - 1]
     return sig[key][tag]
 
 
