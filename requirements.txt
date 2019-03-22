@@ -9,5 +9,5 @@ parsimonious==0.8.1
 pytest==4.2.0
 pytest-cov==2.6.1
 pytest-flake8==1.0.4
-pytest-xdist==1.22.5
+pytest-xdist==1.27.0
 pytest-sugar==0.9.2
