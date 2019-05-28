@@ -4,7 +4,7 @@ attrs==19.1.0
 codecov==2.0.15
 funcy==1.11
 lenses==0.5.0
-hypothesis==4.14.0
+hypothesis==4.23.9
 parsimonious==0.8.1
 pytest==4.3.1
 pytest-cov==2.6.1
