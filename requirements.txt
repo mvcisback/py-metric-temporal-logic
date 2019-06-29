@@ -6,7 +6,7 @@ funcy==1.12
 lenses==0.5.0
 hypothesis==4.24.1
 parsimonious==0.8.1
-pytest==4.6.2
+pytest==5.0.0
 pytest-cov==2.7.1
 pytest-flake8==1.0.4
 pytest-xdist==1.28.0
