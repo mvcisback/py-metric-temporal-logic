@@ -201,6 +201,12 @@ print(utils.discretize(mtl.parse('F[0, 0.2] a'), dt=0.1))
 # output: (a | X a | XX a)
 ```
 
+# Similar Projects
+Feel free to open up a pull-request to add other similar projects. This library was written to meet some of my unique needs, for example I wanted the AST to be immutable and wanted the library to **just** handle manipulating MTL. Many other similar projects exist with different goals.
+
+1. https://github.com/doganulus/python-monitors
+1. https://github.com/STLInspector/STLInspector
+
 # Citing
 
     @misc{pyMTL,
