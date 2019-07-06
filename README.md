@@ -14,6 +14,26 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/72686883.svg)](https://zenodo.org/badge/latestdoi/72686883)
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+**Table of Contents**
+
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Python Operator API](#python-operator-api)
+        - [Propositional logic (using python syntax)](#propositional-logic-using-python-syntax)
+        - [Modal Logic (using python syntax)](#modal-logic-using-python-syntax)
+    - [String based API](#string-based-api)
+        - [Propositional logic (parse api)](#propositional-logic-parse-api)
+        - [Modal Logic (parser api)](#modal-logic-parser-api)
+    - [Boolean Evaluation](#boolean-evaluation)
+    - [Quantitative Evaluate (Signal Temporal Logic)](#quantitative-evaluate-signal-temporal-logic)
+    - [Utilities](#utilities)
+- [Similar Projects](#similar-projects)
+- [Citing](#citing)
+
+<!-- markdown-toc end -->
+
 # About
 
 Python library for working with Metric Temporal Logic (MTL). Metric
