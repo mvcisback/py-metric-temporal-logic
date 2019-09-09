@@ -25,7 +25,11 @@ def to_signal(ts_mapping):
 def interp(sig, t, tag=None):
     # TODO: return function that interpolates the whole signal.
     sig = sig.project({tag})
-    key = sig.data.keys()[sig.data.bisect_right(t) - 1]
+    idx = sig.data.bisect_right(t) - 1
+    if idx<0:
+        return None
+    else:
+        key = sig.data.keys()[idx]
     return sig[key][tag]
 
 
@@ -60,6 +64,9 @@ def pointwise_sat(phi, dt=0.1):
         if t is None:
             res = [(t, v[phi]) for t, v in f(sig).items()]
             return res if quantitative else [((t, v > 0) for t, v in res)]
+
+        if t is False:
+            t = f(sig).items()[0][0]
 
         res = interp(f(sig), t, phi)
         return res if quantitative else res > 0
