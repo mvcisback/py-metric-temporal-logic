@@ -26,7 +26,7 @@ def interp(sig, t, tag=None):
     # TODO: return function that interpolates the whole signal.
     sig = sig.project({tag})
     idx = sig.data.bisect_right(t) - 1
-    if idx<0:
+    if idx < 0:
         return None
     else:
         key = sig.data.keys()[idx]
