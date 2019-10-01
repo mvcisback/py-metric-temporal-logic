@@ -1,6 +1,6 @@
 -e git://github.com/mvcisback/hypothesis-cfg@master#egg=hypothesis-cfg
 -e git://github.com/mvcisback/DiscreteSignals@master#egg=discrete-signals
-attrs==19.1.0
+attrs==19.2.0
 codecov==2.0.15
 funcy==1.12
 lenses==0.5.0
