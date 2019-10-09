@@ -44,7 +44,7 @@ interval = "[" __ const_or_unbound __ "," __ const_or_unbound __ "]"
 
 const_or_unbound = const / "inf" / id
 
-AP = ~r"[a-z][a-z\\d]*"
+AP = ~r"[a-z_][a-z_\\d]*"
 
 bot = "FALSE"
 top = "TRUE"
