@@ -159,7 +159,7 @@ There are two types of evaluation. One uses the boolean semantics of MTL and the
 ```python
 # Assumes piece wise constant interpolation.
 data = {
-    'a': [(0, True), (1, False), (3, False)]
+    'a': [(0, True), (1, False), (3, False)],
     'b': [(0, False), (0.2, True), (4, False)]
 }
 
@@ -178,7 +178,7 @@ print(phi(data, time=3))
 # output: False
 
 # Compute sliding satisifaction.
-print(phi(data, time=None)
+print(phi(data, time=None))
 # output: [(0, True), (0.2, True), (4, False)]
 
 # Evaluate with discrete time
@@ -191,7 +191,7 @@ print(phi(data, dt=0.2))
 ```python
 # Assumes piece wise constant interpolation.
 data = {
-    'a': [(0, 100), (1, -1), (3, -2)]
+    'a': [(0, 100), (1, -1), (3, -2)],
     'b': [(0, 20), (0.2, 2), (4, -10)]
 }
 
