@@ -42,7 +42,17 @@ given in the usage.
 
 # Installation
 
+If you just need to use `metric-temporal-logic`, you can just run:
+
 `$ pip install metric-temporal-logic`
+
+For developers, note that this project uses the
+[poetry](https://poetry.eustace.io/) python package/dependency
+management tool. Please familarize yourself with it and then
+run:
+
+`$ poetry install`
+
 
 # Usage
 
