@@ -1,0 +1,14 @@
+kind: pipeline
+name: default
+
+steps:
+- name: test
+  image: python:3.6
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov_token
+  commands:
+  - pip install poetry
+  - poetry install
+  - poetry run pytest --flake8 --cov=mtl
+  - poetry run codecov
