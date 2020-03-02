@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "metric-temporal-logic"
 readme="README.md"
-version = "0.1.4"
+version = "0.1.5"
 description = "A library for manipulating and evaluating metric temporal logic."
 repository = "https://github.com/mvcisback/py-metric-temporal-logic"
 authors = ["Marcell Vazquez-Chanlatte <mvc@linux.com>"]
