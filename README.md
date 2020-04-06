@@ -156,47 +156,18 @@ phi6 = mtl.parse('(a U[0, 2] b)')
 phi7 = mtl.parse('XX a')
 ```
 
-
-## Boolean Evaluation
-
-Given a property `phi`, one can evaluate is a timeseries satisifies `phi`. Time Series can either be
-defined using a dictionary mapping atomic predicate names to lists of (`time`, `val`) pairs **or** using
-the [DiscreteSignals](https://github.com/mvcisback/DiscreteSignals) API (used internally).
-
-There are two types of evaluation. One uses the boolean semantics of MTL and the other uses Signal Temporal Logic like semantics.
-
-```python
-# Assumes piece wise constant interpolation.
-data = {
-    'a': [(0, True), (1, False), (3, False)],
-    'b': [(0, False), (0.2, True), (4, False)]
-}
-
-phi = mtl.parse('F(a | b)')
-print(phi(data, quantitative=False))
-# output: True
-
-phi = mtl.parse('F(a | b)')
-print(phi(data))
-# output: True
-
-# Note, quantitative parameter defaults to False
-
-# Evaluate at t=3. 
-print(phi(data, time=3))
-# output: False
-
-# Compute sliding satisifaction.
-print(phi(data, time=None))
-# output: [(0, True), (0.2, True), (4, False)]
-
-# Evaluate with discrete time
-phi = mtl.parse('X b')
-print(phi(data, dt=0.2))
-# output: True
-```
-
 ## Quantitative Evaluate (Signal Temporal Logic)
+
+Given a property `phi`, one can evaluate is a timeseries satisifies
+`phi`. Time Series can either be defined using a dictionary mapping
+atomic predicate names to lists of (`time`, `val`) pairs **or** using
+the [DiscreteSignals](https://github.com/mvcisback/DiscreteSignals)
+API (used internally).
+
+There are two types of evaluation. One uses the boolean semantics of
+MTL and the other uses Signal Temporal Logic like semantics.
+
+
 ```python
 # Assumes piece wise constant interpolation.
 data = {
@@ -216,6 +187,45 @@ print(phi(data, time=3))
 phi = mtl.parse('X b')
 print(phi(data, dt=0.2))
 # output: 2
+```
+
+## Boolean Evaluation
+
+To Boolean semantics can be thought of as a special case of the
+quantitative semantics where `True ↦ 1` and `False ↦ -1`.  This
+conversion happens automatically using using the `quantitative=False`
+flag.
+
+
+```python
+# Assumes piece wise constant interpolation.
+data = {
+    'a': [(0, True), (1, False), (3, False)],
+    'b': [(0, False), (0.2, True), (4, False)]
+}
+
+phi = mtl.parse('F(a | b)')
+print(phi(data, quantitative=False))
+# output: True
+
+phi = mtl.parse('F(a | b)')
+print(phi(data))
+# output: True
+
+# Note, quantitative parameter defaults to False
+
+# Evaluate at t=3. 
+print(phi(data, time=3, quantitative=False))
+# output: False
+
+# Compute sliding satisifaction.
+print(phi(data, time=None, quantitative=False))
+# output: [(0, True), (0.2, True), (4, False)]
+
+# Evaluate with discrete time
+phi = mtl.parse('X b')
+print(phi(data, dt=0.2, quantitative=False))
+# output: True
 ```
 
 ## Utilities
