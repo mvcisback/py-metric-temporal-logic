@@ -125,7 +125,12 @@ def eval_mtl_g(phi, dt):
         return min(val[phi.arg])
 
     def _eval(x):
-        return f(x).rolling(a, b).map(_min, tag=phi)
+        tmp = f(x)
+        assert b >= a
+        if b > a:
+            return tmp.rolling(a, b).map(_min, tag=phi)
+
+        return tmp.retag({phi.arg: phi})
 
     return _eval
 

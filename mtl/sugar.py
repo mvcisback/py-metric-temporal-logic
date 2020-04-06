@@ -25,5 +25,11 @@ def until(phi, psi):
     return ast.WeakUntil(phi, psi) & env(psi)
 
 
-def timed_until(phi, psi, lo, hi):
-    return env(psi, lo=lo, hi=hi) & alw(until(phi, psi), lo=0, hi=lo)
+def timed_until(left, right, lo, hi):
+    assert 0 <= lo < hi
+
+    expr = env(right, lo=lo, hi=hi)
+    expr &= alw(left, lo=0, hi=lo)
+    expr &= alw(until(left, right), lo=lo, hi=lo)
+
+    return expr
