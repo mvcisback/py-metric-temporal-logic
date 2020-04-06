@@ -63,7 +63,7 @@ def pointwise_sat(phi, dt=0.1):
 
         if t is None:
             res = [(t, v[phi]) for t, v in f(sig).items()]
-            return res if quantitative else [((t, v > 0) for t, v in res)]
+            return res if quantitative else [(t, v > 0) for t, v in res]
 
         if t is False:
             t = f(sig).items()[0][0]
