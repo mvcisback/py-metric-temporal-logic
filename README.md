@@ -193,7 +193,7 @@ print(phi(data, dt=0.2))
 
 To Boolean semantics can be thought of as a special case of the
 quantitative semantics where `True ↦ 1` and `False ↦ -1`.  This
-conversion happens automatically using using the `quantitative=False`
+conversion happens automatically using the `quantitative=False`
 flag.
 
 
