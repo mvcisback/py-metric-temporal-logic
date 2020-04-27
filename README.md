@@ -94,7 +94,7 @@ phi1 = a.eventually()
 phi2 = (a & b).always()
 
 # `a` until `b`
-phi3 = a.until()
+phi3 = a.until(b)
 
 # `a` weak until `b`
 phi4 = a.weak_until(b)
