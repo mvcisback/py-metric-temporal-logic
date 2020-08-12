@@ -150,7 +150,8 @@ def eval_mtl_next(phi, dt):
     f = eval_mtl(phi.arg, dt)
 
     def _eval(x):
-        return (f(x) << dt).retag({phi.arg: phi})
+        v = (f(x) << dt)
+        return v[max(v.start, 0):].retag({phi.arg: phi})
 
     return _eval
 
