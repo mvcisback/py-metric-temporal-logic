@@ -61,12 +61,14 @@ def pointwise_sat(phi, dt=0.1):
         if not quantitative:
             sig = booleanize_signal(sig)
 
+        start_time = sig.items()[0][0]
+
         if t is None:
-            res = [(t, v[phi]) for t, v in f(sig).items()]
+            res = [(t, v[phi]) for t, v in f(sig).items() if t >= start_time]
             return res if quantitative else [(t, v > 0) for t, v in res]
 
-        if t is False:
-            t = f(sig).items()[0][0]
+        if t is False:  # Use original signals starting time.
+            t = start_time
 
         res = interp(f(sig), t, phi)
         return res if quantitative else res > 0
@@ -150,8 +152,7 @@ def eval_mtl_next(phi, dt):
     f = eval_mtl(phi.arg, dt)
 
     def _eval(x):
-        v = (f(x) << dt)
-        return v[max(v.start, 0):].retag({phi.arg: phi})
+        return (f(x) << dt).retag({phi.arg: phi})
 
     return _eval
 
