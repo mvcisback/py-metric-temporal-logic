@@ -164,6 +164,7 @@ hypothesis = "*"
 reference = "fee01c6d8c36f33501b71ff0e84b342829968ddf"
 type = "git"
 url = "git://github.com/mvcisback/hypothesis-cfg.git"
+
 [[package]]
 category = "dev"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -483,8 +484,8 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "b15cc8274f95a4703eb1c0ec9fb67e72d28fb832e3d50929ca1e7dcf67b4fd45"
-python-versions = "^3.6"
+content-hash = "f32691341aa23a6daff2c24e307dcd1e9bcb5c3b2f042664245559f81ae5dc3f"
+python-versions = "^3.7"
 
 [metadata.files]
 apipkg = [
