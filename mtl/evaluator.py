@@ -6,7 +6,7 @@ from collections import defaultdict
 from functools import reduce, singledispatch
 
 import funcy as fn
-from discrete_signals import signal
+from discrete_signals import signal, DiscreteSignal
 
 from mtl import ast
 
@@ -15,9 +15,11 @@ CONST_FALSE = signal([(0, -1)], start=-OO, end=OO, tag=ast.BOT)
 CONST_TRUE = signal([(0, 1)], start=-OO, end=OO, tag=ast.TOP)
 
 
-def to_signal(ts_mapping):
+def to_signal(ts_mapping) -> DiscreteSignal:
+    if isinstance(ts_mapping, DiscreteSignal):
+        return ts_mapping
+
     start = min(fn.pluck(0, fn.cat(ts_mapping.values())))
-    assert start >= 0
     signals = (signal(v, start, OO, tag=k) for k, v in ts_mapping.items())
     return reduce(op.or_, signals)
 
