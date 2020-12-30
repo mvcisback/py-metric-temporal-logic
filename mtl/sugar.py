@@ -10,7 +10,7 @@ def env(phi, *, lo=0, hi=float('inf')):
 
 
 def implies(x, y):
-    return ~x | y
+    return ast.Implies(x, y)
 
 
 def xor(x, y):

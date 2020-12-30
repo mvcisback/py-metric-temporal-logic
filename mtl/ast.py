@@ -126,7 +126,7 @@ def ast_class(cls):
     cls.atomic_predicates = property(_atomic_predicates)
     cls.evolve = attr.evolve
     cls.iff = sugar.iff
-    cls.implies = sugar.implies
+    cls.implies = lambda a, b: Implies(a, b)
     # Avoid circular dependence.
     cls.weak_until = lambda a, b: WeakUntil(a, b)
     cls.until = sugar.until
@@ -217,6 +217,18 @@ class WeakUntil:
 
     def __repr__(self):
         return f"({self.arg1} W {self.arg2})"
+
+    @property
+    def children(self):
+        return (self.arg1, self.arg2)
+
+@ast_class
+class Implies:
+    arg1: Node
+    arg2: Node
+
+    def __repr__(self):
+        return f"({self.arg1} → {self.arg2})"
 
     @property
     def children(self):
