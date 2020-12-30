@@ -91,20 +91,20 @@ def eval_mtl_and(phi, dt, connectives):
     def _eval(x):
         sigs = [f(x) for f in fs]
         sig = reduce(lambda x, y: dense_compose(x, y, init=OO), sigs)
-        return sig.map(lambda v: min(v.values()), tag=phi)
+        return sig.map(lambda v: connectives.tnorm(v.values()), tag=phi)
 
     return _eval
 
 
-def apply_weak_until(left_key, right_key, sig):
-    prev, max_right = OO, -OO
+def apply_weak_until(left_key, right_key, sig, connectives):
+    ut, ga = -OO, OO
 
     for t in reversed(sig.times()):
         left, right = interp(sig, t, left_key), interp(sig, t, right_key)
 
-        max_right = max(max_right, right)
-        prev = max(right, min(left, prev), -max_right)
-        yield (t, prev)
+        ga = connectives.tnorm(ga, left)
+        ut = max(right, connectives.tnorm(left, ut))
+        yield (t, connectives.tconorm(ut, ga))
 
 
 @eval_mtl.register(ast.WeakUntil)
@@ -113,16 +113,16 @@ def eval_mtl_until(phi, dt, connectives):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
-        data = apply_weak_until(phi.arg1, phi.arg2, sig)
+        data = apply_weak_until(phi.arg1, phi.arg2, sig, connectives)
         return signal(data, x.start, OO, tag=phi)
 
     return _eval
 
 
-def apply_implies(left_key, right_key, sig):
+def apply_implies(left_key, right_key, sig, connectives):
     for t in sig.times():
         left, right = interp(sig, t, left_key), interp(sig, t, right_key)
-        yield (t, max(-left, right))
+        yield (t, connectives.implication(left, right))
 
 
 @eval_mtl.register(ast.Implies)
@@ -131,7 +131,7 @@ def eval_mtl_implies(phi, dt, connectives):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
-        data = apply_implies(phi.arg1, phi.arg2, sig)
+        data = apply_implies(phi.arg1, phi.arg2, sig, connectives)
         return signal(data, x.start, OO, tag=phi)
 
     return _eval
@@ -145,7 +145,7 @@ def eval_mtl_g(phi, dt, connectives):
         return lambda x: CONST_TRUE.retag({ast.TOP: phi})
 
     def _min(val):
-        return min(val[phi.arg])
+        return connectives.tnorm(val[phi.arg])
 
     def _eval(x):
         tmp = f(x)
@@ -163,7 +163,7 @@ def eval_mtl_neg(phi, dt, connectives):
     f = eval_mtl(phi.arg, dt, connectives)
 
     def _eval(x):
-        return f(x).map(lambda v: -v[phi.arg], tag=phi)
+        return f(x).map(lambda v: connectives.negation(v[phi.arg]), tag=phi)
 
     return _eval
 

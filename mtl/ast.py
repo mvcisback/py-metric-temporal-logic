@@ -44,7 +44,7 @@ def _neg(exp):
 
 def _eval(exp, trace, time=False, *, dt=0.1, quantitative=True, connectives=None):
     from mtl import evaluator
-    return evaluator.pointwise_sat(exp, dt)(trace, time, quantitative)
+    return evaluator.pointwise_sat(exp, dt, connectives)(trace, time, quantitative)
 
 
 def _timeshift(exp, t):
