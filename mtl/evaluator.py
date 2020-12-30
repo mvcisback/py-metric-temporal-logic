@@ -54,6 +54,9 @@ def booleanize_signal(sig):
 
 
 def pointwise_sat(phi, dt=0.1, connectives=None):
+    if connectives is None:
+        from mtl import connective
+        connectives = connective.default
     f = eval_mtl(phi, dt, connectives)
 
     def _eval_mtl(x, t=0, quantitative=False):
