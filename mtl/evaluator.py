@@ -121,6 +121,24 @@ def eval_mtl_until(phi, dt):
     return _eval
 
 
+def apply_implies(left_key, right_key, sig):
+    for t in sig.times():
+        left, right = interp(sig, t, left_key), interp(sig, t, right_key)
+        yield (t, max(-left, right))
+
+
+@eval_mtl.register(ast.Implies)
+def eval_mtl_implies(phi, dt):
+    f1, f2 = eval_mtl(phi.arg1, dt), eval_mtl(phi.arg2, dt)
+
+    def _eval(x):
+        sig = dense_compose(f1(x), f2(x), init=-OO)
+        data = apply_implies(phi.arg1, phi.arg2, sig)
+        return signal(data, x.start, OO, tag=phi)
+
+    return _eval
+
+
 @eval_mtl.register(ast.G)
 def eval_mtl_g(phi, dt):
     f = eval_mtl(phi.arg, dt)
