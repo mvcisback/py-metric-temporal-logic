@@ -42,7 +42,7 @@ def _neg(exp):
     return Neg(exp)
 
 
-def _eval(exp, trace, time=False, *, dt=0.1, quantitative=True):
+def _eval(exp, trace, time=False, *, dt=0.1, quantitative=True, connectives=None):
     from mtl import evaluator
     return evaluator.pointwise_sat(exp, dt)(trace, time, quantitative)
 

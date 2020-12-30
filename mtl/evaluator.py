@@ -53,8 +53,8 @@ def booleanize_signal(sig):
     ))
 
 
-def pointwise_sat(phi, dt=0.1):
-    f = eval_mtl(phi, dt)
+def pointwise_sat(phi, dt=0.1, connectives=None):
+    f = eval_mtl(phi, dt, connectives)
 
     def _eval_mtl(x, t=0, quantitative=False):
         sig = to_signal(x)
@@ -77,13 +77,13 @@ def pointwise_sat(phi, dt=0.1):
 
 
 @singledispatch
-def eval_mtl(phi, dt):
+def eval_mtl(phi, dt, connectives):
     raise NotImplementedError
 
 
 @eval_mtl.register(ast.And)
-def eval_mtl_and(phi, dt):
-    fs = [eval_mtl(arg, dt) for arg in phi.args]
+def eval_mtl_and(phi, dt, connectives):
+    fs = [eval_mtl(arg, dt, connectives) for arg in phi.args]
 
     def _eval(x):
         sigs = [f(x) for f in fs]
@@ -105,8 +105,8 @@ def apply_weak_until(left_key, right_key, sig):
 
 
 @eval_mtl.register(ast.WeakUntil)
-def eval_mtl_until(phi, dt):
-    f1, f2 = eval_mtl(phi.arg1, dt), eval_mtl(phi.arg2, dt)
+def eval_mtl_until(phi, dt, connectives):
+    f1, f2 = eval_mtl(phi.arg1, dt, connectives), eval_mtl(phi.arg2, dt, connectives)
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
@@ -123,8 +123,8 @@ def apply_implies(left_key, right_key, sig):
 
 
 @eval_mtl.register(ast.Implies)
-def eval_mtl_implies(phi, dt):
-    f1, f2 = eval_mtl(phi.arg1, dt), eval_mtl(phi.arg2, dt)
+def eval_mtl_implies(phi, dt, connectives):
+    f1, f2 = eval_mtl(phi.arg1, dt, connectives), eval_mtl(phi.arg2, dt, connectives)
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
@@ -135,8 +135,8 @@ def eval_mtl_implies(phi, dt):
 
 
 @eval_mtl.register(ast.G)
-def eval_mtl_g(phi, dt):
-    f = eval_mtl(phi.arg, dt)
+def eval_mtl_g(phi, dt, connectives):
+    f = eval_mtl(phi.arg, dt, connectives)
     a, b = phi.interval
     if b < a:
         return lambda x: CONST_TRUE.retag({ast.TOP: phi})
@@ -156,8 +156,8 @@ def eval_mtl_g(phi, dt):
 
 
 @eval_mtl.register(ast.Neg)
-def eval_mtl_neg(phi, dt):
-    f = eval_mtl(phi.arg, dt)
+def eval_mtl_neg(phi, dt, connectives):
+    f = eval_mtl(phi.arg, dt, connectives)
 
     def _eval(x):
         return f(x).map(lambda v: -v[phi.arg], tag=phi)
@@ -166,8 +166,8 @@ def eval_mtl_neg(phi, dt):
 
 
 @eval_mtl.register(ast.Next)
-def eval_mtl_next(phi, dt):
-    f = eval_mtl(phi.arg, dt)
+def eval_mtl_next(phi, dt, connectives):
+    f = eval_mtl(phi.arg, dt, connectives)
 
     def _eval(x):
         return (f(x) << dt).retag({phi.arg: phi})
@@ -176,7 +176,7 @@ def eval_mtl_next(phi, dt):
 
 
 @eval_mtl.register(ast.AtomicPred)
-def eval_mtl_ap(phi, _):
+def eval_mtl_ap(phi, _, _2):
     def _eval(x):
         return x.project({phi.id}).retag({phi.id: phi})
 
@@ -184,5 +184,5 @@ def eval_mtl_ap(phi, _):
 
 
 @eval_mtl.register(type(ast.BOT))
-def eval_mtl_bot(_, _1):
+def eval_mtl_bot(_, _1, _2):
     return lambda x: CONST_FALSE
