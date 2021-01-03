@@ -10,9 +10,8 @@ from discrete_signals import signal, DiscreteSignal
 
 from mtl import ast
 
+
 OO = float('inf')
-CONST_FALSE = signal([(0, -1)], start=-OO, end=OO, tag=ast.BOT)
-CONST_TRUE = signal([(0, 1)], start=-OO, end=OO, tag=ast.TOP)
 
 
 def to_signal(ts_mapping) -> DiscreteSignal:
@@ -151,7 +150,7 @@ def eval_mtl_g(phi, dt, connectives):
     f = eval_mtl(phi.arg, dt, connectives)
     a, b = phi.interval
     if b < a:
-        return lambda x: CONST_TRUE.retag({ast.TOP: phi})
+        return lambda x: connectives.const_true.retag({ast.TOP: phi})
 
     def _min(val):
         return connectives.tnorm(val[phi.arg])
@@ -202,5 +201,5 @@ def eval_mtl_ap(phi, _, _2):
 
 
 @eval_mtl.register(type(ast.BOT))
-def eval_mtl_bot(_, _1, _2):
-    return lambda x: CONST_FALSE
+def eval_mtl_bot(_, _1, connectives):
+    return lambda x: connectives.const_false
