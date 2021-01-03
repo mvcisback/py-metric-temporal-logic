@@ -24,110 +24,55 @@ DEFAULT_FALSE = signal([(0, -1)], start=-OO, end=OO, tag=ast.BOT)
 DEFAULT_TRUE = signal([(0, 1)], start=-OO, end=OO, tag=ast.TOP)
 
 
-def _default_negation(v):
-    return -v
-
-
-def _default_implication(a, b):
-    return max(-a, b)
-
-
-default = _ConnectivesDef(_default_negation, min, max, _default_implication, DEFAULT_FALSE, DEFAULT_TRUE)
+default = _ConnectivesDef(
+    negation=lambda v: -v,
+    tnorm=min,
+    tconorm=max,
+    implication=lambda a, b: max(-a, b),
+    const_false=DEFAULT_FALSE,
+    const_true=DEFAULT_TRUE,
+)
 
 
 FUZZY_FALSE = signal([(0, 0.0)], start=-OO, end=OO, tag=ast.BOT)
 FUZZY_TRUE = signal([(0, 1.0)], start=-OO, end=OO, tag=ast.TOP)
 
-def _zadeh_negation(v):
-    return 1.0 - v
 
-
-def _zadeh_implication(a, b):
-    return max(1.0 - a, b)
-
-
-zadeh = _ConnectivesDef(_zadeh_negation, min, max, _zadeh_implication, FUZZY_FALSE, FUZZY_TRUE)
-
-
-def _godel_negation(v):
-    if v > 0.0:
-        return 0.0
-    else:
-        return 1.0
-
-
-def _godel_implication(a, b):
-    if a <= b:
-        return 1.0
-    else:
-        return b
+zadeh = _ConnectivesDef(
+    negation=lambda v: 1. - v,
+    tnorm=min,
+    tconorm=max,
+    implication=lambda a, b: max(1. - a, b),
+    const_false=FUZZY_FALSE,
+    const_true=FUZZY_TRUE,
+)
 
 
 godel = _ConnectivesDef(
-    negation=_godel_negation,
+    negation=lambda v: 0. if v > 0. else 1.,
     tnorm=min,
     tconorm=max,
-    implication=_godel_implication,
+    implication=lambda a, b: 1. if a <= b else b,
     const_false=FUZZY_FALSE,
     const_true=FUZZY_TRUE,
 )
-
-_lukasiewicz_negation = _zadeh_negation
-
-
-def _lukasiewicz_tnorm(v):
-    def _tnorm(a, b):
-        return max(a + b - 1.0, 0.0)
-
-    return reduce(_tnorm, v, initial=1.0)
-
-
-def _lukasiewicz_tconorm(v):
-    def _tconorm(a, b):
-        return min(a + b, 1.0)
-
-    return reduce(_tconorm, v, initial=0.0)
-
-
-def _lukasiewicz_implication(a, b):
-    return min(1 - a + b, 1.0)
 
 
 lukasiewicz = _ConnectivesDef(
-    negation=_lukasiewicz_negation,
-    tnorm=_lukasiewicz_tnorm,
-    tconorm=_lukasiewicz_tconorm,
-    implication=_lukasiewicz_implication,
+    negation=lambda v: 1. - v,
+    tnorm=lambda v: reduce(lambda a, b: max(a + b - 1., 0.), v, initial=1.),
+    tconorm=lambda v: reduce(lambda a, b: min(a + b, 1.), v, initial=0.),
+    implication=lambda a, b: min(1. - a + b, 1.),
     const_false=FUZZY_FALSE,
     const_true=FUZZY_TRUE,
 )
 
-_product_negation = _godel_negation
-
-
-def _product_tnorm(v):
-    return reduce(operator.mul, v, initial=1.0)
-
-
-def _product_tconorm(v):
-    def _tconorm(a, b):
-        return (a + b) - a * b
-
-    return reduce(_tconorm, v, initial=0.0)
-
-
-def _product_implication(a, b):
-    if a <= b:
-        return 1.0
-    else:
-        return b / a
-
 
 product = _ConnectivesDef(
-    negation=_product_negation,
-    tnorm=_product_tnorm,
-    tconorm=_product_tconorm,
-    implication=_product_implication,
+    negation=lambda v: 0. if v > 0. else 1.,
+    tnorm=lambda v: reduce(operator.mul, v, initial=1.),
+    tconorm=lambda v: reduce(lambda a, b: (a + b) - (a * b), v, initial=0.),
+    implication=lambda a, b: 1. if a <= b else b / a,
     const_false=FUZZY_FALSE,
     const_true=FUZZY_TRUE,
 )
