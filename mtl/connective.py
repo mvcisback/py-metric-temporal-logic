@@ -12,6 +12,7 @@ OO = float('inf')
 
 @attr.s(frozen=True, auto_attribs=True, repr=False, slots=True)
 class _ConnectivesDef:
+    name: str
     negation: Callable[[float], float]
     tnorm: Callable[[Iterable[float]], float]
     tconorm: Callable[[Iterable[float]], float]
@@ -19,12 +20,19 @@ class _ConnectivesDef:
     const_false: DiscreteSignal
     const_true: DiscreteSignal
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return "<ConnectivesDef {}>".format(self.name)
+
 
 DEFAULT_FALSE = signal([(0, -1)], start=-OO, end=OO, tag=ast.BOT)
 DEFAULT_TRUE = signal([(0, 1)], start=-OO, end=OO, tag=ast.TOP)
 
 
 default = _ConnectivesDef(
+    name="default",
     negation=lambda v: -v,
     tnorm=min,
     tconorm=max,
@@ -39,6 +47,7 @@ FUZZY_TRUE = signal([(0, 1.0)], start=-OO, end=OO, tag=ast.TOP)
 
 
 zadeh = _ConnectivesDef(
+    name="zadeh",
     negation=lambda v: 1. - v,
     tnorm=min,
     tconorm=max,
@@ -49,6 +58,7 @@ zadeh = _ConnectivesDef(
 
 
 godel = _ConnectivesDef(
+    name="godel",
     negation=lambda v: 0. if v > 0. else 1.,
     tnorm=min,
     tconorm=max,
@@ -59,6 +69,7 @@ godel = _ConnectivesDef(
 
 
 lukasiewicz = _ConnectivesDef(
+    name="lukasiewicz",
     negation=lambda v: 1. - v,
     tnorm=lambda v: reduce(lambda a, b: max(a + b - 1., 0.), v, initial=1.),
     tconorm=lambda v: reduce(lambda a, b: min(a + b, 1.), v, initial=0.),
@@ -69,6 +80,7 @@ lukasiewicz = _ConnectivesDef(
 
 
 product = _ConnectivesDef(
+    name="product",
     negation=lambda v: 0. if v > 0. else 1.,
     tnorm=lambda v: reduce(operator.mul, v, initial=1.),
     tconorm=lambda v: reduce(lambda a, b: (a + b) - (a * b), v, initial=0.),
