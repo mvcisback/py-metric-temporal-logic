@@ -42,9 +42,9 @@ def _neg(exp):
     return Neg(exp)
 
 
-def _eval(exp, trace, time=False, *, dt=0.1, quantitative=True, connectives=None):
+def _eval(exp, trace, time=False, *, dt=0.1, quantitative=True, logic=None):
     from mtl import evaluator
-    return evaluator.pointwise_sat(exp, dt, connectives)(trace, time, quantitative)
+    return evaluator.pointwise_sat(exp, dt, logic)(trace, time, quantitative)
 
 
 def _timeshift(exp, t):
@@ -221,6 +221,7 @@ class WeakUntil:
     @property
     def children(self):
         return (self.arg1, self.arg2)
+
 
 @ast_class
 class Implies:
