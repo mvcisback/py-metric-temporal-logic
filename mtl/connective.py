@@ -71,8 +71,8 @@ godel = _ConnectivesDef(
 lukasiewicz = _ConnectivesDef(
     name="lukasiewicz",
     negation=lambda v: 1. - v,
-    tnorm=lambda v: reduce(lambda a, b: max(a + b - 1., 0.), v, initial=1.),
-    tconorm=lambda v: reduce(lambda a, b: min(a + b, 1.), v, initial=0.),
+    tnorm=lambda v: reduce(lambda a, b: max(a + b - 1., 0.), v, 1.),
+    tconorm=lambda v: reduce(lambda a, b: min(a + b, 1.), v, 0.),
     implication=lambda a, b: min(1. - a + b, 1.),
     const_false=FUZZY_FALSE,
     const_true=FUZZY_TRUE,
@@ -82,8 +82,8 @@ lukasiewicz = _ConnectivesDef(
 product = _ConnectivesDef(
     name="product",
     negation=lambda v: 0. if v > 0. else 1.,
-    tnorm=lambda v: reduce(operator.mul, v, initial=1.),
-    tconorm=lambda v: reduce(lambda a, b: (a + b) - (a * b), v, initial=0.),
+    tnorm=lambda v: reduce(operator.mul, v, 1.),
+    tconorm=lambda v: reduce(lambda a, b: (a + b) - (a * b), v, 0.),
     implication=lambda a, b: 1. if a <= b else b / a,
     const_false=FUZZY_FALSE,
     const_true=FUZZY_TRUE,
