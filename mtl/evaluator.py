@@ -56,11 +56,11 @@ def booleanize_signal(sig):
     ))
 
 
-def pointwise_sat(phi, dt=0.1, connectives=None):
-    if connectives is None:
+def pointwise_sat(phi, dt=0.1, logic=None):
+    if logic is None:
         from mtl import connective
-        connectives = connective.default
-    f = eval_mtl(phi, dt, connectives)
+        logic = connective.default
+    f = eval_mtl(phi, dt, logic)
 
     def _eval_mtl(x, t=0, quantitative=False):
         sig = to_signal(x)
@@ -83,77 +83,73 @@ def pointwise_sat(phi, dt=0.1, connectives=None):
 
 
 @singledispatch
-def eval_mtl(phi, dt, connectives):
+def eval_mtl(phi, dt, logic):
     raise NotImplementedError
 
 
 @eval_mtl.register(ast.And)
-def eval_mtl_and(phi, dt, connectives):
-    fs = [eval_mtl(arg, dt, connectives) for arg in phi.args]
+def eval_mtl_and(phi, dt, logic):
+    fs = [eval_mtl(arg, dt, logic) for arg in phi.args]
 
     def _eval(x):
         sigs = [f(x) for f in fs]
         sig = reduce(lambda x, y: dense_compose(x, y, init=OO), sigs)
-        return sig.map(lambda v: connectives.tnorm(v.values()), tag=phi)
+        return sig.map(lambda v: logic.tnorm(v.values()), tag=phi)
 
     return _eval
 
 
-def apply_weak_until(left_key, right_key, sig, connectives):
+def apply_weak_until(left_key, right_key, sig, logic):
     ut, ga = -OO, OO
 
     for t in reversed(sig.times()):
         left, right = interp(sig, t, left_key), interp(sig, t, right_key)
 
-        ga = connectives.tnorm(ga, left)
-        ut = max(right, connectives.tnorm(left, ut))
-        yield (t, connectives.tconorm(ut, ga))
+        ga = logic.tnorm(ga, left)
+        ut = max(right, logic.tnorm(left, ut))
+        yield (t, logic.tconorm(ut, ga))
 
 
 @eval_mtl.register(ast.WeakUntil)
-def eval_mtl_until(phi, dt, connectives):
-    f1, f2 = eval_mtl(phi.arg1, dt, connectives), eval_mtl(phi.arg2, dt, connectives)
+def eval_mtl_until(phi, dt, logic):
+    f1, f2 = eval_mtl(phi.arg1, dt, logic), eval_mtl(phi.arg2, dt, logic)
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
-<<<<<<< HEAD
         sig = sig | interp_all(sig, x.start, OO)  # Force valuation at start
-        data = apply_weak_until(phi.arg1, phi.arg2, sig)
-=======
-        data = apply_weak_until(phi.arg1, phi.arg2, sig, connectives)
->>>>>>> 9d1fef8 (Implement ast evaluation using connective operations)
+        data = apply_weak_until(phi.arg1, phi.arg2, sig, logic)
         return signal(data, x.start, OO, tag=phi)
 
     return _eval
 
 
-def apply_implies(left_key, right_key, sig, connectives):
+def apply_implies(left_key, right_key, sig, logic):
     for t in sig.times():
         left, right = interp(sig, t, left_key), interp(sig, t, right_key)
-        yield (t, connectives.implication(left, right))
+        yield (t, logic.implication(left, right))
 
 
 @eval_mtl.register(ast.Implies)
-def eval_mtl_implies(phi, dt, connectives):
-    f1, f2 = eval_mtl(phi.arg1, dt, connectives), eval_mtl(phi.arg2, dt, connectives)
+def eval_mtl_implies(phi, dt, logic):
+    f1, f2 = eval_mtl(phi.arg1, dt, logic), eval_mtl(phi.arg2, dt, logic)
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
-        data = apply_implies(phi.arg1, phi.arg2, sig, connectives)
+        data = apply_implies(phi.arg1, phi.arg2, sig, logic)
         return signal(data, x.start, OO, tag=phi)
 
     return _eval
 
 
 @eval_mtl.register(ast.G)
-def eval_mtl_g(phi, dt, connectives):
-    f = eval_mtl(phi.arg, dt, connectives)
+def eval_mtl_g(phi, dt, logic):
+    f = eval_mtl(phi.arg, dt, logic)
     a, b = phi.interval
     if b < a:
-        return lambda x: connectives.const_true.retag({ast.TOP: phi})
+        return lambda x: logic.const_true.retag({ast.TOP: phi})
 
     def _min(val):
-        return connectives.tnorm(val[phi.arg])
+        return logic.tnorm(val[phi.arg])
 
     def _eval(x):
         tmp = f(x)
@@ -173,18 +169,18 @@ def eval_mtl_g(phi, dt, connectives):
 
 
 @eval_mtl.register(ast.Neg)
-def eval_mtl_neg(phi, dt, connectives):
-    f = eval_mtl(phi.arg, dt, connectives)
+def eval_mtl_neg(phi, dt, logic):
+    f = eval_mtl(phi.arg, dt, logic)
 
     def _eval(x):
-        return f(x).map(lambda v: connectives.negation(v[phi.arg]), tag=phi)
+        return f(x).map(lambda v: logic.negation(v[phi.arg]), tag=phi)
 
     return _eval
 
 
 @eval_mtl.register(ast.Next)
-def eval_mtl_next(phi, dt, connectives):
-    f = eval_mtl(phi.arg, dt, connectives)
+def eval_mtl_next(phi, dt, logic):
+    f = eval_mtl(phi.arg, dt, logic)
 
     def _eval(x):
         return (f(x) << dt).retag({phi.arg: phi})
@@ -201,5 +197,5 @@ def eval_mtl_ap(phi, _, _2):
 
 
 @eval_mtl.register(type(ast.BOT))
-def eval_mtl_bot(_, _1, connectives):
-    return lambda x: connectives.const_false
+def eval_mtl_bot(_, _1, logic):
+    return lambda x: logic.const_false
