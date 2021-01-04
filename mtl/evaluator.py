@@ -1,6 +1,5 @@
 # TODO: figure out how to deduplicate this with robustness
 # - Abstract as working on distributive lattice
-
 import operator as op
 from collections import defaultdict
 from functools import reduce, singledispatch
@@ -113,7 +112,11 @@ def eval_mtl_until(phi, dt, logic):
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
         data = apply_weak_until(phi.arg1, phi.arg2, sig, logic)
-        return signal(data, x.start, OO, tag=phi)
+        # FIXME signal removes entries outside [start:end] w/o interpolation
+        d = list(data)
+        s = signal(d, min(u for (u, _) in d), OO, tag=phi)
+        d.append((x.start, interp(s, x.start, phi)))
+        return signal(d, x.start, OO, tag=phi)
 
     return _eval
 
@@ -131,7 +134,11 @@ def eval_mtl_implies(phi, dt, logic):
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
         data = apply_implies(phi.arg1, phi.arg2, sig, logic)
-        return signal(data, x.start, OO, tag=phi)
+        # FIXME signal removes entries outside [start:end] w/o interpolation
+        d = list(data)
+        s = signal(d, min(u for (u, _) in d), OO, tag=phi)
+        d.append((x.start, interp(s, x.start, phi)))
+        return signal(d, x.start, OO, tag=phi)
 
     return _eval
 
