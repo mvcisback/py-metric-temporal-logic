@@ -94,6 +94,18 @@ def eval_mtl_and(phi, dt, logic):
     return _eval
 
 
+@eval_mtl.register(ast.Or)
+def eval_mtl_or(phi, dt, logic):
+    fs = [eval_mtl(arg, dt, logic) for arg in phi.args]
+
+    def _eval(x):
+        sigs = [f(x) for f in fs]
+        sig = reduce(lambda x, y: dense_compose(x, y, init=OO), sigs)
+        return sig.map(lambda v: logic.tconorm(v.values()), tag=phi)
+
+    return _eval
+
+
 def apply_weak_until(left_key, right_key, sig, logic):
     ut, ga = -OO, OO
 
