@@ -28,4 +28,4 @@ def test_identities(phi):
 def test_walk():
     phi = mtl.parse(
         '(([ ][0, 1] ap1 & < >[1,2] ap2) | (@ap1 U ap2))')
-    assert len(list((~phi).walk())) == 19
+    assert len(list((~phi).walk())) == 18
