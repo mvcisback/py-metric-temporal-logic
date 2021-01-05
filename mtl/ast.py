@@ -29,7 +29,7 @@ def flatten_binary(phi, op, dropT, shortT):
 
 
 def _or(exp1, exp2):
-    return ~(~exp1 & ~exp2)
+    return flatten_binary(Or((exp1, exp2)), Or, BOT, TOP)
 
 
 def _and(exp1, exp2):
@@ -187,6 +187,10 @@ class NaryOpMTL:
 
 
 class And(NaryOpMTL):
+    OP = "&"
+
+
+class Or(NaryOpMTL):
     OP = "&"
 
 
