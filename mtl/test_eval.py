@@ -42,3 +42,27 @@ def test_eval_regression_until_start():
 
     phi = (mtl.parse("(X TRUE W X TRUE)"))
     phi(x, 0, quantitative=False)
+
+
+def test_eval_regression_timed_until():
+    """From issue #217"""
+    x = {
+        'start': [(0, True), (200, False)],
+        'success': [(0, False), (300, True)]
+    }
+    phi = mtl.parse('(~start U[0,120] success)')
+    assert phi(x, time=200, quantitative=False, dt=1)
+
+    y = {
+        'start': [(0, True), (1, False), (5, True), (6, True)],
+        'success': [(0, False), (20, True)]
+    }
+    phi1 = mtl.parse('(start U[0,20] success)')
+    assert phi1(y, time=6, quantitative=False, dt=1)
+
+    z = {
+        'start': [(0, True), (200, False)],
+        'success': [(0, False), (300, True)]
+    }
+    phi2 = mtl.parse('F[0,120]success')
+    assert phi2(z, time=181, quantitative=False, dt=1)
