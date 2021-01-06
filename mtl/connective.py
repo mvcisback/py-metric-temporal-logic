@@ -3,7 +3,7 @@ from functools import reduce
 from typing import Callable, Iterable
 
 import attr
-from discrete_signals import DiscreteSignal, signal
+from discrete_signals import signal
 
 from mtl import ast
 
@@ -35,8 +35,8 @@ class _ConnectivesDef:
         return signal([(0, self.const_true)], start=-OO, end=OO, tag=ast.TOP)
 
 
-DEFAULT_FALSE = -1.0
-DEFAULT_TRUE = 1.0
+DEFAULT_FALSE = -OO
+DEFAULT_TRUE = OO
 
 
 default = _ConnectivesDef(
