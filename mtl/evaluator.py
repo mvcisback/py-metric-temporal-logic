@@ -158,7 +158,7 @@ def eval_mtl_g(phi, dt, logic):
     f = eval_mtl(phi.arg, dt, logic)
     a, b = phi.interval
     if b < a:
-        return lambda x: logic.const_true.retag({ast.TOP: phi})
+        return lambda x: logic.TOP.retag({ast.TOP: phi})
 
     def _min(val):
         return logic.tnorm(val[phi.arg])
@@ -210,4 +210,4 @@ def eval_mtl_ap(phi, _, _2):
 
 @eval_mtl.register(type(ast.BOT))
 def eval_mtl_bot(_, _1, logic):
-    return lambda x: logic.const_false
+    return lambda x: logic.BOT

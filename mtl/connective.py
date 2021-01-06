@@ -17,8 +17,8 @@ class _ConnectivesDef:
     tnorm: Callable[[Iterable[float]], float]
     tconorm: Callable[[Iterable[float]], float]
     implication: Callable[[float, float], float]
-    const_false: DiscreteSignal
-    const_true: DiscreteSignal
+    const_false: float
+    const_true: float
 
     def __str__(self):
         return self.name
@@ -26,9 +26,15 @@ class _ConnectivesDef:
     def __repr__(self):
         return "<ConnectivesDef {}>".format(self.name)
 
+    def BOT(self):
+        return signal([(0, self.const_false)], start=-OO, end=OO, tag=ast.BOT)
 
-DEFAULT_FALSE = signal([(0, -1)], start=-OO, end=OO, tag=ast.BOT)
-DEFAULT_TRUE = signal([(0, 1)], start=-OO, end=OO, tag=ast.TOP)
+    def TOP(self):
+        return signal([(0, self.const_true)], start=-OO, end=OO, tag=ast.TOP)
+
+
+DEFAULT_FALSE = -1.0
+DEFAULT_TRUE = 1.0
 
 
 default = _ConnectivesDef(
@@ -42,8 +48,8 @@ default = _ConnectivesDef(
 )
 
 
-FUZZY_FALSE = signal([(0, 0.0)], start=-OO, end=OO, tag=ast.BOT)
-FUZZY_TRUE = signal([(0, 1.0)], start=-OO, end=OO, tag=ast.TOP)
+FUZZY_FALSE = 0.0
+FUZZY_TRUE = 1.0
 
 
 zadeh = _ConnectivesDef(
