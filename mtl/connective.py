@@ -26,9 +26,11 @@ class _ConnectivesDef:
     def __repr__(self):
         return "<ConnectivesDef {}>".format(self.name)
 
+    @property
     def BOT(self):
         return signal([(0, self.const_false)], start=-OO, end=OO, tag=ast.BOT)
 
+    @property
     def TOP(self):
         return signal([(0, self.const_true)], start=-OO, end=OO, tag=ast.TOP)
 
