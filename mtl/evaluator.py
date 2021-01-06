@@ -111,7 +111,8 @@ def eval_mtl_or(phi, dt, logic):
 
 
 def apply_weak_until(left_key, right_key, sig, logic):
-    ut, ga = -OO, OO
+    ut = logic.const_false
+    ga = logic.const_true
 
     for t in reversed(sig.times()):
         left, right = interp(sig, t, left_key), interp(sig, t, right_key)
