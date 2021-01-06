@@ -20,3 +20,13 @@ def test_eval_regression_next_neg():
     v = f(d, quantitative=False, dt=1, time=None)
     assert not f(d, quantitative=False, dt=1)
     assert min(t for t, _ in v) >= 0
+
+
+def test_eval_regression_until_start():
+    """From issue #221"""
+    x = {
+        "ap1": [(0, True), (0.1, True), (0.2, False)],
+    }
+
+    phi = (mtl.parse("(X TRUE W X TRUE)"))
+    phi(x, 0, quantitative=False)

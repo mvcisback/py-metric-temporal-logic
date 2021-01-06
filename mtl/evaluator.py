@@ -33,6 +33,11 @@ def interp(sig, t, tag=None):
     return sig[key][tag]
 
 
+def interp_all(sig, t, end=OO):
+    v = fn.map(lambda u: signal([(t, interp(sig, t, u))], t, end, u), sig.tags)
+    return reduce(op.__or__, v)
+
+
 def dense_compose(sig1, sig2, init=None):
     sig12 = sig1 | sig2
     tags = sig12.tags
@@ -110,6 +115,7 @@ def eval_mtl_until(phi, dt):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=-OO)
+        sig = sig | interp_all(sig, x.start, OO)  # Force valuation at start
         data = apply_weak_until(phi.arg1, phi.arg2, sig)
         return signal(data, x.start, OO, tag=phi)
 
