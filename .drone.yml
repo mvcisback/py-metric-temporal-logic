@@ -3,7 +3,7 @@ name: default
 
 steps:
 - name: test
-  image: python:3.6
+  image: python:3.7
   environment:
     CODECOV_TOKEN:
       from_secret: codecov_token
