@@ -135,6 +135,12 @@ def eval_mtl_g(phi, dt):
         tmp = f(x)
         assert b >= a
         if b > a:
+            # Force valuation at pivot points
+            if a < b < OO:
+                ts = fn.map(
+                    lambda t: interp_all(tmp, t - b - a + dt, tmp.end),
+                    tmp.times())
+                tmp = reduce(op.__or__, ts, tmp)[tmp.start:tmp.end]
             return tmp.rolling(a, b).map(_min, tag=phi)
 
         return tmp.retag({phi.arg: phi})
