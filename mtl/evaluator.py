@@ -116,9 +116,9 @@ def apply_weak_until(left_key, right_key, sig, logic):
     for t in reversed(sig.times()):
         left, right = interp(sig, t, left_key), interp(sig, t, right_key)
 
-        ga = logic.tnorm(ga, left)
-        ut = max(right, logic.tnorm(left, ut))
-        yield (t, logic.tconorm(ut, ga))
+        ga = logic.tnorm([ga, left])
+        ut = max(right, logic.tnorm([left, ut]))
+        yield (t, logic.tconorm([ut, ga]))
 
 
 @eval_mtl.register(ast.WeakUntil)
