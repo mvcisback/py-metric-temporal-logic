@@ -1,6 +1,5 @@
 from hypothesis import given, strategies as st
 
-import math
 import mtl
 
 from mtl.connective import godel, zadeh, lukasiewicz, product
@@ -103,7 +102,8 @@ def test_fuzzy_eval(con, phi1, phi2, phi3):
     assert (not v2 >= v3) or con.tconorm([v1, v2]) >= con.tconorm([v1, v3])
     assert con.tnorm([v1, v2]) <= v1
     assert con.tconorm([v1, v2]) >= v1
-    assert (not v1 <= v2) or (con.implication(v1, v3) >= con.implication(v2, v3))
-    assert (not v2 <= v3) or (con.implication(v1, v2) <= con.implication(v1, v3))
+    assert (not v1 <= v2) \
+        or (con.implication(v1, v3) >= con.implication(v2, v3))
+    assert (not v2 <= v3) \
+        or (con.implication(v1, v2) <= con.implication(v1, v3))
     assert con.implication(v1, v2) >= max(con.negation(v1), v2)
-
