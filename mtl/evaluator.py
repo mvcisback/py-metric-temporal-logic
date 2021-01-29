@@ -110,6 +110,17 @@ def eval_mtl_or(phi, dt, logic):
     return _eval
 
 
+@eval_mtl.register(ast.Lt)
+def eval_mtl_lt(phi, dt, logic):
+    f1, f2 = eval_mtl(phi.arg1, dt, logic), eval_mtl(phi.arg2, dt, logic)
+
+    def _eval(x):
+        sig = dense_compose(f1(x), f2(x), init=logic.const_false)
+        return sig.map(lambda v: logic.const_true if v[phi.arg1] < v[phi.arg2] else logic.const_false, tag=phi)
+
+    return _eval
+
+
 def apply_weak_until(left_key, right_key, sig, logic):
     ut = logic.const_false
     ga = logic.const_true
