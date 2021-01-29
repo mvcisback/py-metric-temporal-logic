@@ -195,6 +195,20 @@ class Or(NaryOpMTL):
 
 
 @ast_class
+class BinaryOpMTL:
+    OP = "?"
+    arg1: Node
+    arg2: Node
+
+    def __repr__(self):
+        return f"({self.arg1} {self.OP} {self.arg2})"
+
+
+class Lt(BinaryOpMTL):
+    OP = "<"
+
+
+@ast_class
 class ModalOp:
     OP = '?'
     interval: Interval
