@@ -191,7 +191,7 @@ class And(NaryOpMTL):
 
 
 class Or(NaryOpMTL):
-    OP = "&"
+    OP = "|"
 
 
 @ast_class
