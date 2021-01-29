@@ -40,6 +40,10 @@ def _lt(exp1, exp2):
     return Lt(exp1, exp2)
 
 
+def _eq(exp1, exp2):
+    return Eq(exp1, exp2)
+
+
 def _neg(exp):
     if isinstance(exp, Neg):
         return exp.arg
@@ -126,6 +130,7 @@ def ast_class(cls):
     cls.__rshift__ = _timeshift
     cls.__getitem__ = _inline_context
     cls.__lt__ = _lt
+    cls.__le__ = sugar.le
     cls.walk = _walk
     cls.params = property(_params)
     cls.atomic_predicates = property(_atomic_predicates)
@@ -138,11 +143,18 @@ def ast_class(cls):
     cls.timed_until = sugar.timed_until
     cls.always = sugar.alw
     cls.eventually = sugar.env
+    cls.eq = _eq
 
     if not hasattr(cls, "children"):
         cls.children = property(lambda _: ())
 
-    return attr.s(frozen=True, auto_attribs=True, repr=False, slots=True, order=False)(cls)
+    return attr.s(
+        frozen=True,
+        auto_attribs=True,
+        repr=False,
+        slots=True,
+        order=False
+    )(cls)
 
 
 def _update_itvl(itvl, lookup):
@@ -211,6 +223,10 @@ class BinaryOpMTL:
 
 class Lt(BinaryOpMTL):
     OP = "<"
+
+
+class Eq(BinaryOpMTL):
+    OP = "="
 
 
 @ast_class

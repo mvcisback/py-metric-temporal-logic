@@ -17,6 +17,10 @@ def xor(x, y):
     return (x | y) & ~(x & y)
 
 
+def le(x, y):
+    return (x < y) | (x.eq(y))
+
+
 def iff(x, y):
     return (x & y) | (~x & ~y)
 
