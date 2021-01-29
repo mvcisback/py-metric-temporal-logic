@@ -92,7 +92,8 @@ def eval_mtl_and(phi, dt, logic):
 
     def _eval(x):
         sigs = [f(x) for f in fs]
-        sig = reduce(lambda x, y: dense_compose(x, y, init=logic.const_true), sigs)
+        sig = reduce(lambda x, y:
+                     dense_compose(x, y, init=logic.const_true), sigs)
         return sig.map(lambda v: logic.tnorm(v.values()), tag=phi)
 
     return _eval
@@ -104,7 +105,8 @@ def eval_mtl_or(phi, dt, logic):
 
     def _eval(x):
         sigs = [f(x) for f in fs]
-        sig = reduce(lambda x, y: dense_compose(x, y, init=logic.const_true), sigs)
+        sig = reduce(lambda x, y:
+                     dense_compose(x, y, init=logic.const_true), sigs)
         return sig.map(lambda v: logic.tconorm(v.values()), tag=phi)
 
     return _eval
@@ -116,7 +118,11 @@ def eval_mtl_lt(phi, dt, logic):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        return sig.map(lambda v: logic.const_true if v[phi.arg1] < v[phi.arg2] else logic.const_false, tag=phi)
+        return sig.map(lambda v:
+                       logic.const_true
+                       if v[phi.arg1] < v[phi.arg2]
+                       else logic.const_false,
+                       tag=phi)
 
     return _eval
 
@@ -154,7 +160,7 @@ def eval_mtl_until(phi, dt, logic):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        sig = sig | interp_all(sig, x.start, logic.const_true)  # Force valuation at start
+        sig = sig | interp_all(sig, x.start, logic.const_true)
         data = apply_weak_until(phi.arg1, phi.arg2, sig, logic)
         return signal(data, x.start, logic.const_true, tag=phi)
 
@@ -173,7 +179,7 @@ def eval_mtl_implies(phi, dt, logic):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        sig = sig | interp_all(sig, x.start, logic.const_true)  # Force valuation at start
+        sig = sig | interp_all(sig, x.start, logic.const_true)
         data = apply_implies(phi.arg1, phi.arg2, sig, logic)
         return signal(data, x.start, logic.const_true, tag=phi)
 
