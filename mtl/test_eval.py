@@ -66,3 +66,24 @@ def test_eval_regression_timed_until():
     }
     phi2 = mtl.parse('F[0,120]success')
     assert phi2(z, time=181, quantitative=False, dt=1)
+
+
+def test_eval_comparison():
+    a = mtl.parse("a")
+    b = mtl.parse("b")
+
+    d = {
+        "a": [(0,  5.), (1, 10.),           (3,  0.), (4, 10.)],
+        "b": [(0, 15.),           (2,  5.),           (4, 10.)],
+    }
+
+    i = a < b
+    assert i(d, time=0, quantitative=False)
+    assert i(d, time=1, quantitative=False)
+    assert not i(d, time=2, quantitative=False)
+    assert i(d, time=3, quantitative=False)
+    assert not i(d, time=4, quantitative=False)
+
+    i = a.eq(b)
+    assert not i(d, time=0, quantitative=False)
+    assert i(d, time=4, quantitative=False)
