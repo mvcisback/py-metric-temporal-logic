@@ -36,6 +36,10 @@ def _and(exp1, exp2):
     return flatten_binary(And((exp1, exp2)), And, TOP, BOT)
 
 
+def _lt(exp1, exp2):
+    return Lt(exp1, exp2)
+
+
 def _neg(exp):
     if isinstance(exp, Neg):
         return exp.arg
@@ -121,6 +125,7 @@ def ast_class(cls):
     cls.__call__ = _eval
     cls.__rshift__ = _timeshift
     cls.__getitem__ = _inline_context
+    cls.__lt__ = _lt
     cls.walk = _walk
     cls.params = property(_params)
     cls.atomic_predicates = property(_atomic_predicates)
@@ -137,7 +142,7 @@ def ast_class(cls):
     if not hasattr(cls, "children"):
         cls.children = property(lambda _: ())
 
-    return attr.s(frozen=True, auto_attribs=True, repr=False, slots=True)(cls)
+    return attr.s(frozen=True, auto_attribs=True, repr=False, slots=True, order=False)(cls)
 
 
 def _update_itvl(itvl, lookup):
