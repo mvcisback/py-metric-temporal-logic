@@ -1,5 +1,6 @@
 # TODO: figure out how to deduplicate this with robustness
 # - Abstract as working on distributive lattice
+import numbers
 import operator as op
 from collections import defaultdict
 from functools import reduce, singledispatch
@@ -84,6 +85,11 @@ def pointwise_sat(phi, dt=0.1, logic=None):
 @singledispatch
 def eval_mtl(phi, dt, logic):
     raise NotImplementedError
+
+
+@eval_mtl.register(numbers.Number)
+def eval_mtl_constant_number(phi, dt, logic):
+    return lambda _: signal([(0, phi)], start=-OO, end=OO, tag=phi)
 
 
 @eval_mtl.register(ast.And)
