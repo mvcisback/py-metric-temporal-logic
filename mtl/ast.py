@@ -131,6 +131,8 @@ def ast_class(cls):
     cls.__getitem__ = _inline_context
     cls.__lt__ = _lt
     cls.__le__ = sugar.le
+    cls.__gt__ = sugar.gt
+    cls.__ge__ = sugar.ge
     cls.walk = _walk
     cls.params = property(_params)
     cls.atomic_predicates = property(_atomic_predicates)

@@ -21,6 +21,14 @@ def le(x, y):
     return (x < y) | (x.eq(y))
 
 
+def gt(x, y):
+    return ~(x <= y)
+
+
+def ge(x, y):
+    return ~(x < y)
+
+
 def iff(x, y):
     return (x & y) | (~x & ~y)
 
