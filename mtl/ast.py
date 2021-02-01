@@ -71,7 +71,8 @@ def _walk(exp):
     while len(children) > 0:
         node = pop(children)
         yield node
-        children.extend(node.children)
+        if hasattr(node, "children"):
+            children.extend(node.children)
 
 
 def _params(exp):
@@ -221,6 +222,10 @@ class BinaryOpMTL:
 
     def __repr__(self):
         return f"({self.arg1} {self.OP} {self.arg2})"
+
+    @property
+    def children(self):
+        return (self.arg1, self.arg2)
 
 
 class Lt(BinaryOpMTL):
