@@ -84,7 +84,7 @@ def pointwise_sat(phi, dt=0.1, logic=None):
 
 @singledispatch
 def eval_mtl(phi, dt, logic):
-    raise NotImplementedError
+    return lambda _: signal([(0, phi)], start=-OO, end=OO, tag=phi)
 
 
 @eval_mtl.register(numbers.Number)
