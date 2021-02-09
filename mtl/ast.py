@@ -223,7 +223,7 @@ class BinaryOpMTL:
 
     def __repr__(self):
         if self.tolerance != 0.:
-            return f"({self.arg1} {self.OP}[±{self.tolerance}] {self.arg2})"
+            return f"({self.arg1} {self.OP}[~{self.tolerance}] {self.arg2})"
         return f"({self.arg1} {self.OP} {self.arg2})"
 
     @property
