@@ -36,12 +36,12 @@ def _and(exp1, exp2):
     return flatten_binary(And((exp1, exp2)), And, TOP, BOT)
 
 
-def _lt(exp1, exp2):
-    return Lt(exp1, exp2)
+def _lt(exp1, exp2, tolerance=0.):
+    return Lt(exp1, exp2, abs(tolerance))
 
 
-def _eq(exp1, exp2):
-    return Eq(exp1, exp2)
+def _eq(exp1, exp2, tolerance=0.):
+    return Eq(exp1, exp2, abs(tolerance))
 
 
 def _neg(exp):
@@ -219,8 +219,11 @@ class BinaryOpMTL:
     OP = "?"
     arg1: Node
     arg2: Node
+    tolerance: float
 
     def __repr__(self):
+        if self.tolerance != 0.:
+            return f"({self.arg1} {self.OP}[±{self.tolerance}] {self.arg2})"
         return f"({self.arg1} {self.OP} {self.arg2})"
 
     @property
