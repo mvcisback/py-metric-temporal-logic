@@ -148,6 +148,9 @@ def ast_class(cls):
     cls.eventually = sugar.env
     cls.eq = _eq
     cls.lt = _lt
+    cls.le = sugar.le
+    cls.ge = sugar.ge
+    cls.gt = sugar.gt
 
     if not hasattr(cls, "children"):
         cls.children = property(lambda _: ())
