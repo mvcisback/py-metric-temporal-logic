@@ -122,13 +122,17 @@ def eval_mtl_or(phi, dt, logic):
 def eval_mtl_lt(phi, dt, logic):
     f1, f2 = eval_mtl(phi.arg1, dt, logic), eval_mtl(phi.arg2, dt, logic)
 
+    def _eval_lt(v):
+        if v[phi.arg1] < v[phi.arg2]:
+            return logic.const_true
+        elif v[phi.arg2] <= v[phi.arg1] - phi.tolerance:
+            return logic.const_false
+        else:
+            return ((v[phi.arg2] - (v[phi.arg1] - phi.tolerance)) / phi.tolerance) * (logic.const_true - logic.const_false) + logic.const_false
+
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        return sig.map(lambda v:
-                       logic.const_true
-                       if v[phi.arg1] < v[phi.arg2]
-                       else logic.const_false,
-                       tag=phi)
+        return sig.map(_eval_lt, tag=phi)
 
     return _eval
 
