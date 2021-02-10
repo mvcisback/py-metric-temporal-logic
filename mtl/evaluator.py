@@ -69,8 +69,7 @@ def pointwise_sat(phi, dt=0.1, logic=None):
 
     def _eval_mtl(x, t=0, quantitative=False):
         sig = to_signal(x)
-        if not quantitative:
-            sig = booleanize_signal(sig, logic)
+        sig = booleanize_signal(sig, logic)
 
         start_time = sig.items()[0][0]
 
