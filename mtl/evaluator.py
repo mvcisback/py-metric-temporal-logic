@@ -183,9 +183,9 @@ def eval_mtl_until(phi, dt, logic):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        sig = sig | interp_all(sig, x.start, logic.const_true)
+        sig = sig | interp_all(sig, x.start)
         data = apply_weak_until(phi.arg1, phi.arg2, sig, logic)
-        return signal(data, x.start, logic.const_true, tag=phi)
+        return signal(data, x.start, x.end, tag=phi)
 
     return _eval
 
@@ -202,9 +202,9 @@ def eval_mtl_implies(phi, dt, logic):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        sig = sig | interp_all(sig, x.start, logic.const_true)
+        sig = sig | interp_all(sig, x.start)
         data = apply_implies(phi.arg1, phi.arg2, sig, logic)
-        return signal(data, x.start, logic.const_true, tag=phi)
+        return signal(data, x.start, x.end, tag=phi)
 
     return _eval
 
