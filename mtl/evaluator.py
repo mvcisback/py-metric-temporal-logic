@@ -49,9 +49,14 @@ def dense_compose(sig1, sig2, init=None):
     return sig12.evolve(data=data)
 
 
-def booleanize_signal(sig):
+def booleanize_signal(sig, logic):
+    def _booleanize_value(v):
+        if isinstance(v, bool):
+            return logic.const_true if v else logic.const_false
+        else:
+            return v
     return sig.transform(lambda mapping: defaultdict(
-        lambda: None, {k: 2*int(v) - 1 for k, v in mapping.items()}
+        lambda: None, {k: _booleanize_value(v) for k, v in mapping.items()}
     ))
 
 
@@ -64,13 +69,13 @@ def pointwise_sat(phi, dt=0.1, logic=None):
     def _eval_mtl(x, t=0, quantitative=False):
         sig = to_signal(x)
         if not quantitative:
-            sig = booleanize_signal(sig)
+            sig = booleanize_signal(sig, logic)
 
         start_time = sig.items()[0][0]
 
         if t is None:
             res = [(t, v[phi]) for t, v in f(sig).items() if t >= start_time]
-            return res if quantitative else [(t, v > 0) for t, v in res]
+            return res if quantitative else [(t, v >= logic.const_true) for t, v in res]
 
         if t is False:  # Use original signals starting time.
             t = start_time
