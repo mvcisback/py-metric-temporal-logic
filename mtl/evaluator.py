@@ -24,11 +24,13 @@ def to_signal(ts_mapping) -> DiscreteSignal:
 
 
 def interp(sig, t, tag=None):
-    # TODO: return function that interpolates the whole signal.
-    sig = sig.project({tag})
-    idx = max(sig.data.bisect_right(t) - 1, 0)
-    key = sig.data.keys()[idx]
-    return sig[key][tag]
+    if t in sig.data and tag in sig.data[t]:
+        return sig.data[t][tag]
+    s = sig[:t]
+    for i in reversed(s.data):
+        if tag in s.data[i]:
+            return s.data[i][tag]
+    return None
 
 
 def interp_all(sig, t, end=OO):
