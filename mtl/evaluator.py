@@ -218,6 +218,16 @@ def eval_mtl_g(phi, dt, logic):
     def _min(val):
         return logic.tnorm(val[phi.arg])
 
+    def _rolling_inf(s):
+        d = None
+        for t in reversed(s.data):
+            v = s.data[t]
+            if phi.arg in v:
+                if d is None:
+                    d = v[phi.arg]
+                d = logic.tnorm(d, v[phi.arg])
+                yield (t, d)
+
     def _eval(x):
         tmp = f(x)
         assert b >= a
@@ -228,6 +238,13 @@ def eval_mtl_g(phi, dt, logic):
                     lambda t: interp_all(tmp, t - b - a + dt, tmp.end),
                     tmp.times())
                 tmp = reduce(op.__or__, ts, tmp)[tmp.start:tmp.end]
+            else:
+                return signal(
+                    _rolling_inf(tmp),
+                    tmp.start,
+                    tmp.end - b if b < tmp.end else tmp.end,
+                    tag=phi
+                )
             return tmp.rolling(a, b).map(_min, tag=phi)
 
         return tmp.retag({phi.arg: phi})
