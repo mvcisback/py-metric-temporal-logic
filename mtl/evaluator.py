@@ -7,6 +7,7 @@ from functools import reduce, singledispatch
 
 import funcy as fn
 from discrete_signals import signal, DiscreteSignal
+from sortedcontainers import SortedDict
 
 from mtl import ast
 
@@ -226,7 +227,27 @@ def eval_mtl_g(phi, dt, logic):
                 if d is None:
                     d = v[phi.arg]
                 d = logic.tnorm(d, v[phi.arg])
-                yield (t, d)
+                yield t, d
+
+    def _rolling(s):
+        assert a == 0
+        # Interpolate the whole signal to include pivot points
+        d = SortedDict({t: s[t][phi.arg] for t in s.times() if phi.arg in s[t]})
+        for t in set(d.keys()):
+            idx = max(d.bisect_right(t) - 1, 0)
+            key = d.keys()[idx]
+            i = t - b - a + dt
+            if s.start <= i < s.end:
+                d[i] = s[key][phi.arg]
+        # Iterate over rolling window
+        v = []
+        for t in reversed(d):
+            v.append((t, d[t]))
+            x = [i for j, i in v if t + a <= j < t + b]
+            if len(x) > 0:
+                yield t, logic.tnorm(x)
+            else:
+                yield t, d[t]
 
     def _eval(x):
         tmp = f(x)
@@ -234,10 +255,12 @@ def eval_mtl_g(phi, dt, logic):
         if b > a:
             # Force valuation at pivot points
             if a < b < OO:
-                ts = fn.map(
-                    lambda t: interp_all(tmp, t - b - a + dt, tmp.end),
-                    tmp.times())
-                tmp = reduce(op.__or__, ts, tmp)[tmp.start:tmp.end]
+                return signal(
+                    _rolling(tmp),
+                    tmp.start,
+                    tmp.end - b if b < tmp.end else tmp.end,
+                    tag=phi
+                )
             else:
                 return signal(
                     _rolling_inf(tmp),
