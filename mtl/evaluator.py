@@ -23,6 +23,7 @@ def to_signal(ts_mapping) -> DiscreteSignal:
 
 
 def interp(sig, t, tag=None):
+<<<<<<< HEAD
     if t in sig.data and tag in sig.data[t]:
         return sig.data[t][tag]
     s = sig[:t]
@@ -30,6 +31,16 @@ def interp(sig, t, tag=None):
         if tag in s.data[i]:
             return s.data[i][tag]
     return None
+=======
+    idx = max(sig.data.bisect_right(t) - 1, 0)
+    keys = sig.data.keys()
+    while idx > 0:
+        if tag in sig[keys[idx]]:
+            return sig[keys[idx]][tag]
+        idx = idx - 1
+    key = keys[0]
+    return sig[key][tag]
+>>>>>>> 2bf91f8 (Prevent signal duplication during value interpolation)
 
 
 def interp_all(sig, t, end=OO):
