@@ -1,6 +1,10 @@
 from discrete_signals import signal
+from hypothesis import given
 
 import mtl
+from mtl import connective
+from mtl.evaluator import booleanize_signal, to_signal, eval_mtl_g, eval_mtl_g_legacy
+from mtl.hypothesis import MetricTemporalLogicStrategy
 
 
 def test_eval_regression_smoke1():
@@ -87,3 +91,22 @@ def test_eval_comparison():
     i = a.eq(b)
     assert not i(d, time=0, quantitative=False)
     assert i(d, time=4, quantitative=False)
+
+
+@given(MetricTemporalLogicStrategy)
+def test_eval_regression_always(phi):
+    x = {
+        "ap1": [(0, True), (1, True), (2, False)],
+        "ap2": [(0, False), (2, True), (5, False)],
+        "ap3": [(0, True), (1, True), (3, False)],
+        "ap4": [(0, False), (1, False), (3, False)],
+        "ap5": [(0, False), (1, False), (3, True)],
+        "ap6": [(0, True), (float('inf'), True)],
+    }
+    s = booleanize_signal(to_signal(x), connective.default)
+    f = eval_mtl_g(phi.always(), 0.1, connective.default)(s)
+    r = eval_mtl_g_legacy(phi.always(), 0.1, connective.default)(s)
+    assert f == r
+
+
+
