@@ -7,6 +7,7 @@ from functools import reduce, singledispatch
 
 import funcy as fn
 from discrete_signals import signal, DiscreteSignal
+from sortedcontainers import SortedDict
 
 from mtl import ast
 
@@ -24,13 +25,14 @@ def to_signal(ts_mapping) -> DiscreteSignal:
 
 
 def interp(sig, t, tag=None):
-    if t in sig.data and tag in sig.data[t]:
-        return sig.data[t][tag]
-    s = sig[:t]
-    for i in reversed(s.data):
-        if tag in s.data[i]:
-            return s.data[i][tag]
-    return None
+    idx = max(sig.data.bisect_right(t) - 1, 0)
+    keys = sig.data.keys()
+    while idx > 0:
+        if tag in sig[keys[idx]]:
+            return sig[keys[idx]][tag]
+        idx = idx - 1
+    key = keys[0]
+    return sig[key][tag]
 
 
 def interp_all(sig, t, end=OO):
@@ -212,6 +214,79 @@ def eval_mtl_implies(phi, dt, logic):
 
 @eval_mtl.register(ast.G)
 def eval_mtl_g(phi, dt, logic):
+    f = eval_mtl(phi.arg, dt, logic)
+    a, b = phi.interval
+    if b < a:
+        return lambda x: logic.TOP.retag({ast.TOP: phi})
+
+    def _min(val):
+        return logic.tnorm(val[phi.arg])
+
+    def _rolling_inf(s):
+        d = None
+        for t in reversed(s.data):
+            v = s.data[t]
+            if phi.arg in v:
+                if d is None:
+                    d = v[phi.arg]
+                d = logic.tnorm(d, v[phi.arg])
+                yield t, d
+
+    def _rolling(s, aa, bb):
+        assert aa == 0, f"{aa} -- {phi}"
+        # Interpolate the whole signal to include pivot points
+        d = SortedDict({t: s[t][phi.arg] for t in s.times() if phi.arg in s[t]})
+        for t in set(d.keys()):
+            idx = max(d.bisect_right(t) - 1, 0)
+            key = d.keys()[idx]
+            i = t - bb - aa + dt
+            if s.start <= i < s.end:
+                d[i] = s[key][phi.arg]
+        # Iterate over rolling window
+        v = []
+        for t in reversed(d):
+            v.append((t, d[t]))
+            while not (t + aa <= v[0][0] < t + bb):
+                del v[0]
+            x = [i for j, i in v]
+            if len(x) > 0:
+                yield t, logic.tnorm(x)
+            else:
+                yield t, d[t]
+
+    def _eval(x):
+        tmp = f(x)
+        assert b >= a
+        if b > a:
+            if a < b < OO:
+                if a != 0:
+                    return signal(
+                        _rolling(tmp, 0, b - a),
+                        tmp.start,
+                        tmp.end - b if b < tmp.end else tmp.end,
+                        tag=phi
+                    ) << a
+                else:
+                    return signal(
+                        _rolling(tmp),
+                        tmp.start,
+                        tmp.end - b if b < tmp.end else tmp.end,
+                        tag=phi
+                    )
+            else:
+                return signal(
+                    _rolling_inf(tmp),
+                    tmp.start,
+                    tmp.end - b if b < tmp.end else tmp.end,
+                    tag=phi
+                )
+            return tmp.rolling(a, b).map(_min, tag=phi)
+
+        return tmp.retag({phi.arg: phi})
+    return _eval
+
+
+def eval_mtl_g_legacy(phi, dt, logic):
     f = eval_mtl(phi.arg, dt, logic)
     a, b = phi.interval
     if b < a:
