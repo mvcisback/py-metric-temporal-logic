@@ -23,7 +23,6 @@ def to_signal(ts_mapping) -> DiscreteSignal:
 
 
 def interp(sig, t, tag=None):
-<<<<<<< HEAD
     if t in sig.data and tag in sig.data[t]:
         return sig.data[t][tag]
     s = sig[:t]
@@ -31,16 +30,6 @@ def interp(sig, t, tag=None):
         if tag in s.data[i]:
             return s.data[i][tag]
     return None
-=======
-    idx = max(sig.data.bisect_right(t) - 1, 0)
-    keys = sig.data.keys()
-    while idx > 0:
-        if tag in sig[keys[idx]]:
-            return sig[keys[idx]][tag]
-        idx = idx - 1
-    key = keys[0]
-    return sig[key][tag]
->>>>>>> 2bf91f8 (Prevent signal duplication during value interpolation)
 
 
 def interp_all(sig, t, end=OO):
@@ -87,7 +76,10 @@ def pointwise_sat(phi, dt=0.1, logic=None):
 
         if t is None:
             res = [(t, v[phi]) for t, v in f(sig).items() if t >= start_time]
-            return res if quantitative else [(t, v >= logic.const_true) for t, v in res]
+            if quantitative:
+                return res
+            else:
+                return [(t, v >= logic.const_true) for t, v in res]
 
         if t is False:  # Use original signals starting time.
             t = start_time
@@ -110,7 +102,7 @@ def eval_mtl_and(phi, dt, logic):
     def _eval(x):
         sigs = [f(x) for f in fs]
         sig = reduce(lambda x, y:
-        			 dense_compose(x, y, init=logic.const_true), sigs)
+                     dense_compose(x, y, init=logic.const_true), sigs)
         return sig.map(lambda v: logic.tnorm(v.values()), tag=phi)
 
     return _eval
@@ -123,7 +115,7 @@ def eval_mtl_or(phi, dt, logic):
     def _eval(x):
         sigs = [f(x) for f in fs]
         sig = reduce(lambda x, y:
-        			 dense_compose(x, y, init=logic.const_true), sigs)
+                     dense_compose(x, y, init=logic.const_true), sigs)
         return sig.map(lambda v: logic.tconorm(v.values()), tag=phi)
 
     return _eval
@@ -147,7 +139,7 @@ def eval_mtl_until(phi, dt, logic):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        sig = sig | interp_all(sig, x.start, logic.const_true)  # Force valuation at start
+        sig = sig | interp_all(sig, x.start, logic.const_true)
         data = apply_weak_until(phi.arg1, phi.arg2, sig, logic)
         return signal(data, x.start, x.end, tag=phi)
 
@@ -166,7 +158,7 @@ def eval_mtl_implies(phi, dt, logic):
 
     def _eval(x):
         sig = dense_compose(f1(x), f2(x), init=logic.const_false)
-        sig = sig | interp_all(sig, x.start, logic.const_true)  # Force valuation at start
+        sig = sig | interp_all(sig, x.start, logic.const_true)
         data = apply_implies(phi.arg1, phi.arg2, sig, logic)
         return signal(data, x.start, x.end, tag=phi)
 
