@@ -29,7 +29,8 @@ def interp(sig, t, tag=None):
     for i in reversed(s.data):
         if tag in s.data[i]:
             return s.data[i][tag]
-    return None
+    key = sig.data.keys()[0]
+    return sig[key][tag]
 
 
 def interp_all(sig, t, end=OO):
