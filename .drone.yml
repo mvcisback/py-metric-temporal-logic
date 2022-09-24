@@ -10,5 +10,4 @@ steps:
   commands:
   - pip install poetry
   - poetry install
-  - poetry run pytest --flake8 --cov=mtl
-  - poetry run codecov
+  - poetry run pytest 
