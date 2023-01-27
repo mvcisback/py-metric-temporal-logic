@@ -158,7 +158,7 @@ phi7 = mtl.parse('XX a')
 
 ## Quantitative Evaluate (Signal Temporal Logic)
 
-Given a property `phi`, one can evaluate is a timeseries satisifies
+Given a property `phi`, one can evaluate if a timeseries satisifies
 `phi`. Time Series can either be defined using a dictionary mapping
 atomic predicate names to lists of (`time`, `val`) pairs **or** using
 the [DiscreteSignals](https://github.com/mvcisback/DiscreteSignals)
