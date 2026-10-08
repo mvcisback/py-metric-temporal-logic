@@ -98,13 +98,12 @@ def eval_mtl_and(phi, dt):
 
 
 def apply_weak_until(left_key, right_key, sig):
-    prev, max_right = OO, -OO
+    prev = OO
 
     for t in reversed(sig.times()):
         left, right = interp(sig, t, left_key), interp(sig, t, right_key)
 
-        max_right = max(max_right, right)
-        prev = max(right, min(left, prev), -max_right)
+        prev = max(right, min(left, prev))
         yield (t, prev)
 
 
