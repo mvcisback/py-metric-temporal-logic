@@ -1,5 +1,8 @@
+from itertools import product
+
 import hypothesis.strategies as st
 from hypothesis import given
+import pytest
 
 import mtl
 from mtl.hypothesis import MetricTemporalLogicStrategy
@@ -12,6 +15,44 @@ x = {
     "ap5": [(0, False), (0.1, False), (0.3, True)],
     "ap6": [(0, True), (float('inf'), True)],
 }
+
+
+@pytest.mark.parametrize('left, right, expected', [
+    ([False, False], [False, False], [False, False]),
+    ([True, False], [False, False], [False, False]),
+    ([True, True], [False, False], [True, True]),
+    ([True, False, False], [False, True, False], [True, True, False]),
+    ([False, True], [False, True], [False, True]),
+    ([False, False], [True, False], [True, False]),
+    ([False], [False], [False]),
+])
+def test_eval_weak_until(left, right, expected):
+    trace = {'a': list(enumerate(left)), 'b': list(enumerate(right))}
+    phi = mtl.parse('(a W b)')
+
+    for t, value in enumerate(expected):
+        assert phi(trace, time=t, quantitative=False, dt=1) == value
+
+
+@pytest.mark.parametrize('length', range(1, 5))
+def test_eval_until_exhaustive(length):
+    weak_until = mtl.parse('(a W b)')
+    until = mtl.parse('(a U b)')
+
+    for values in product((False, True), repeat=2 * length):
+        left, right = values[:length], values[length:]
+        trace = {'a': list(enumerate(left)), 'b': list(enumerate(right))}
+
+        for t in range(length):
+            # A witness for U needs the left operand only before the witness.
+            expected_until = any(
+                right[j] and all(left[t:j]) for j in range(t, length)
+            )
+            expected_weak_until = expected_until or all(left[t:])
+            assert weak_until(trace, time=t, quantitative=False, dt=1) \
+                == expected_weak_until
+            assert until(trace, time=t, quantitative=False, dt=1) \
+                == expected_until
 
 
 @given(st.just(mtl.ast.Next(mtl.BOT) | mtl.ast.Next(mtl.TOP)))

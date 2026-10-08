@@ -1,6 +1,35 @@
 from discrete_signals import signal
+import pytest
 
 import mtl
+
+
+@pytest.mark.parametrize('left, right, expected', [
+    ([-3, -4], [-8, -6], [-4, -4]),
+    ([-5, -4], [-1, -2], [-1, -2]),
+    ([3, -2], [-8, -6], [-2, -2]),
+    ([3, 2], [-8, -6], [2, 2]),
+    ([3, -2, -4], [-8, 5, -6], [3, 5, -4]),
+    ([-2, 3], [-8, 5], [-2, 5]),
+    ([-2, -4], [5, -6], [5, -4]),
+    ([0, -2], [-8, -6], [-2, -2]),
+    ([3, 0], [-8, -6], [0, 0]),
+    ([-3], [-8], [-3]),
+])
+def test_eval_weak_until_quantitative(left, right, expected):
+    trace = {'a': list(enumerate(left)), 'b': list(enumerate(right))}
+    weak_until = mtl.parse('(a W b)')
+    until = mtl.parse('(a U b)')
+
+    for t, value in enumerate(expected):
+        # Quantitative U is the best right witness, limited by preceding lefts.
+        expected_until = max(
+            min([right[j]] + left[t:j]) for j in range(t, len(left))
+        )
+        assert value == max(expected_until, min(left[t:]))
+        assert weak_until(trace, time=t, quantitative=True, dt=1) == value
+        assert until(trace, time=t, quantitative=True, dt=1) \
+            == expected_until
 
 
 def test_eval_regression_smoke1():
